@@ -1,0 +1,70 @@
+package com.apimocktle.ide.action
+
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.psi.PsiClass
+import com.intellij.psi.util.PsiTreeUtil
+import com.apimocktle.core.event.ActionCompletedTopic
+import com.apimocktle.core.event.ActionCompletedTopic.Companion.syncPublish
+import com.apimocktle.logging.IdeaLog
+import java.awt.datatransfer.StringSelection
+
+/**
+ * Base class for actions that format class fields to various output formats.
+ *
+ * Finds the containing [PsiClass] from the action context, formats it using
+ * the subclass implementation, copies the result to clipboard, and shows
+ * a notification.
+ *
+ * @param title The display title for notifications
+ * @see FieldsToJsonAction for JSON output
+ * @see FieldsToJson5Action for JSON5 output
+ * @see FieldsToPropertiesAction for Properties output
+ */
+abstract class FieldFormatAction(
+    private val title: String
+) : AnAction() {
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val psiClass = findPsiClass(e) ?: return
+        try {
+            val text = kotlinx.coroutines.runBlocking { format(project, psiClass) }
+            CopyPasteManager.getInstance().setContents(StringSelection(text))
+            Notifications.Bus.notify(
+                Notification(
+                    "EasyAPI Notifications",
+                    title,
+                    "已复制到剪贴板",
+                    NotificationType.INFORMATION
+                ), project
+            )
+        } finally {
+            project.syncPublish(ActionCompletedTopic.TOPIC)
+        }
+    }
+
+    /**
+     * Format the given class fields to a string representation.
+     *
+     * @param project The IntelliJ project
+     * @param psiClass The class to format
+     * @return The formatted string representation
+     */
+    protected abstract suspend fun format(project: Project, psiClass: PsiClass): String
+
+    private fun findPsiClass(e: AnActionEvent): PsiClass? {
+        val element = e.getData(CommonDataKeys.PSI_ELEMENT)
+        if (element is PsiClass) return element
+        if (element != null) return PsiTreeUtil.getParentOfType(element, PsiClass::class.java)
+        val file = e.getData(CommonDataKeys.PSI_FILE) ?: return null
+        return PsiTreeUtil.findChildOfType(file, PsiClass::class.java)
+    }
+
+    companion object : IdeaLog
+}

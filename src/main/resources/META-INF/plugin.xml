@@ -1,0 +1,154 @@
+<idea-plugin>
+    <id>com.apimocktle.plugin</id>
+    <name>ApiMocktle</name>
+    <version>1.0.0</version>
+    <vendor>ApiMocktle</vendor>
+
+    <description><![CDATA[EasyAPI 统一插件，支持从源码提取 API 并同步到 YAPI。]]></description>
+    <category>Web</category>
+
+    <idea-version since-build="233.0"/>
+    <depends>com.intellij.modules.platform</depends>
+
+    <depends optional="true" config-file="easy-api-kotlin.xml">org.jetbrains.kotlin</depends>
+    <depends optional="true" config-file="easy-api-scala.xml">org.intellij.scala</depends>
+    <depends optional="true" config-file="easy-api-groovy.xml">org.intellij.groovy</depends>
+
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK2="true"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.apimocktle.core.EasyApiApplicationService"/>
+        <applicationService serviceImplementation="com.apimocktle.settings.state.ApplicationSettingsState"/>
+        <applicationService serviceImplementation="com.apimocktle.cache.AppCacheRepository"/>
+        <projectService serviceImplementation="com.apimocktle.core.EasyApiProjectService"/>
+        <projectService serviceImplementation="com.apimocktle.core.event.EventBus"/>
+        <projectService serviceImplementation="com.apimocktle.util.storage.SessionStorage"/>
+        <projectService serviceImplementation="com.apimocktle.rule.engine.RuleEngine"/>
+        <projectService serviceImplementation="com.apimocktle.http.HttpClientProvider"/>
+        <projectService serviceImplementation="com.apimocktle.logging.IdeaConsoleProvider"/>
+        <projectService serviceInterface="com.apimocktle.config.ConfigReader"
+                        serviceImplementation="com.apimocktle.config.DefaultConfigReader"/>
+        <projectService serviceImplementation="com.apimocktle.config.ConfigSyncService"/>
+        <projectService serviceImplementation="com.apimocktle.cache.CacheService"/>
+        <projectService serviceInterface="com.apimocktle.settings.SettingBinder"
+                        serviceImplementation="com.apimocktle.settings.DefaultSettingBinder"/>
+        <projectService serviceImplementation="com.apimocktle.settings.state.ProjectSettingsState"/>
+        <projectService serviceInterface="com.apimocktle.exporter.yapi.YapiSettingsHelper"
+                        serviceImplementation="com.apimocktle.exporter.yapi.DefaultYapiSettingsHelper"/>
+
+        <projectService serviceInterface="com.apimocktle.util.markdown.MarkdownRender"
+                        serviceImplementation="com.apimocktle.util.markdown.BundledMarkdownRender"/>
+        <projectService serviceImplementation="com.apimocktle.exporter.grpc.GrpcMethodResolver"/>
+        <projectService serviceImplementation="com.apimocktle.grpc.CompositeDescriptorResolver"/>
+
+        <projectService serviceImplementation="com.apimocktle.exporter.EndpointBuilder"/>
+        <projectService serviceImplementation="com.apimocktle.cache.VcsBranchChangeListener"/>
+
+        <postStartupActivity implementation="com.apimocktle.ide.ApiIndexStartupActivity"/>
+
+        <projectConfigurable groupId="null"
+                             displayName="EasyApi"
+                             id="easyapi.settings.EasyApiConfigurable"
+                             instance="com.apimocktle.settings.ui.EasyApiSettingsConfigurable"/>
+        <projectConfigurable groupId="easyapi.settings.EasyApiConfigurable"
+                             displayName="远程"
+                             id="easyapi.settings.EasyApiConfigurable.Remote"
+                             instance="com.apimocktle.settings.ui.EasyApiRemoteConfigurable"/>
+        <projectConfigurable groupId="easyapi.settings.EasyApiConfigurable"
+                             displayName="内置配置"
+                             id="easyapi.settings.EasyApiConfigurable.BuiltInConfig"
+                             instance="com.apimocktle.settings.ui.EasyApiBuiltInConfigurable"/>
+        <projectConfigurable groupId="easyapi.settings.EasyApiConfigurable"
+                             displayName="其他"
+                             id="easyapi.settings.EasyApiConfigurable.Other"
+                             instance="com.apimocktle.settings.ui.EasyApiOtherConfigurable"/>
+        <toolWindow
+                id="API Dashboard"
+                icon="AllIcons.Toolwindows.ToolWindowRun"
+                anchor="bottom"
+                factoryClass="com.apimocktle.dashboard.ApiDashboardToolWindowFactory"/>
+        <notificationGroup id="EasyApi Notifications" displayType="BALLOON"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.apimocktle.ide.linemarker.ApiMethodLineMarkerProvider"/>
+        <searchEverywhereContributor implementation="com.apimocktle.ide.search.ApiSearchEverywhereContributorFactory"/>
+    </extensions>
+
+    <actions>
+        <group id="EasyApiExportFromFileGroup" text="导出" description="导出API">
+            <action id="com.apimocktle.action.ApiCallAction"
+                    class="com.apimocktle.ide.action.ApiCallAction" text="调用"
+                    description="调用API">
+                <keyboard-shortcut first-keystroke="alt shift C" keymap="$default"/>
+                <keyboard-shortcut first-keystroke="control C" keymap="Mac OS X" replace-all="true"/>
+                <keyboard-shortcut first-keystroke="control C" keymap="Mac OS X 10.5+" replace-all="true"/>
+            </action>
+            <action id="com.apimocktle.action.MultipleExportAction"
+                    class="com.apimocktle.ide.action.ExportApiAction" text="导出"
+                    description="导出API">
+                <keyboard-shortcut first-keystroke="alt shift E" keymap="$default"/>
+                <keyboard-shortcut first-keystroke="control E" keymap="Mac OS X" replace-all="true"/>
+                <keyboard-shortcut first-keystroke="control E" keymap="Mac OS X 10.5+" replace-all="true"/>
+            </action>
+        </group>
+
+        <group id="EasyApiExportGroup" text="导出" description="导出API">
+            <action id="com.apimocktle.action.YapiExportAction"
+                    class="com.apimocktle.ide.action.ExportToYapiAction" text="导出到YAPI"
+                    description="导出到YAPI">
+            </action>
+        </group>
+
+        <group id="EasyApiFieldsGroup" text="字段转换" description="字段格式转换">
+            <action id="com.apimocktle.action.FieldsToJsonAction"
+                    class="com.apimocktle.ide.action.FieldsToJsonAction" text="转JSON"
+                    description="字段转JSON">
+            </action>
+            <action id="com.apimocktle.action.FieldsToJson5Action"
+                    class="com.apimocktle.ide.action.FieldsToJson5Action" text="转JSON5"
+                    description="字段转JSON5">
+            </action>
+            <action id="com.apimocktle.action.FieldsToPropertiesAction"
+                    class="com.apimocktle.ide.action.FieldsToPropertiesAction" text="转Properties"
+                    description="字段转Properties">
+            </action>
+        </group>
+
+        <group id="EasyApiCodeMenu" text="EasyApi" description="EasyApi代码菜单" popup="true">
+            <add-to-group group-id="CodeMenu" anchor="last"/>
+            <action id="com.apimocktle.action.ScriptExecutorAction"
+                    class="com.apimocktle.ide.action.OpenScriptExecutorAction" text="脚本执行器"
+                    description="打开脚本执行器">
+            </action>
+        </group>
+
+        <group id="EasyApiGenerateMenu" text="EasyApi" description="EasyApi生成菜单" popup="true">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
+            <reference ref="EasyApiExportFromFileGroup"/>
+            <reference ref="EasyApiExportGroup"/>
+            <reference ref="EasyApiFieldsGroup"/>
+        </group>
+
+        <group id="EasyApiEditorLangPopupMenu" text="EasyApi" description="EasyApi编辑器菜单" popup="true">
+            <add-to-group group-id="EditorLangPopupMenu" anchor="last"/>
+            <reference ref="EasyApiExportFromFileGroup"/>
+            <reference ref="EasyApiExportGroup"/>
+            <reference ref="EasyApiFieldsGroup"/>
+        </group>
+
+        <group id="EasyApiProjectViewPopupMenu" text="EasyApi" description="EasyApi项目视图菜单" popup="true">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <reference ref="EasyApiExportFromFileGroup"/>
+            <reference ref="EasyApiExportGroup"/>
+        </group>
+
+        <action
+                id="com.apimocktle.action.OpenDashboardAction"
+                class="com.apimocktle.ide.action.OpenApiDashboardAction"
+                text="打开API仪表盘"
+                description="打开API Dashboard工具窗口">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+
+    </actions>
+</idea-plugin>

@@ -1,0 +1,28 @@
+package com.apimocktle.gap
+
+import com.apimocktle.exporter.feign.FeignClassExporter
+import com.apimocktle.exporter.jaxrs.JaxRsClassExporter
+import com.apimocktle.exporter.springmvc.SpringMvcClassExporter
+import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.TestConfigReader
+import org.junit.Assert.*
+
+class FeatureParityTest : EasyApiLightCodeInsightFixtureTestCase() {
+
+    override fun createConfigReader() = TestConfigReader.empty(project)
+
+    fun testSpringMvcExporterExists() = runTest {
+        val exporter = SpringMvcClassExporter(project)
+        assertNotNull("SpringMvcClassExporter should exist", exporter)
+    }
+
+    fun testFeignExporterExists() = runTest {
+        val exporter = FeignClassExporter(project)
+        assertNotNull("FeignClassExporter should exist", exporter)
+    }
+
+    fun testJaxRsExporterExists() = runTest {
+        val exporter = JaxRsClassExporter(project)
+        assertNotNull("JaxRsClassExporter should exist", exporter)
+    }
+}
