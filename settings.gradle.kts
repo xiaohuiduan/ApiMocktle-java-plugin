@@ -1,4 +1,4 @@
-rootProject.name = "easy-yapi"
+rootProject.name = "ApiMocktle"
 
 pluginManagement {
     repositories {

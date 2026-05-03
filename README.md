@@ -1,235 +1,126 @@
-# EasyYapi
+# ApiMocktle
 
-[![CI](https://github.com/tangcent/easy-yapi/actions/workflows/ci.yml/badge.svg)](https://github.com/tangcent/easy-yapi/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/tangcent/easy-yapi/branch/master/graph/badge.svg?token=J6RUGI54XV)](https://codecov.io/gh/tangcent/easy-yapi)
-[![](https://img.shields.io/jetbrains/plugin/v/12458?color=blue&label=version)](https://plugins.jetbrains.com/plugin/12458-easyyapi)
-[![](https://img.shields.io/jetbrains/plugin/d/12458)](https://plugins.jetbrains.com/plugin/12458-easyyapi)
+一个 IntelliJ IDEA 插件，从源码提取 API 并同步到 [ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle)。
 
-English | [中文](README_CN.md)
+## 功能
 
-> **Note:** This is the v3.0 rewrite of EasyYapi. For the source code of stable v2.x releases, see the
-> [`stable/v2.x.x`](https://github.com/tangcent/easy-yapi/tree/stable/v2.x.x) branch.
+### API 导出到 YAPI
 
-An IntelliJ IDEA plugin for API development — export API documentation to YApi/Postman/Markdown, send requests, and manage endpoints directly from your code.
+- 从 Java / Kotlin / Scala / Groovy 源码解析 API 端点
+- 使用**个人令牌**认证，无需为每个模块单独配置
+- 导出时下拉选择目标项目，支持搜索过滤
+- 自动创建分类、检测重复接口、更新确认
 
-## Features
+### API 仪表盘
 
-### API Export
+内置工具窗口，浏览、搜索、调用 API：
 
-Export API endpoints from your source code to multiple formats:
+- 按模块和类浏览接口树
+- 搜索接口路径、名称、方法
+- 查看参数、请求头、请求体详情
+- 直接从仪表盘发送 HTTP 请求
+- 单击导航至源码
 
-| Format | HTTP | gRPC | Output |
-|--------|------|------|--------|
-| [YApi](https://easyyapi.github.io/guide/export2yapi) | ✓ | — | Upload to YApi platform with category management, mock rules, and update confirmation |
-| [Postman](https://easyyapi.github.io/guide/export2postman) | ✓ | — | JSON file or direct upload to Postman workspace |
-| [Markdown](https://easyyapi.github.io/guide/export2markdown) | ✓ | ✓ | .md documentation file |
-| cURL | ✓ | ✓ | Executable shell command |
-| HTTP Client | ✓ | ✓ | IntelliJ HTTP Client scratch file |
+### 发送 API 请求
 
-### API Dashboard
+- 右键控制器方法 → **调用**（`Alt+Shift+C`）
+- 编辑参数后发送，查看带语法高亮的响应
 
-A built-in tool window that provides a tree view of all API endpoints in your project:
+### API 全局搜索
 
-- Browse endpoints organized by module and class
-- Search and filter endpoints by path, name, or HTTP method
-- View endpoint details (parameters, headers, body, response)
-- Send HTTP requests directly from the dashboard
-- Navigate to source code with a single click
-- Edit request parameters with auto-persistence
+双击 Shift → APIs 标签 → 按方法前缀（`GET /users`）或关键字搜索。
 
-### Send API Requests
+### 字段转换
 
-Call any API endpoint directly from the editor:
+- 类字段 → JSON / JSON5 / Properties
 
-- Right-click a controller method → **Call** (or press `Ctrl+C` on macOS / `Alt+Shift+C`)
-- The API Dashboard opens and navigates to the selected endpoint
-- Edit parameters, headers, and body before sending
-- View response with syntax highlighting
+## 支持的框架
 
-### API Search Everywhere
-
-Find API endpoints from anywhere in the IDE using IntelliJ's Search Everywhere (Double Shift):
-
-- Search by HTTP method prefix (e.g., `GET /users`)
-- Search by path, endpoint name, class name, or description
-- Click a result to navigate directly to the source method
-
-### Gutter Icons
-
-API methods are marked with a gutter icon in the editor. Click it to open the endpoint in the API Dashboard.
-
-### Field Conversion
-
-Convert class fields to various formats:
-
-- **To JSON** — Standard JSON with default values
-- **To JSON5** — JSON5 format with comments support
-- **To Properties** — Java `.properties` format
-
-### Supported Frameworks
-
-| Category | Supported |
-|----------|-----------|
-| Languages | Java, Kotlin, Scala (optional), Groovy (optional) |
-| Web Frameworks | Spring MVC, Spring Cloud OpenFeign, JAX-RS (Quarkus / Jersey) |
+| 类别 | 支持 |
+|------|------|
+| 语言 | Java、Kotlin、Scala、Groovy |
+| Web 框架 | Spring MVC、Spring Cloud OpenFeign、JAX-RS |
 | RPC | gRPC |
-| Validation | javax.validation / Jakarta Validation |
-| Serialization | Jackson, Gson |
-| API Docs | Swagger 2 / OpenAPI 3 annotations |
-| Spring Actuator | Actuator endpoints |
+| 校验 | javax.validation / Jakarta Validation |
+| 序列化 | Jackson、Gson |
+| API 注解 | Swagger 2 / OpenAPI 3 |
 
-#### Spring MVC
+## 安装
 
-Full support for Spring MVC annotations:
+1. 从 `build/distributions/` 获取 `easy-yapi-x.x.x.zip`
+2. IDEA → Settings → Plugins → 齿轮 → Install Plugin from Disk
+3. 选择 zip 文件，重启 IDEA
 
-- `@RequestMapping`, `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping`, `@PatchMapping`
-- `@RequestParam`, `@PathVariable`, `@RequestBody`, `@RequestHeader`, `@CookieValue`
-- `@RestController`, `@Controller`
-- Class-level and method-level mapping composition
-- Generic type resolution for parameterized controllers
-- Custom meta-annotation support
+**兼容性**：IntelliJ IDEA 2023.3+ / JDK 17+
 
-#### Spring Cloud OpenFeign
+## 使用方法
 
-Support for Feign client interfaces:
+### 导出到 YAPI
 
-- `@FeignClient` interface detection
-- Spring MVC annotations on interface methods
-- Native Feign annotations: `@RequestLine`, `@Headers`, `@Body`, `@Param`
+1. **配置个人令牌**：Settings → ApiMocktle → YAPI → 输入服务器地址和个人令牌
+2. 右键控制器文件 / 类 / 方法 → **导出到YAPI**（`Alt+Shift+E`）
+3. 在弹出的项目选择框中选择目标项目
+4. API 自动同步
 
-#### JAX-RS
+### 调用 API
 
-Full support for JAX-RS annotations:
+右键控制器方法 → **调用**（`Alt+Shift+C`），编辑参数后发送。
 
-- `@Path`, `@GET`, `@POST`, `@PUT`, `@DELETE`, `@PATCH`, `@HEAD`, `@OPTIONS`
-- `@PathParam`, `@QueryParam`, `@FormParam`, `@HeaderParam`, `@CookieParam`, `@MatrixParam`
-- `@Consumes`, `@Produces`
+### 打开仪表盘
 
-#### gRPC
+Tools → 打开API仪表盘，或点击底部 **API Dashboard** 标签。
 
-Support for gRPC service implementations:
+## 配置
 
-- Service path extraction (`/<package>.<ServiceName>/<MethodName>`)
-- Streaming type detection (unary, server-streaming, client-streaming, bidirectional)
-- Request/response protobuf message type resolution
-- Server reflection support
-- Stub class resolution
+插件使用分层配置系统：
 
-## How to Use
+| 优先级 | 来源 | 说明 |
+|--------|------|------|
+| 最高 | 本地文件 | 项目根目录 `.easy.api.config` |
+| | 扩展 | 内置扩展配置 |
+| | 远程 | 从 URL 加载的配置 |
+| 最低 | 内置 | 默认配置 |
 
-### Export APIs
+支持 Groovy 脚本、正则表达式、注解表达式等规则引擎语法。
 
-1. Right-click on a controller file, class, or method in the editor or project view
-2. Select **EasyApi → Export** (or press `Ctrl+E` on macOS / `Alt+Shift+E`)
-3. Choose the target format (YApi / Postman / Markdown / cURL / HTTP Client)
-4. The APIs will be exported automatically
+## 开发
 
-### Call an API
+### 环境要求
 
-1. Right-click on a controller method
-2. Select **EasyApi → Call** (or press `Ctrl+C` on macOS / `Alt+Shift+C`)
-3. The API Dashboard opens with the endpoint loaded
-4. Edit parameters and send the request
+- JDK 17+
+- IntelliJ IDEA 2023.3+
 
-### Open API Dashboard
-
-- Go to **Tools → Open API Dashboard**
-- Or click the **API Dashboard** tab at the bottom of the IDE
-
-### Search APIs
-
-1. Press **Double Shift** to open Search Everywhere
-2. Switch to the **APIs** tab
-3. Type an HTTP method prefix (e.g., `GET /users`) or any keyword
-
-### Convert Fields
-
-1. Right-click on a class in the editor
-2. Select **EasyApi → ToJson / ToJson5 / ToProperties**
-
-## Configuration
-
-EasyYapi uses a layered configuration system with multiple sources, processed in priority order:
-
-| Priority | Source | Description |
-|----------|--------|-------------|
-| Highest | Runtime | Programmatic overrides set during execution |
-| | Local file | `.easy.api.config` in the project root |
-| | Extension | Plugin extension configs (Swagger, validation, etc.) |
-| | Remote | Config files fetched from URLs |
-| Lowest | Built-in | Default bundled configuration |
-
-Configuration supports:
-
-- **Property resolution** — Reference other config values with `${key}`
-- **Directives** — Control parsing behavior (`#resolve`, `#ignore`, etc.)
-- **Rule engine** — Groovy scripts, regex, annotation expressions, tag expressions
-- **Remote configs** — Load shared configs from URLs (e.g., Swagger, javax.validation presets)
-
-## Development
-
-### Prerequisites
-
-- JDK 17 or higher
-- IntelliJ IDEA 2025.2 or higher
-
-### Build & Run
+### 构建
 
 ```bash
-# Run an IDEA instance with the plugin installed
+# 编译
+./gradlew clean buildPlugin
+
+# 运行 IDEA 实例
 ./gradlew runIde
 
-# Run all tests
+# 运行测试
 ./gradlew clean test
-
-# Generate JaCoCo coverage report
-./gradlew jacocoTestReport
 ```
 
-### Compatibility
+## 架构
 
-| JDK | IDE | Status |
-|-----|-----|--------|
-| 17 | 2025.2.1 | ✓ |
-
-## Architecture
-
-The plugin follows a layered architecture:
-
-```mermaid
-graph TB
-    IDE["IDE Integration Layer<br/>(Actions, Dashboard, Line Markers, Search)"]
-    Export["Export Layer<br/>(ExportOrchestrator → ClassExporter → ApiExporter)"]
-    Core["Core Services<br/>(RuleEngine, ConfigReader, ApiIndex, HttpClient)"]
-    PSI["PSI Analysis<br/>(TypeResolver, DocHelper, AnnotationHelper)"]
-
-    IDE --> Export
-    Export --> Core
-    Core --> PSI
+```
+IDE 层 (Actions, Dashboard, Line Markers, Search)
+    ↓
+导出层 (ExportOrchestrator → ClassExporter → YapiExporter)
+    ↓
+核心服务 (RuleEngine, ConfigReader, ApiIndex, HttpClient)
+    ↓
+PSI 分析 (TypeResolver, DocHelper, AnnotationHelper)
 ```
 
-- **ClassExporter** — Extracts `ApiEndpoint` models from PSI classes (Spring MVC, JAX-RS, Feign, gRPC)
-- **ApiExporter** — Converts `ApiEndpoint` models to output formats (YApi, Postman, Markdown, cURL, HTTP Client)
-- **ExportOrchestrator** — Coordinates the full export pipeline from scanning to output
-- **ApiIndex** — Caches discovered endpoints for fast search and dashboard access
-- **RuleEngine** — Evaluates rule expressions to customize parsing behavior
+- **ClassExporter** — 从 PSI 类提取 `ApiEndpoint` 模型
+- **YapiExporter** — 格式化、上传至 YAPI
+- **ExportOrchestrator** — 协调扫描到导出的完整流程
+- **RuleEngine** — 评估规则表达式，自定义解析行为
 
-## Documentation
-
-- [Guide](https://easyyapi.github.io/guide/) — Overview and features
-- [Installation](https://easyyapi.github.io/guide/installation) — Install from Marketplace or disk
-- [Usage](https://easyyapi.github.io/guide/use) — Export and call APIs
-- [Export to YApi](https://easyyapi.github.io/guide/export2yapi) — YApi export and settings
-- [Export to Postman](https://easyyapi.github.io/guide/export2postman) — Postman export
-- [Export to Markdown](https://easyyapi.github.io/guide/export2markdown) — Markdown export and templates
-- [Call API](https://easyyapi.github.io/guide/call) — Send requests, API Dashboard, gRPC call
-
-## Contributing
-
-You can propose a feature request by opening an issue or a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
-Here is a list of contributors:
-
-<a href="https://github.com/tangcent/easy-api/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tangcent/easy-yapi" />
-</a>
+## 致谢
+1. 本项目是在大佬[tangcent/easy-yapi](https://github.com/tangcent/easy-yapi)的项目基础上进行改造，去除了一些与ApiMocktle不相关的功能，并进行了翻译为中文，同时对令牌相关的逻辑进行了修改，简化了同步的过程逻辑。
+2. 感谢mimo 100T计划，给我提供的免费2亿credits套餐（虽然我一天就蹬完了🤣）。
+3. 感谢伟大的DeepSeek V4 pro，在五一期间降价，让我疯狂蹬，花费却不到100，完成了项目所有内容。
