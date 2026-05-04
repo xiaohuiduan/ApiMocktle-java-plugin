@@ -2,6 +2,12 @@
 
 一个 IntelliJ IDEA 插件，从源码提取 API 并同步到 [ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle)。
 
+## 同步设置以及案例
+
+该插件必须结合[ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle)进行共同使用。
+
+![同步设置以及案例](./assets/sync.png)
+
 ## 功能
 
 ### API 导出到 YAPI
