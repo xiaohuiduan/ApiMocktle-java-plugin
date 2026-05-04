@@ -5,7 +5,11 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(sed -i 's/com\\\\.itangcent\\\\.idea\\\\.easy_api\\\\.actions/com.apimocktle.action/g' src/main/resources/META-INF/plugin.xml)",
-      "Bash(sed -i 's/com\\\\.itangcent\\\\.idea\\\\.plugin\\\\.easy-yapi/com.apimocktle.plugin/g' src/main/resources/META-INF/plugin.xml build.gradle.kts)"
+      "Bash(sed -i 's/com\\\\.itangcent\\\\.idea\\\\.plugin\\\\.easy-yapi/com.apimocktle.plugin/g' src/main/resources/META-INF/plugin.xml build.gradle.kts)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(gh repo *)",
+      "Bash(git tag *)"
     ]
   }
 }

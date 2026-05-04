@@ -455,18 +455,35 @@ object CommonSettingsHelper {
     }
 }
 
-class YapiSettingsPanel : SettingsPanel {
+class YapiSettingsPanel(private val project: com.intellij.openapi.project.Project) : SettingsPanel {
     private val yapiServer = JBTextField()
     private val yapiPersonalToken = JBTextField()
+    private val testTokenButton = JButton("检测令牌")
+    private val testTokenResult = JBLabel()
     private val enableUrlTemplating = JBCheckBox("启用URL模板", true)
     private val switchNotice = JBCheckBox("切换通知", true)
     private val yapiExportModeCombo = ComboBox(YapiExportMode.entries.toTypedArray())
     private val yapiReqBodyJson5 = JBCheckBox("请求体JSON5")
     private val yapiResBodyJson5 = JBCheckBox("响应体JSON5")
 
+    private val tokenInputPanel = JPanel(BorderLayout(5, 0)).apply {
+        add(yapiPersonalToken, BorderLayout.CENTER)
+        val btnPanel = JPanel(BorderLayout(5, 0)).apply {
+            add(testTokenButton, BorderLayout.CENTER)
+            add(testTokenResult, BorderLayout.EAST)
+        }
+        add(btnPanel, BorderLayout.EAST)
+    }
+
+    init {
+        testTokenButton.addActionListener {
+            testToken()
+        }
+    }
+
     override val component: JComponent = FormBuilder.createFormBuilder()
         .addLabeledComponent("YAPI服务器：", yapiServer)
-        .addLabeledComponent("个人令牌：", yapiPersonalToken)
+        .addLabeledComponent("个人令牌：", tokenInputPanel)
         .addComponent(enableUrlTemplating)
         .addComponent(switchNotice)
         .addLabeledComponent("导出模式：", yapiExportModeCombo)
@@ -475,9 +492,56 @@ class YapiSettingsPanel : SettingsPanel {
         .addComponentFillVertically(JPanel(), 0)
         .panel
 
+    private fun testToken() {
+        val server = yapiServer.text.trim()
+        val token = yapiPersonalToken.text.trim()
+        if (server.isBlank()) {
+            com.intellij.openapi.ui.Messages.showWarningDialog(project, "请先输入YAPI服务器地址", "提示")
+            return
+        }
+        if (token.isBlank()) {
+            com.intellij.openapi.ui.Messages.showWarningDialog(project, "请先输入个人令牌", "提示")
+            return
+        }
+        testTokenButton.isEnabled = false
+        testTokenResult.text = "检测中..."
+        kotlin.concurrent.thread {
+            try {
+                val url = java.net.URL("${server.removeSuffix("/")}/api/project/list?token=${java.net.URLEncoder.encode(token, "UTF-8")}")
+                val conn = url.openConnection() as java.net.HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+                conn.requestMethod = "GET"
+                val code = conn.responseCode
+                val body = if (code == 200) conn.inputStream.bufferedReader().readText()
+                           else conn.errorStream?.bufferedReader()?.readText() ?: ""
+                val json = com.google.gson.JsonParser.parseString(body).asJsonObject
+                val errcode = json.get("errcode")?.asInt ?: json.get("code")?.asInt
+                val errmsg = json.get("errmsg")?.asString ?: json.get("message")?.asString ?: ""
+                javax.swing.SwingUtilities.invokeLater {
+                    if (errcode == 0 || errmsg.contains("成功")) {
+                        testTokenResult.text = "✓ 令牌有效"
+                        testTokenResult.foreground = java.awt.Color(0x2da44e)
+                    } else {
+                        testTokenResult.text = "✗ $errmsg"
+                        testTokenResult.foreground = java.awt.Color(0xcf222e)
+                    }
+                    testTokenButton.isEnabled = true
+                }
+            } catch (e: Exception) {
+                javax.swing.SwingUtilities.invokeLater {
+                    testTokenResult.text = "✗ 连接失败：${e.message}"
+                    testTokenResult.foreground = java.awt.Color(0xcf222e)
+                    testTokenButton.isEnabled = true
+                }
+            }
+        }
+    }
+
     override fun resetFrom(settings: Settings?) {
         yapiServer.text = settings?.yapiServer ?: ""
         yapiPersonalToken.text = settings?.yapiPersonalToken ?: ""
+        testTokenResult.text = ""
         enableUrlTemplating.isSelected = settings?.enableUrlTemplating ?: true
         switchNotice.isSelected = settings?.switchNotice ?: true
         yapiExportModeCombo.selectedItem = settings?.yapiExportMode?.let {

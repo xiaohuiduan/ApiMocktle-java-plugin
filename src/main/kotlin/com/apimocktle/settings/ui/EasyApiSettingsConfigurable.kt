@@ -17,7 +17,7 @@ class EasyApiSettingsConfigurable(private val project: com.intellij.openapi.proj
     }
 
     private val generalPanel = GeneralSettingsPanel(project)
-    private val yapiPanel = YapiSettingsPanel()
+    private val yapiPanel = YapiSettingsPanel(project)
     private val httpPanel = HttpSettingsPanel()
     private val intelligentPanel = IntelligentSettingsPanel()
     private val extensionPanel = ExtensionConfigPanel()
