@@ -2,7 +2,7 @@ package com.apimocktle.psi.type
 
 import com.apimocktle.psi.DefaultPsiClassHelper
 import com.apimocktle.psi.model.ObjectModel
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
 /**
@@ -18,7 +18,7 @@ import com.apimocktle.testFramework.TestConfigReader
  * - ResolvedType sealed class: equality, pattern matching
  * - Complex hierarchies: diamond, interface+class, deep chains, double wrapping
  */
-class ResolvedTypeTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ResolvedTypeTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun setUp() {
         super.setUp()

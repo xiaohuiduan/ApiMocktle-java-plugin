@@ -1,9 +1,9 @@
 package com.apimocktle.util.storage
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class SessionStorageTest : EasyApiLightCodeInsightFixtureTestCase() {
+class SessionStorageTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var storage: SessionStorage
 

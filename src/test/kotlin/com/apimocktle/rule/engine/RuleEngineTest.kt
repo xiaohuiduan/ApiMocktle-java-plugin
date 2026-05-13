@@ -6,13 +6,13 @@ import com.apimocktle.config.ConfigReader
 import com.apimocktle.rule.EventRuleMode
 import com.apimocktle.rule.RuleKey
 import com.apimocktle.rule.StringRuleMode
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import org.junit.Assert.*
 import org.junit.Test
 import org.mockito.kotlin.mock
 
-class RuleEngineTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleEngineTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun createConfigReader(): ConfigReader = TestConfigReader.empty(project)
 

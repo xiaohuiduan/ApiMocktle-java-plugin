@@ -1,8 +1,8 @@
 package com.apimocktle.util.ide
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class ProjectClassAvailabilityServiceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ProjectClassAvailabilityServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var availabilityService: ProjectClassAvailabilityService
 

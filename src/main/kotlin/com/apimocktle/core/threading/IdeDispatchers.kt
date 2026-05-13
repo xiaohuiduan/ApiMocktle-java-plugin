@@ -115,7 +115,7 @@ object IdeDispatchers : IdeaLog {
     val SwingAny: CoroutineDispatcher = SwingDispatcher(ModalityState.any())
 
     private val backgroundExecutor = Executors.newCachedThreadPool { runnable ->
-        Thread(runnable, "EasyAPI-background").apply { isDaemon = true }
+        Thread(runnable, "ApiMocktle-background").apply { isDaemon = true }
     }
 
     /**

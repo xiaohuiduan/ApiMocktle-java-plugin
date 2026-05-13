@@ -2,9 +2,9 @@ package com.apimocktle.ide.action
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class ScriptExecutorActionTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ScriptExecutorActionTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var action: ScriptExecutorAction
 

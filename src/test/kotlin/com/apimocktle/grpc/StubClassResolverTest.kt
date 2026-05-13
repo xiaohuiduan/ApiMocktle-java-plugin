@@ -1,7 +1,7 @@
 package com.apimocktle.grpc
 
 import com.intellij.openapi.application.ApplicationManager
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -14,7 +14,7 @@ import org.junit.Before
  *   - EchoServiceImpl extends EchoServiceImplBase  (user-written)
  *   - EchoRequest / EchoResponse  (generated message classes)
  */
-class StubClassResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class StubClassResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: StubClassResolver
 

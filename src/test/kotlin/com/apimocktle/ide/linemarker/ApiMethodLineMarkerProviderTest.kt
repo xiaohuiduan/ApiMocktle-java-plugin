@@ -3,11 +3,11 @@ package com.apimocktle.ide.linemarker
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.util.PsiTreeUtil
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import com.apimocktle.util.ide.ProjectClassAvailabilityService
 
-class ApiMethodLineMarkerProviderTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiMethodLineMarkerProviderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var lineMarkerProvider: ApiMethodLineMarkerProvider
 

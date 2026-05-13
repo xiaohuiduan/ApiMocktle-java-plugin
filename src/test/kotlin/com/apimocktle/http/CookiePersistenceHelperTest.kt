@@ -1,10 +1,10 @@
 package com.apimocktle.http
 
 import com.apimocktle.cache.ProjectCacheRepository
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class CookiePersistenceHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class CookiePersistenceHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var cookiePersistenceHelper: CookiePersistenceHelper
 

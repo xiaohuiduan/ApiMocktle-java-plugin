@@ -2,6 +2,21 @@
 
 一个 IntelliJ IDEA 插件，从源码提取 API 并同步到 [ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle)。
 
+## 更新日志
+
+### v2.1.0 — 统一名字 & EasyApi → ApiMocktle
+
+- **名字统一**：清理所有 EasyApi 名字，避免与[EasyApi](https://github.com/tangcent/easy-yapi)插件冲突，设置页、右键菜单统一显示为 ApiMocktle
+- **菜单重构**：右键菜单扁平化，去掉多余的"导出"按钮，只保留「调用」和「导出到ApiMocktle」
+- **快捷键**：「导出到ApiMocktle」继承 `Alt+Shift+E` 快捷键
+- **通知/控制台**：所有通知组、控制台窗口标题改为 ApiMocktle
+- **内部清理**：重命名所有 EasyApi* 类、State 持久化名称、缓存目录等
+
+### v2.0.0 — 个人令牌 + 项目选择同步
+
+- 新增 YAPI 设置页检测令牌按钮
+- 支持个人令牌认证和项目选择同步
+
 ## 同步设置以及案例
 
 该插件必须结合[ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle)进行共同使用。
@@ -10,7 +25,7 @@
 
 ## 功能
 
-### API 导出到 YAPI
+### API 导出到 ApiMocktle
 
 - 从 Java / Kotlin / Scala / Groovy 源码解析 API 端点
 - 使用**个人令牌**认证，无需为每个模块单独配置
@@ -53,7 +68,7 @@
 
 ## 安装
 
-1. 从 `build/distributions/` 获取 `easy-yapi-x.x.x.zip`
+1. 从 `build/distributions/` 获取 `ApiMocktle-x.x.x.zip`
 2. IDEA → Settings → Plugins → 齿轮 → Install Plugin from Disk
 3. 选择 zip 文件，重启 IDEA
 
@@ -61,10 +76,10 @@
 
 ## 使用方法
 
-### 导出到 YAPI
+### 导出到 ApiMocktle
 
 1. **配置个人令牌**：Settings → ApiMocktle → YAPI → 输入服务器地址和个人令牌
-2. 右键控制器文件 / 类 / 方法 → **导出到YAPI**（`Alt+Shift+E`）
+2. 右键控制器文件 / 类 / 方法 → **导出到ApiMocktle**（`Alt+Shift+E`）
 3. 在弹出的项目选择框中选择目标项目
 4. API 自动同步
 

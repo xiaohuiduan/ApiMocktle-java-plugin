@@ -4,9 +4,9 @@ import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.search.GlobalSearchScope
 import com.apimocktle.rule.context.*
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class ScriptContextPropertyTests : EasyApiLightCodeInsightFixtureTestCase() {
+class ScriptContextPropertyTests : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testBaseMethodsDocAnnotationModifierAndSource() {
         addAnnotationStubs()

@@ -2,10 +2,10 @@ package com.apimocktle.exporter.jaxrs
 
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class JaxRsRuleIntegrationTest : EasyApiLightCodeInsightFixtureTestCase() {
+class JaxRsRuleIntegrationTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: JaxRsClassExporter
 

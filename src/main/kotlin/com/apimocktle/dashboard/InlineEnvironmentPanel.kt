@@ -8,7 +8,7 @@ import com.intellij.util.ui.JBUI
 import com.apimocktle.dashboard.env.Environment
 import com.apimocktle.dashboard.env.EnvironmentScope
 import com.apimocktle.dashboard.env.EnvironmentService
-import com.apimocktle.settings.ui.EasyApiSettingsConfigurable
+import com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
@@ -214,10 +214,10 @@ class InlineEnvironmentPanel(private val project: Project) : JPanel(BorderLayout
     }
 
     private fun openSettings() {
-        EasyApiSettingsConfigurable.selectTab(EasyApiSettingsConfigurable.TAB_ENVIRONMENT)
+        ApiMocktleSettingsConfigurable.selectTab(ApiMocktleSettingsConfigurable.TAB_ENVIRONMENT)
         com.intellij.openapi.options.ShowSettingsUtil.getInstance().showSettingsDialog(
             project,
-            EasyApiSettingsConfigurable::class.java
+            ApiMocktleSettingsConfigurable::class.java
         )
     }
 

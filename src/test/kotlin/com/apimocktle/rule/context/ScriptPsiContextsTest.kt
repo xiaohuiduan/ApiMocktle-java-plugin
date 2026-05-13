@@ -5,9 +5,9 @@ import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class ScriptPsiContextsTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ScriptPsiContextsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var fixture: JavaCodeInsightTestFixture
 

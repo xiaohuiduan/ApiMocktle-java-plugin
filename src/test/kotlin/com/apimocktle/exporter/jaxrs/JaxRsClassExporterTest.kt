@@ -1,6 +1,6 @@
 package com.apimocktle.exporter.jaxrs
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.httpMetadata
@@ -8,7 +8,7 @@ import com.apimocktle.exporter.model.path
 import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
 
-class JaxRsClassExporterTest : EasyApiLightCodeInsightFixtureTestCase() {
+class JaxRsClassExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: JaxRsClassExporter
 

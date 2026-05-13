@@ -1,8 +1,8 @@
 package com.apimocktle.rule.context
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class RuleContextTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleContextTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testFromCreatesContextWithElement() {
         loadFile("rule/SimpleClass.java", """

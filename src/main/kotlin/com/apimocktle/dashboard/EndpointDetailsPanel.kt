@@ -1117,12 +1117,12 @@ class EndpointDetailsPanel(
     }
 
     private fun openGrpcSettings() {
-        com.apimocktle.settings.ui.EasyApiSettingsConfigurable.selectTab(
-            com.apimocktle.settings.ui.EasyApiSettingsConfigurable.TAB_GRPC
+        com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable.selectTab(
+            com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable.TAB_GRPC
         )
         com.intellij.openapi.options.ShowSettingsUtil.getInstance().showSettingsDialog(
             project,
-            com.apimocktle.settings.ui.EasyApiSettingsConfigurable::class.java
+            com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable::class.java
         )
     }
 
@@ -1292,7 +1292,7 @@ class EndpointDetailsPanel(
 
     private fun showCopyNotification() {
         NotificationGroupManager.getInstance()
-            .getNotificationGroup("EasyApi Notifications")
+            .getNotificationGroup("ApiMocktle Notifications")
             .createNotification("已复制到剪贴板", NotificationType.INFORMATION)
             .notify(project)
     }

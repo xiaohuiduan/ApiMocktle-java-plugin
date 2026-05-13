@@ -5,7 +5,7 @@ import com.apimocktle.exporter.model.grpcMetadata
 import com.apimocktle.exporter.model.path
 import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
 /**
@@ -22,7 +22,7 @@ import com.apimocktle.testFramework.TestConfigReader
  * - `EchoServiceImpl`: A gRPC service implementation extending `EchoServiceGrpc.EchoServiceImplBase`
  * - `UserInfo`: A non-gRPC model class used to verify rejection behavior
  */
-class GrpcClassExporterTest : EasyApiLightCodeInsightFixtureTestCase() {
+class GrpcClassExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: GrpcClassExporter
 

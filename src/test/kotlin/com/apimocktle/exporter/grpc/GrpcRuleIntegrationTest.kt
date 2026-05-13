@@ -1,10 +1,10 @@
 package com.apimocktle.exporter.grpc
 
 import com.apimocktle.exporter.model.grpcMetadata
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class GrpcRuleIntegrationTest : EasyApiLightCodeInsightFixtureTestCase() {
+class GrpcRuleIntegrationTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: GrpcClassExporter
 

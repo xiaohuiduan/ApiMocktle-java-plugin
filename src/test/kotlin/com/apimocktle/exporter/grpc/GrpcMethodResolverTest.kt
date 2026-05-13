@@ -3,7 +3,7 @@ package com.apimocktle.exporter.grpc
 import com.apimocktle.exporter.model.GrpcStreamingType
 import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import io.grpc.stub.annotations.RpcMethod
 import java.io.File
@@ -27,7 +27,7 @@ import java.io.File
  * - `UserInfo`: Non-gRPC class to verify empty result
  * - Generated `EchoServiceGrpc`: Uses @RpcMethod annotations on static methods
  */
-class GrpcMethodResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class GrpcMethodResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: GrpcMethodResolver
 

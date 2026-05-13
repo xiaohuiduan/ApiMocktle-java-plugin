@@ -1,11 +1,11 @@
 package com.apimocktle.cache
 
 import com.apimocktle.settings.SettingBinder
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
-class ApiFileChangeListenerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiFileChangeListenerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var listener: ApiFileChangeListener
 

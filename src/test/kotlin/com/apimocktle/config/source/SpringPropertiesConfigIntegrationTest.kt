@@ -1,10 +1,10 @@
 package com.apimocktle.config.source
 
 import com.apimocktle.extension.ExtensionConfigRegistry
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class SpringPropertiesConfigIntegrationTest : EasyApiLightCodeInsightFixtureTestCase() {
+class SpringPropertiesConfigIntegrationTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun setUp() {
         super.setUp()

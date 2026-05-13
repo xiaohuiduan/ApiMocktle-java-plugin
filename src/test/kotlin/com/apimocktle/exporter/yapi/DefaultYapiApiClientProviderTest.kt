@@ -2,7 +2,7 @@ package com.apimocktle.exporter.yapi
 
 import com.apimocktle.http.HttpClient
 import com.apimocktle.http.HttpResponse
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.wrap
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -14,10 +14,10 @@ import org.mockito.kotlin.*
  * Verifies token resolution, client caching per module, and failure propagation
  * when the server URL is not configured.
  *
- * Extends [EasyApiLightCodeInsightFixtureTestCase] (JUnit 3 style) — tests are
+ * Extends [ApiMocktleLightCodeInsightFixtureTestCase] (JUnit 3 style) — tests are
  * discovered by the `test` method name prefix, not by annotation.
  */
-class DefaultYapiApiClientProviderTest : EasyApiLightCodeInsightFixtureTestCase() {
+class DefaultYapiApiClientProviderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var settingsHelper: YapiSettingsHelper
     private lateinit var httpClient: HttpClient

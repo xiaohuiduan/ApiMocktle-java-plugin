@@ -9,7 +9,7 @@ class ScriptFilesWrapperTest {
     @Test
     fun testSave_createsFile() {
         val tmpDir = System.getProperty("java.io.tmpdir")
-        val path = "$tmpDir/easyapi-test-${System.nanoTime()}/test.txt"
+        val path = "$tmpDir/apimocktle-test-${System.nanoTime()}/test.txt"
         try {
             ScriptFilesWrapper.save("hello world", path)
             val file = File(path)
@@ -24,7 +24,7 @@ class ScriptFilesWrapperTest {
     @Test
     fun testSave_withCharset() {
         val tmpDir = System.getProperty("java.io.tmpdir")
-        val path = "$tmpDir/easyapi-test-${System.nanoTime()}/charset.txt"
+        val path = "$tmpDir/apimocktle-test-${System.nanoTime()}/charset.txt"
         try {
             ScriptFilesWrapper.save("hello", "UTF-8", path)
             val file = File(path)
@@ -39,7 +39,7 @@ class ScriptFilesWrapperTest {
     @Test
     fun testSave_withInvalidCharset_fallsBackToUtf8() {
         val tmpDir = System.getProperty("java.io.tmpdir")
-        val path = "$tmpDir/easyapi-test-${System.nanoTime()}/fallback.txt"
+        val path = "$tmpDir/apimocktle-test-${System.nanoTime()}/fallback.txt"
         try {
             ScriptFilesWrapper.save("hello", "INVALID-CHARSET", path)
             val file = File(path)
@@ -54,7 +54,7 @@ class ScriptFilesWrapperTest {
     @Test
     fun testSave_createsParentDirectories() {
         val tmpDir = System.getProperty("java.io.tmpdir")
-        val path = "$tmpDir/easyapi-test-${System.nanoTime()}/nested/dir/file.txt"
+        val path = "$tmpDir/apimocktle-test-${System.nanoTime()}/nested/dir/file.txt"
         try {
             ScriptFilesWrapper.save("content", path)
             assertTrue(File(path).exists())
@@ -69,7 +69,7 @@ class ScriptFilesWrapperTest {
     @Test
     fun testSave_overwritesExistingFile() {
         val tmpDir = System.getProperty("java.io.tmpdir")
-        val path = "$tmpDir/easyapi-test-${System.nanoTime()}/overwrite.txt"
+        val path = "$tmpDir/apimocktle-test-${System.nanoTime()}/overwrite.txt"
         try {
             ScriptFilesWrapper.save("first", path)
             ScriptFilesWrapper.save("second", path)

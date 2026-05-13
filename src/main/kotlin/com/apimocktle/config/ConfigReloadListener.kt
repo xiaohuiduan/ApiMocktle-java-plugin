@@ -41,7 +41,7 @@ interface ConfigReloadListener {
          * Topic for configuration reload events.
          */
         val TOPIC: Topic<ConfigReloadListener> = Topic.create(
-            "EasyAPI Config Reloaded",
+            "ApiMocktle Config Reloaded",
             ConfigReloadListener::class.java
         )
     }

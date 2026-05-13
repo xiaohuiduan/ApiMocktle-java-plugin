@@ -1,10 +1,10 @@
 package com.apimocktle.exporter.jaxrs
 
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class JaxRsResourceRecognizerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class JaxRsResourceRecognizerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var recognizer: JaxRsResourceRecognizer
 

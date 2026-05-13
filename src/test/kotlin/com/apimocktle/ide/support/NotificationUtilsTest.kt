@@ -1,8 +1,8 @@
 package com.apimocktle.ide.support
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class NotificationUtilsTest : EasyApiLightCodeInsightFixtureTestCase() {
+class NotificationUtilsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testNotifyInfoDoesNotThrow() {
         NotificationUtils.notifyInfo(project, "Test Title", "Test Content")

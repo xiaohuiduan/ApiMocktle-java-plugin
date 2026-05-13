@@ -1,6 +1,6 @@
 package com.apimocktle.psi.adapter
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.AssumptionViolatedException
 
 /**
@@ -13,7 +13,7 @@ import org.junit.AssumptionViolatedException
  *
  * Uses ComplexKotlinSource.kt resource file for comprehensive testing.
  */
-class KotlinPsiAdapterTest : EasyApiLightCodeInsightFixtureTestCase() {
+class KotlinPsiAdapterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var adapter: KotlinPsiAdapter
 

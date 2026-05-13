@@ -1,9 +1,9 @@
 package com.apimocktle.ide.dialog
 
 import com.apimocktle.exporter.model.*
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class ExportDialogTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ExportDialogTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testDialogShowsEndpointCount() {
         val dialog = ExportDialog(project, 10)

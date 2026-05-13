@@ -35,7 +35,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * @see ExportOrchestrator for the export process
  * @see ExportFormat for available formats
  */
-abstract class BaseExportAction : EasyApiAction(), IdeaLog {
+abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
 
     /**
      * The export format for this action.

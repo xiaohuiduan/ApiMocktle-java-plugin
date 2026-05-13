@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * Default implementation of [IdeaConsole] that outputs to an IntelliJ tool window.
  *
- * Creates and manages a "EasyAPI" tool window at the bottom of the IDE that displays
+ * Creates and manages a "ApiMocktle" tool window at the bottom of the IDE that displays
  * log messages with different severity levels. The console view is lazily initialized
  * on first log output.
  *
@@ -33,7 +33,7 @@ class DefaultIdeaConsole(
 ) : IdeaConsole {
 
     companion object {
-        const val WINDOW_ID: String = "EasyAPI"
+        const val WINDOW_ID: String = "ApiMocktle"
     }
 
     private val logQueue = ConcurrentLinkedQueue<Pair<LogLevel?, String>>()

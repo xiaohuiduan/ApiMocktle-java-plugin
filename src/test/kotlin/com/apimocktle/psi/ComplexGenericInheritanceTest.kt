@@ -2,7 +2,7 @@ package com.apimocktle.psi
 
 import com.apimocktle.psi.model.ObjectModel
 import com.apimocktle.psi.type.JsonType
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
 /**
@@ -24,7 +24,7 @@ import com.apimocktle.testFramework.TestConfigReader
  * so the inherited `content` field should resolve to AtaPage<VotePageQueryVO>,
  * not VotePageQueryVO directly.
  */
-class ComplexGenericInheritanceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ComplexGenericInheritanceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun setUp() {
         super.setUp()

@@ -8,7 +8,7 @@ import com.apimocktle.ide.support.SelectedHelper
 import com.apimocktle.ide.support.SelectionScope
 
 /**
- * Base class for EasyAPI actions with selection-based visibility.
+ * Base class for ApiMocktle actions with selection-based visibility.
  *
  * Actions extending this class are only visible when a valid selection
  * (class, method, or file) is available in the editor.
@@ -16,7 +16,7 @@ import com.apimocktle.ide.support.SelectionScope
  * @see SelectedHelper for selection resolution
  * @see SelectionScope for the selection model
  */
-abstract class EasyApiAction : AnAction() {
+abstract class ApiMocktleAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {

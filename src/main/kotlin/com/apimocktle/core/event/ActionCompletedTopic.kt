@@ -9,7 +9,7 @@ interface ActionCompletedTopic {
 
     companion object {
         val TOPIC: Topic<ActionCompletedTopic> = Topic.create(
-            "EasyAPI Action Completed",
+            "ApiMocktle Action Completed",
             ActionCompletedTopic::class.java
         )
 

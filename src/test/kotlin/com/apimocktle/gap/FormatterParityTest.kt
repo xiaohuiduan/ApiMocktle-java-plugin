@@ -1,11 +1,11 @@
 package com.apimocktle.gap
 
 import com.apimocktle.exporter.curl.CurlFormatter
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import org.junit.Assert.*
 
-class FormatterParityTest : EasyApiLightCodeInsightFixtureTestCase() {
+class FormatterParityTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun createConfigReader() = TestConfigReader.empty(project)
 

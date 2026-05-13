@@ -1,11 +1,11 @@
 package com.apimocktle.dashboard
 
 import com.apimocktle.exporter.model.*
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 
-class ApiTreeCellRendererTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiTreeCellRendererTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var renderer: ApiTreeCellRenderer
     private lateinit var tree: JTree

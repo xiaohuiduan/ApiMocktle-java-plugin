@@ -1,7 +1,7 @@
 package com.apimocktle.psi.adapter
 
 import com.intellij.testFramework.LightProjectDescriptor
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.AssumptionViolatedException
 
 /**
@@ -15,7 +15,7 @@ import org.junit.AssumptionViolatedException
  * Uses ComplexScalaSource.scala resource file for comprehensive testing.
  * Tests requiring the Scala plugin are guarded with AssumptionViolatedException.
  */
-class ScalaPsiAdapterTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ScalaPsiAdapterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var adapter: ScalaPsiAdapter
 

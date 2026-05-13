@@ -1,9 +1,9 @@
 package com.apimocktle.util.storage
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class LocalStorageTest : EasyApiLightCodeInsightFixtureTestCase() {
+class LocalStorageTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testGetInstance() {
         val storage = LocalStorage.getInstance(project)

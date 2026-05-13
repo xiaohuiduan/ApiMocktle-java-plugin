@@ -2,11 +2,11 @@ package com.apimocktle.dashboard
 
 import com.apimocktle.exporter.model.path
 import com.apimocktle.testFramework.ApiFixtures
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 import javax.swing.tree.DefaultMutableTreeNode
 
-class ApiDashboardPanelTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiDashboardPanelTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var apiDashboardPanel: ApiDashboardPanel
 

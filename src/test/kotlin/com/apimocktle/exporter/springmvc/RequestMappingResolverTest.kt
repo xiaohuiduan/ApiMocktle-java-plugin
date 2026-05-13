@@ -4,10 +4,10 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.psi.type.ResolvedType
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class RequestMappingResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RequestMappingResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: RequestMappingResolver
 

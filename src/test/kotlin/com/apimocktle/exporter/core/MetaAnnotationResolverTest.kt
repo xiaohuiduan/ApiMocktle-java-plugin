@@ -1,9 +1,9 @@
 package com.apimocktle.exporter.core
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class MetaAnnotationResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class MetaAnnotationResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun setUp() {
         super.setUp()

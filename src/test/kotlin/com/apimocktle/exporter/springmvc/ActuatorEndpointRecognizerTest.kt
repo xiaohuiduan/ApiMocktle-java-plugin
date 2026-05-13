@@ -2,10 +2,10 @@ package com.apimocktle.exporter.springmvc
 
 import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class ActuatorEndpointRecognizerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ActuatorEndpointRecognizerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var recognizer: ActuatorEndpointRecognizer
 

@@ -3,10 +3,10 @@ package com.apimocktle.exporter.springmvc
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.psi.helper.UnifiedAnnotationHelper
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class ContentTypeResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ContentTypeResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: ContentTypeResolver
 

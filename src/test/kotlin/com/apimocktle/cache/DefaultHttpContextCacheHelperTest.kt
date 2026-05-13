@@ -1,10 +1,10 @@
 package com.apimocktle.cache
 
 import com.apimocktle.http.HttpCookie
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class DefaultHttpContextCacheHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class DefaultHttpContextCacheHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var cacheHelper: DefaultHttpContextCacheHelper
     private lateinit var cacheRepository: ProjectCacheRepository

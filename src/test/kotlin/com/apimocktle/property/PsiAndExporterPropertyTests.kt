@@ -17,11 +17,11 @@ import com.apimocktle.rule.RuleKey
 import com.apimocktle.rule.RuleKeys
 import com.apimocktle.rule.StringRuleMode
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import kotlinx.coroutines.runBlocking
 
-class PsiAndExporterPropertyTests : EasyApiLightCodeInsightFixtureTestCase() {
+class PsiAndExporterPropertyTests : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testFeignControllerRecognition() = runBlocking {
         addFeignStubs()

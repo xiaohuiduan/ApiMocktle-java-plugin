@@ -1,11 +1,11 @@
 package com.apimocktle.cache
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 
-class VcsBranchChangeListenerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class VcsBranchChangeListenerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var listener: VcsBranchChangeListener
 

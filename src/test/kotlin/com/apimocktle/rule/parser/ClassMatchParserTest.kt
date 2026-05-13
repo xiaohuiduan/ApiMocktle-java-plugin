@@ -1,9 +1,9 @@
 package com.apimocktle.rule.parser
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class ClassMatchParserTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ClassMatchParserTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var parser: ClassMatchParser
 

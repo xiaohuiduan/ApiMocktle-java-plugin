@@ -9,10 +9,10 @@ import com.apimocktle.exporter.springmvc.SpringMvcClassExporter
 import com.apimocktle.extension.ExtensionConfigRegistry
 import com.apimocktle.psi.model.FieldModel
 import com.apimocktle.psi.model.ObjectModel
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class JacksonConfigIntegrationTest : EasyApiLightCodeInsightFixtureTestCase() {
+class JacksonConfigIntegrationTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: SpringMvcClassExporter
 

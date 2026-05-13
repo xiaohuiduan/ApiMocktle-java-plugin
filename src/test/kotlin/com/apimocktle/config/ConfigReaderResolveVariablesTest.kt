@@ -1,10 +1,10 @@
 package com.apimocktle.config
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import org.junit.Assert.*
 
-class ConfigReaderResolveVariablesTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ConfigReaderResolveVariablesTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var configReader: TestConfigReader
 

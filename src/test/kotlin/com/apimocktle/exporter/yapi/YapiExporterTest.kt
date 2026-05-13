@@ -7,7 +7,7 @@ import com.apimocktle.exporter.model.OutputConfig
 import com.apimocktle.exporter.model.YapiExportOptions
 import com.apimocktle.exporter.model.ExportResult
 import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.wrap
 import org.junit.Assert.*
 import org.mockito.kotlin.any
@@ -15,7 +15,7 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
-class YapiExporterTest : EasyApiLightCodeInsightFixtureTestCase() {
+class YapiExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporterProject: com.intellij.openapi.project.Project
     private lateinit var exporter: YapiExporter

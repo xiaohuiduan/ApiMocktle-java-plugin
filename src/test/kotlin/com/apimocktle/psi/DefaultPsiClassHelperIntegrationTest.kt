@@ -5,11 +5,11 @@ import com.apimocktle.psi.model.ObjectModel
 import com.apimocktle.psi.model.ObjectModelValueConverter
 import com.apimocktle.psi.type.JsonType
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import kotlinx.coroutines.runBlocking
 
-class DefaultPsiClassHelperIntegrationTest : EasyApiLightCodeInsightFixtureTestCase() {
+class DefaultPsiClassHelperIntegrationTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var helper: DefaultPsiClassHelper
 

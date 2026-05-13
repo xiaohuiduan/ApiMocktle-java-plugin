@@ -5,7 +5,7 @@ import com.apimocktle.http.HttpClient
 /**
  * The root `pm` object exposed to Groovy pre-request and post-response scripts.
  *
- * This is the primary API surface for EasyAPI scripts, designed to be compatible with
+ * This is the primary API surface for ApiMocktle scripts, designed to be compatible with
  * Postman's `pm.*` scripting API. Scripts receive a `pm` binding that provides access to:
  * - **Variable scopes**: [environment], [globals], [collectionVariables], [variables]
  * - **Request manipulation**: [request] (modify headers, body, URL before sending)

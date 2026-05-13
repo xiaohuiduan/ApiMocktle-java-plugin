@@ -1,9 +1,9 @@
 package com.apimocktle.exporter.core
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class CompositeApiClassRecognizerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class CompositeApiClassRecognizerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var recognizer: CompositeApiClassRecognizer
 

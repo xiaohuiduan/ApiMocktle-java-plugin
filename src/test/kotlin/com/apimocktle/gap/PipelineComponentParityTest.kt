@@ -7,11 +7,11 @@ import com.apimocktle.exporter.springmvc.ContentTypeResolver
 import com.apimocktle.exporter.springmvc.SpringControllerRecognizer
 import com.apimocktle.psi.helper.UnifiedAnnotationHelper
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import org.junit.Assert.*
 
-class PipelineComponentParityTest : EasyApiLightCodeInsightFixtureTestCase() {
+class PipelineComponentParityTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun createConfigReader() = TestConfigReader.empty(project)
 

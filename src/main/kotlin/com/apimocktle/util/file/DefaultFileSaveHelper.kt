@@ -31,7 +31,7 @@ class DefaultFileSaveHelper(private val outputCharset: Charset = Charsets.UTF_8)
         val choice = Messages.showYesNoCancelDialog(
             project,
             "Export output",
-            "EasyAPI",
+            "ApiMocktle",
             "Save to File",
             "Copy to Clipboard",
             "Cancel",

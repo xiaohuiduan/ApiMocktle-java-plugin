@@ -5,7 +5,7 @@ import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.exporter.model.path
 import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
 /**
@@ -15,7 +15,7 @@ import com.apimocktle.testFramework.TestConfigReader
  * - Case 4: Generic interface with annotations on super
  * - Composite: Generic + annotations on super + override without annotations
  */
-class InheritedControllerExportTest : EasyApiLightCodeInsightFixtureTestCase() {
+class InheritedControllerExportTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: SpringMvcClassExporter
 

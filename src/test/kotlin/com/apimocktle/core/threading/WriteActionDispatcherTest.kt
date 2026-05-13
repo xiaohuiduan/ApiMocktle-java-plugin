@@ -1,13 +1,13 @@
 package com.apimocktle.core.threading
 
 import com.intellij.openapi.application.ApplicationManager
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-class WriteActionDispatcherTest : EasyApiLightCodeInsightFixtureTestCase() {
+class WriteActionDispatcherTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var writeActionDispatcher: WriteActionDispatcher
 

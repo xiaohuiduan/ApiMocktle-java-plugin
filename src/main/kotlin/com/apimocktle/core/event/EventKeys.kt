@@ -1,7 +1,7 @@
 package com.apimocktle.core.event
 
 /**
- * Predefined event keys used throughout the EasyAPI plugin.
+ * Predefined event keys used throughout the ApiMocktle plugin.
  *
  * These keys are used with [EventBus] for inter-component communication.
  */

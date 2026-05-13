@@ -4,10 +4,10 @@ import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
 import com.apimocktle.psi.type.ResolvedType
 import com.apimocktle.psi.type.searchAnnotation
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class FeignAnnotationInheritanceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class FeignAnnotationInheritanceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun setUp() {
         super.setUp()

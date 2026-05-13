@@ -1,8 +1,8 @@
 package com.apimocktle.logging
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class DefaultIdeaConsoleTest : EasyApiLightCodeInsightFixtureTestCase() {
+class DefaultIdeaConsoleTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var console: DefaultIdeaConsole
 
@@ -48,6 +48,6 @@ class DefaultIdeaConsoleTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 
     fun testWindowId() {
-        assertEquals("EasyAPI", DefaultIdeaConsole.WINDOW_ID)
+        assertEquals("ApiMocktle", DefaultIdeaConsole.WINDOW_ID)
     }
 }

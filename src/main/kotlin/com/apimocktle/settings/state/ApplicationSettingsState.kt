@@ -8,9 +8,9 @@ import com.apimocktle.settings.Settings
 import com.apimocktle.settings.YapiExportMode
 
 /**
- * 应用级设置状态，存储在 `easyapi_app.xml` 中。
+ * 应用级设置状态，存储在 `apimocktle_app.xml` 中。
  */
-@State(name = "EasyApiApplicationSettings", storages = [Storage("easyapi_app.xml")])
+@State(name = "ApiMocktleApplicationSettings", storages = [Storage("apimocktle_app.xml")])
 class ApplicationSettingsState : PersistentStateComponent<ApplicationSettingsState.State> {
     /**
      * 应用级设置数据类。

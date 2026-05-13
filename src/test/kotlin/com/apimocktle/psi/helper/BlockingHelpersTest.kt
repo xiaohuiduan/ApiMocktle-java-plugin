@@ -1,8 +1,8 @@
 package com.apimocktle.psi.helper
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class BlockingHelpersTest : EasyApiLightCodeInsightFixtureTestCase() {
+class BlockingHelpersTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var blockingDocHelper: BlockingDocHelper
 

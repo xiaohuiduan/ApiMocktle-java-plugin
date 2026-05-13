@@ -1,6 +1,6 @@
 package com.apimocktle.core.threading
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.coroutineContext
 
-class PluginClassLoaderDispatcherTest : EasyApiLightCodeInsightFixtureTestCase() {
+class PluginClassLoaderDispatcherTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var pluginClassLoaderDispatcher: PluginClassLoaderDispatcher
 

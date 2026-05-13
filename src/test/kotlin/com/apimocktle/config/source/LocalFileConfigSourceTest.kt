@@ -50,7 +50,7 @@ class LocalFileConfigSourceTest {
     }
 
     @Test
-    fun testCollectWithEasyApiConfigFile() {
+    fun testCollectWithApiMocktleConfigFile() {
         val configFile = tempFolder.newFile(".easy.api.config")
         configFile.writeText("server=https://api.example.com")
         

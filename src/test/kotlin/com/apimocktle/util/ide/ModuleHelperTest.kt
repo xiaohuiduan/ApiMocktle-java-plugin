@@ -1,9 +1,9 @@
 package com.apimocktle.util.ide
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class ModuleHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ModuleHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testResolveModuleNameByPathWithSrcDirectory() {
         val result = ModuleHelper.resolveModuleNameByPath("/projects/my-app/src/main/java/com/example/App.java")

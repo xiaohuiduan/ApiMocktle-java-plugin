@@ -1,9 +1,9 @@
 package com.apimocktle.ide.dialog
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class ExportDialogPreferencesPersistenceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ExportDialogPreferencesPersistenceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var persistence: ExportDialogPreferencesPersistence
 

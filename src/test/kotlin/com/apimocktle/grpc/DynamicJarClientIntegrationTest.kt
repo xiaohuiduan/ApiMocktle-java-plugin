@@ -3,7 +3,7 @@ package com.apimocktle.grpc
 import com.google.protobuf.util.JsonFormat
 import com.apimocktle.grpc.test.EchoResponse
 import com.apimocktle.grpc.test.ReverseResponse
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -26,7 +26,7 @@ import org.junit.Before
  * Note: These tests require gRPC runtime jars to be available in the project
  * classpath or local cache. The server must have gRPC reflection enabled.
  */
-class DynamicJarClientIntegrationTest : EasyApiLightCodeInsightFixtureTestCase() {
+class DynamicJarClientIntegrationTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var client: DynamicJarClient
     private var mockServer: GrpcMockServer? = null

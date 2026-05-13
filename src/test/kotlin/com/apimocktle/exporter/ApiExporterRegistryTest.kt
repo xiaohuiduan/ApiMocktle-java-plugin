@@ -1,10 +1,10 @@
 package com.apimocktle.exporter
 
 import com.apimocktle.exporter.model.ExportFormat
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class ApiExporterRegistryTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiExporterRegistryTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var registry: ApiExporterRegistry
 

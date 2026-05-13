@@ -2,10 +2,10 @@ package com.apimocktle.dashboard
 
 import com.apimocktle.exporter.model.ApiEndpoint
 import com.apimocktle.exporter.model.HttpMetadata
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class RequestEditCacheServiceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RequestEditCacheServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testGetInstance() {
         val service = RequestEditCacheService.getInstance(project)

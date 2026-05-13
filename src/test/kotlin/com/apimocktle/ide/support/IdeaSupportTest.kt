@@ -1,8 +1,8 @@
 package com.apimocktle.ide.support
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class IdeaSupportTest : EasyApiLightCodeInsightFixtureTestCase() {
+class IdeaSupportTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testIdeVersionReturnsNonEmpty() {
         val version = IdeaSupport.ideVersion()

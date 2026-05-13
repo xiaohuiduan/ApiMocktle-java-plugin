@@ -1,6 +1,6 @@
 package com.apimocktle.grpc
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Assume
@@ -10,7 +10,7 @@ import java.net.URLClassLoader
 /**
  * Tests for [ServerReflectionResolver].
  */
-class ServerReflectionResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ServerReflectionResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: ServerReflectionResolver
     private var mockServer: GrpcMockServer? = null

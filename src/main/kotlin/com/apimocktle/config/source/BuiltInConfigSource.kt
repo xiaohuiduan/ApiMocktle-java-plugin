@@ -7,7 +7,7 @@ import com.apimocktle.config.parser.ConfigTextParser
 /**
  * Configuration source for built-in default configuration.
  *
- * Loads configuration from a bundled resource file (`config/builtin.easyapi.config`)
+ * Loads configuration from a bundled resource file.
  * or from custom text provided at construction.
  *
  * This source has the lowest priority (1) and provides default values
@@ -22,7 +22,7 @@ class BuiltInConfigSource(
     private val enabled: Boolean,
     private val configTextParser: ConfigTextParser,
     private val customText: String? = null,
-    private val resourcePath: String = "config/builtin.easyapi.config"
+    private val resourcePath: String = "config/builtin.apimocktle.config"
 ) : ConfigSource {
     override val priority: Int = 1
     override val sourceId: String = "builtin"

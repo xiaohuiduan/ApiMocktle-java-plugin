@@ -7,10 +7,10 @@ import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.OutputConfig
 import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class ExportOrchestratorTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ExportOrchestratorTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var orchestrator: ExportOrchestrator
 

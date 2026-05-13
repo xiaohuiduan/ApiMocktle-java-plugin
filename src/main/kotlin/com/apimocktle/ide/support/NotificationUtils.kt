@@ -9,7 +9,7 @@ object NotificationUtils {
 
     fun notifyInfo(project: Project?, title: String, content: String) {
         Notifications.Bus.notify(
-            Notification("EasyAPI Notifications", title, content, NotificationType.INFORMATION),
+            Notification("ApiMocktle Notifications", title, content, NotificationType.INFORMATION),
             project
         )
     }
@@ -22,7 +22,7 @@ object NotificationUtils {
      */
     fun notifyInfoWithLinks(project: Project?, title: String, content: String) {
         val notification = Notification(
-            "EasyAPI Notifications",
+            "ApiMocktle Notifications",
             title,
             content,
             NotificationType.INFORMATION
@@ -34,14 +34,14 @@ object NotificationUtils {
 
     fun notifyWarning(project: Project?, title: String, content: String) {
         Notifications.Bus.notify(
-            Notification("EasyAPI Notifications", title, content, NotificationType.WARNING),
+            Notification("ApiMocktle Notifications", title, content, NotificationType.WARNING),
             project
         )
     }
 
     fun notifyError(project: Project?, title: String, content: String) {
         Notifications.Bus.notify(
-            Notification("EasyAPI Notifications", title, content, NotificationType.ERROR),
+            Notification("ApiMocktle Notifications", title, content, NotificationType.ERROR),
             project
         )
     }

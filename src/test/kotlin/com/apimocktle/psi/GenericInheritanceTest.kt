@@ -4,13 +4,13 @@ import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
 import com.apimocktle.psi.model.ObjectModel
 import com.apimocktle.psi.type.JsonType
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
 /**
  * Tests generic type resolution through class inheritance hierarchies.
  */
-class GenericInheritanceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class GenericInheritanceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun setUp() {
         super.setUp()

@@ -6,7 +6,7 @@ import com.apimocktle.psi.model.ObjectModel
 import com.apimocktle.psi.model.ObjectModelJsonConverter
 import com.apimocktle.psi.model.ObjectModelValueConverter
 import com.apimocktle.testFramework.TestConfigReader
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -17,7 +17,7 @@ import kotlinx.coroutines.runBlocking
  *
  * Related: https://github.com/tangcent/easy-yapi/issues/1325
  */
-class NestedFieldParsingTest : EasyApiLightCodeInsightFixtureTestCase() {
+class NestedFieldParsingTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var helper: DefaultPsiClassHelper
 

@@ -1,10 +1,10 @@
 package com.apimocktle.cache
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 import java.nio.file.Files
 
-class ProjectCacheRepositoryTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ProjectCacheRepositoryTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var repository: ProjectCacheRepository
 

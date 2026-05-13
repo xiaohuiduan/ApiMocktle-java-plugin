@@ -13,5 +13,5 @@ import com.apimocktle.exporter.model.ExportFormat
 class ExportToYapiAction : BaseExportAction() {
 
     override val exportFormat: ExportFormat = ExportFormat.YAPI
-    override val actionName: String = "导出到YAPI"
+    override val actionName: String = "导出到ApiMocktle"
 }

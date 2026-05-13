@@ -1,7 +1,7 @@
 package com.apimocktle.grpc
 
 import com.intellij.openapi.application.ApplicationManager
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -9,7 +9,7 @@ import org.junit.Before
 /**
  * Tests for [ProtoFileResolver].
  */
-class ProtoFileResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ProtoFileResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: ProtoFileResolver
 

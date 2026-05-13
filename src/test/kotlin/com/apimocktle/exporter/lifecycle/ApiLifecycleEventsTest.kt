@@ -9,10 +9,10 @@ import com.apimocktle.exporter.springmvc.ActuatorEndpointExporter
 import com.apimocktle.exporter.springmvc.SpringMvcClassExporter
 import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class ApiLifecycleEventsTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var springExporter: SpringMvcClassExporter
     private lateinit var jaxRsExporter: JaxRsClassExporter

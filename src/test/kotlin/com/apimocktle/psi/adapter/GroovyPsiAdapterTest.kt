@@ -1,6 +1,6 @@
 package com.apimocktle.psi.adapter
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.AssumptionViolatedException
 
 /**
@@ -14,7 +14,7 @@ import org.junit.AssumptionViolatedException
  * Uses ComplexGroovySource.groovy resource file for comprehensive testing.
  * Tests requiring the Groovy plugin are guarded with AssumptionViolatedException.
  */
-class GroovyPsiAdapterTest : EasyApiLightCodeInsightFixtureTestCase() {
+class GroovyPsiAdapterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var adapter: GroovyPsiAdapter
 

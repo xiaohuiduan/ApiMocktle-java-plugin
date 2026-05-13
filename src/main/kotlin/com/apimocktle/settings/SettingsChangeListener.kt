@@ -8,7 +8,7 @@ interface SettingsChangeListener {
 
     companion object {
         val TOPIC: Topic<SettingsChangeListener> = Topic.create(
-            "EasyApi Settings Changed",
+            "ApiMocktle Settings Changed",
             SettingsChangeListener::class.java
         )
     }

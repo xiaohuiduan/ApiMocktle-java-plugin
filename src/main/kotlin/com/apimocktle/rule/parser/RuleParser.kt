@@ -5,7 +5,7 @@ import com.apimocktle.rule.context.RuleContext
 import com.apimocktle.rule.engine.RuleEngine
 
 /**
- * Parser for rule expressions in the EasyAPI configuration system.
+ * Parser for rule expressions in the ApiMocktle configuration system.
  *
  * Rule expressions are used throughout the plugin for:
  * - Conditional logic (e.g., `field.ignore`)

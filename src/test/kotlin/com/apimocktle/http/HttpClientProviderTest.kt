@@ -3,9 +3,9 @@ package com.apimocktle.http
 import com.apimocktle.settings.HttpClientType
 import com.apimocktle.settings.SettingBinder
 import com.apimocktle.settings.Settings
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class HttpClientProviderTest : EasyApiLightCodeInsightFixtureTestCase() {
+class HttpClientProviderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var httpClientProvider: HttpClientProvider
 

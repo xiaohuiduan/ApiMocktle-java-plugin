@@ -9,9 +9,9 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.apimocktle.ide.support.SelectedHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiMocktleActionTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var userCtrl: PsiClass
     private lateinit var greetingMethod: PsiMethod
@@ -28,16 +28,16 @@ class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetActionUpdateThreadReturnsBGT() {
-        val action = TestableEasyApiAction()
+        val action = TestableApiMocktleAction()
         assertEquals(
-            "EasyApiAction should use BGT thread for updates",
+            "ApiMocktleAction should use BGT thread for updates",
             ActionUpdateThread.BGT,
             action.actionUpdateThread
         )
     }
 
     fun testUpdateEnabledWithClassInEditor() {
-        val action = TestableEasyApiAction()
+        val action = TestableApiMocktleAction()
         val presentation = Presentation()
         val event = createEvent(
             psiElement = userCtrl,
@@ -53,7 +53,7 @@ class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 
     fun testUpdateEnabledWithMethodInEditor() {
-        val action = TestableEasyApiAction()
+        val action = TestableApiMocktleAction()
         val event = createEvent(
             psiElement = greetingMethod,
             psiFile = userCtrl.containingFile
@@ -68,7 +68,7 @@ class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 
     fun testUpdateEnabledWithClassInProjectTree() {
-        val action = TestableEasyApiAction()
+        val action = TestableApiMocktleAction()
         val event = createEvent(
             navigatables = arrayOf(userCtrl as Navigatable)
         )
@@ -82,7 +82,7 @@ class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 
     fun testUpdateEnabledWithFileContext() {
-        val action = TestableEasyApiAction()
+        val action = TestableApiMocktleAction()
         val event = createEvent(
             psiFile = userCtrl.containingFile
         )
@@ -96,7 +96,7 @@ class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 
     fun testUpdateDisabledWithNoContext() {
-        val action = TestableEasyApiAction()
+        val action = TestableApiMocktleAction()
         val event = createEvent()
 
         action.update(event)
@@ -113,7 +113,7 @@ class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
             psiFile = userCtrl.containingFile
         )
 
-        val actionScope = TestableEasyApiAction().callResolveScope(event)
+        val actionScope = TestableApiMocktleAction().callResolveScope(event)
         val helperScope = SelectedHelper.resolveSelection(event)
 
         assertNotNull("Action resolveScope should return non-null for valid context", actionScope)
@@ -128,7 +128,7 @@ class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
     fun testResolveScopeReturnsNullForNoContext() {
         val event = createEvent()
 
-        val scope = TestableEasyApiAction().callResolveScope(event)
+        val scope = TestableApiMocktleAction().callResolveScope(event)
 
         assertNull("resolveScope should return null when no selection context", scope)
     }
@@ -149,7 +149,7 @@ class EasyApiActionTest : EasyApiLightCodeInsightFixtureTestCase() {
         override fun getData(dataId: String): Any? = data[dataId]
     }
 
-    private class TestableEasyApiAction : EasyApiAction() {
+    private class TestableApiMocktleAction : ApiMocktleAction() {
         override fun actionPerformed(e: AnActionEvent) {}
 
         fun callResolveScope(e: AnActionEvent) = resolveScope(e)

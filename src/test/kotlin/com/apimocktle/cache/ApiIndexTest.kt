@@ -5,11 +5,11 @@ import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.exporter.model.path
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.wrap
 import kotlinx.coroutines.runBlocking
 
-class ApiIndexTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiIndexTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var apiIndex: ApiIndex
     private lateinit var wrappedProject: com.intellij.openapi.project.Project

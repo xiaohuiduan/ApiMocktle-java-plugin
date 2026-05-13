@@ -1,8 +1,8 @@
-# EasyAPI Script Reference — Postman-Compatible Groovy API
+# ApiMocktle Script Reference — Postman-Compatible Groovy API
 
-This document describes the EasyAPI Groovy scripting API for **Pre-request** and **Post-response** scripts in the API Dashboard. The API is designed to be structurally compatible with Postman's `pm.*` JavaScript API, so users familiar with Postman can quickly adapt. All scripts are written in **Groovy**.
+This document describes the ApiMocktle Groovy scripting API for **Pre-request** and **Post-response** scripts in the API Dashboard. The API is designed to be structurally compatible with Postman's `pm.*` JavaScript API, so users familiar with Postman can quickly adapt. All scripts are written in **Groovy**.
 
-> **Goal:** A user who knows Postman scripting should be able to write the equivalent Groovy script with minimal mental translation. An AI assistant can use this document to automatically convert Postman JavaScript scripts to EasyAPI Groovy scripts.
+> **Goal:** A user who knows Postman scripting should be able to write the equivalent Groovy script with minimal mental translation. An AI assistant can use this document to automatically convert Postman JavaScript scripts to ApiMocktle Groovy scripts.
 
 ---
 
@@ -18,7 +18,7 @@ This document describes the EasyAPI Groovy scripting API for **Pre-request** and
 8. [Sending Additional Requests](#sending-additional-requests)
 9. [Script Metadata](#script-metadata)
 10. [Environment Model](#environment-model)
-11. [Postman → EasyAPI Conversion Guide](#postman--easyapi-conversion-guide)
+11. [Postman → ApiMocktle Conversion Guide](#postman--apimocktle-conversion-guide)
 12. [Full API Reference](#full-api-reference)
 
 ---
@@ -82,11 +82,11 @@ The `pm` object is the top-level entry point for all scripting APIs, mirroring P
 
 ## Variable Scopes
 
-EasyAPI supports multiple variable scopes, following the same precedence as Postman:
+ApiMocktle supports multiple variable scopes, following the same precedence as Postman:
 
 **Precedence (narrowest wins):** `local (pm.variables)` > `environment` > `collectionVariables` > `globals`
 
-| Scope | Postman Equivalent | EasyAPI Storage | Description |
+| Scope | Postman Equivalent | ApiMocktle Storage | Description |
 |-------|-------------------|-----------------|-------------|
 | `pm.globals` | Global variables | Application-level settings | Shared across all projects |
 | `pm.collectionVariables` | Collection variables | Project-level settings | Scoped to the current project |
@@ -122,7 +122,7 @@ pm.environment.replaceIn("User-{{$randomInt}}")
 
 ### Dynamic Variables
 
-EasyAPI supports Postman-style dynamic variables using `{{$variableName}}` syntax. These are **automatically resolved** in URLs, headers, query parameters, and request bodies before the request is sent — just like Postman.
+ApiMocktle supports Postman-style dynamic variables using `{{$variableName}}` syntax. These are **automatically resolved** in URLs, headers, query parameters, and request bodies before the request is sent — just like Postman.
 
 You can also resolve them manually in scripts using `replaceIn`:
 
@@ -143,7 +143,7 @@ def resolved = pm.environment.replaceIn("User-{{$randomInt}}")
 | `{{$randomIP}}` | Random IPv4 | `192.168.1.1` |
 | `{{$randomUuid}}` | UUID | `b14ec7f5-...` |
 
-> **Auto-resolution example:** If you set the URL to `https://api.example.com?ts={{$timestamp}}&rid={{$randomInt}}`, EasyAPI automatically resolves `{{$timestamp}}` and `{{$randomInt}}` before sending the request.
+> **Auto-resolution example:** If you set the URL to `https://api.example.com?ts={{$timestamp}}&rid={{$randomInt}}`, ApiMocktle automatically resolves `{{$timestamp}}` and `{{$randomInt}}` before sending the request.
 
 ---
 
@@ -320,7 +320,7 @@ pm.expect(json.age).to.not.be.below(18)
 
 #### Assertion Methods
 
-| Method | Postman JS | EasyAPI Groovy | Description |
+| Method | Postman JS | ApiMocktle Groovy | Description |
 |--------|-----------|----------------|-------------|
 | eql | `pm.expect(x).to.eql(y)` | `pm.expect(x).to.eql(y)` | Deep equality |
 | equal | `pm.expect(x).to.equal(y)` | `pm.expect(x).to.equal(y)` | Strict equality |
@@ -364,7 +364,7 @@ pm.expect(s).to.not.include("error")
 
 #### Type Names for `.a()` / `.an()`
 
-| Postman JS type | EasyAPI Groovy type |
+| Postman JS type | ApiMocktle Groovy type |
 |----------------|---------------------|
 | `"string"` | `"String"` |
 | `"number"` | `"Number"` |
@@ -463,11 +463,11 @@ When resolving `{{variableName}}` in request URLs, headers, or body:
 
 ---
 
-## Postman → EasyAPI Conversion Guide
+## Postman → ApiMocktle Conversion Guide
 
 ### Syntax Differences at a Glance
 
-| Aspect | Postman (JavaScript) | EasyAPI (Groovy) |
+| Aspect | Postman (JavaScript) | ApiMocktle (Groovy) |
 |--------|---------------------|-------------------|
 | Language | JavaScript | Groovy |
 | String | `'single'` or `"double"` | `"double"` or `'single'` |
@@ -494,7 +494,7 @@ pm.request.headers.add({
 });
 ```
 
-**EasyAPI (Groovy):**
+**ApiMocktle (Groovy):**
 ```groovy
 pm.request.headers.add([
     key: "Authorization",
@@ -521,7 +521,7 @@ pm.test("User name is Alice", function () {
 });
 ```
 
-**EasyAPI (Groovy):**
+**ApiMocktle (Groovy):**
 ```groovy
 def responseJson = pm.response.json()
 
@@ -561,7 +561,7 @@ pm.request.headers.add({
 });
 ```
 
-**EasyAPI (Groovy):**
+**ApiMocktle (Groovy):**
 ```groovy
 def timestamp = System.currentTimeMillis() / 1000
 def nonce = UUID.randomUUID().toString().take(8)
@@ -600,7 +600,7 @@ pm.sendRequest({
 });
 ```
 
-**EasyAPI (Groovy):**
+**ApiMocktle (Groovy):**
 ```groovy
 def responseJson = pm.response.json()
 pm.environment.set("auth_token", responseJson.access_token)
@@ -641,7 +641,7 @@ pm.test("Schema is valid", function () {
 });
 ```
 
-**EasyAPI (Groovy):**
+**ApiMocktle (Groovy):**
 ```groovy
 def schema = [
     type: "object",
@@ -682,7 +682,7 @@ pm.test("Body contains success", function () {
 });
 ```
 
-**EasyAPI (Groovy):**
+**ApiMocktle (Groovy):**
 ```groovy
 pm.test("Response time is less than 200ms") {
     pm.expect(pm.response.responseTime).to.be.below(200)
@@ -854,9 +854,9 @@ pm.test("Body contains success") {
 
 ---
 
-## Legacy EasyAPI Bindings (Still Available)
+## Legacy ApiMocktle Bindings (Still Available)
 
-The existing EasyAPI rule script bindings remain available for advanced use cases:
+The existing ApiMocktle rule script bindings remain available for advanced use cases:
 
 | Binding | Description |
 |---------|-------------|

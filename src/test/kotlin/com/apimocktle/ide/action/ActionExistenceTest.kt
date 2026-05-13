@@ -6,9 +6,9 @@ import org.junit.Test
 class ActionExistenceTest {
 
     @Test
-    fun testEasyApiActionClassExists() {
-        val clazz = Class.forName("com.apimocktle.ide.action.EasyApiAction")
-        assertNotNull("EasyApiAction class should exist", clazz)
+    fun testApiMocktleActionClassExists() {
+        val clazz = Class.forName("com.apimocktle.ide.action.ApiMocktleAction")
+        assertNotNull("ApiMocktleAction class should exist", clazz)
     }
 
     @Test
@@ -51,11 +51,5 @@ class ActionExistenceTest {
     fun testApiCallActionExists() {
         val action = ApiCallAction()
         assertNotNull("ApiCallAction should be created", action)
-    }
-
-    @Test
-    fun testExportApiActionExists() {
-        val action = ExportApiAction()
-        assertNotNull("ExportApiAction should be created", action)
     }
 }

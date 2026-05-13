@@ -9,14 +9,14 @@ import java.nio.file.Paths
 /**
  * Project-scoped cache repository.
  *
- * Stores cache files under `.idea/easyapi-cache/` in the project directory.
+ * Stores cache files under `.idea/apimocktle-cache/` in the project directory.
  * This cache is specific to each project and is typically used for:
  * - API export history
  * - Project-specific settings cache
  * - Temporary build artifacts
  *
  * ## Location
- * - Default: `<project>/.idea/easyapi-cache/`
+ * - Default: `<project>/.idea/apimocktle-cache/`
  * - Fallback: System temp directory if project has no base path
  *
  * @see CacheRepository for the interface
@@ -26,8 +26,8 @@ import java.nio.file.Paths
 class ProjectCacheRepository(private val project: Project) : CacheRepository {
 
     private val cacheDir: Path by lazy {
-        project.basePath?.let { Paths.get(it, ".idea", "easyapi-cache") }
-            ?: Paths.get(System.getProperty("java.io.tmpdir"), "easyapi-cache")
+        project.basePath?.let { Paths.get(it, ".idea", "apimocktle-cache") }
+            ?: Paths.get(System.getProperty("java.io.tmpdir"), "apimocktle-cache")
     }
 
     override fun resolve(path: String): Path {

@@ -1,8 +1,8 @@
 package com.apimocktle.dashboard
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class ApiDashboardToolWindowFactoryTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiDashboardToolWindowFactoryTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testFactoryExists() {
         val factory = ApiDashboardToolWindowFactory()

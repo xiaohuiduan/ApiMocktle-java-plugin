@@ -8,7 +8,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTabbedPane
 
-class EasyApiSettingsConfigurable(private val project: com.intellij.openapi.project.Project) : Configurable {
+class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.project.Project) : Configurable {
     private var panel: JPanel? = null
     private var tabs: JTabbedPane? = null
 
@@ -45,7 +45,7 @@ class EasyApiSettingsConfigurable(private val project: com.intellij.openapi.proj
         const val TAB_ENVIRONMENT = "环境"
     }
 
-    override fun getDisplayName(): String = "EasyApi"
+    override fun getDisplayName(): String = "ApiMocktle"
 
     override fun createComponent(): JComponent {
         if (panel == null) {
@@ -136,7 +136,7 @@ class EasyApiSettingsConfigurable(private val project: com.intellij.openapi.proj
     }
 }
 
-abstract class BaseEasyApiChildConfigurable(
+abstract class BaseApiMocktleChildConfigurable(
     private val displayName: String,
     private val panelFactory: () -> SettingsPanel
 ) : Configurable {
@@ -182,10 +182,10 @@ abstract class BaseEasyApiChildConfigurable(
     }
 }
 
-class EasyApiExtensionConfigurable(project: com.intellij.openapi.project.Project) : BaseEasyApiChildConfigurable("扩展", { ExtensionConfigPanel() }) { init { this.project = project } }
+class ApiMocktleExtensionConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("扩展", { ExtensionConfigPanel() }) { init { this.project = project } }
 
-class EasyApiRemoteConfigurable(project: com.intellij.openapi.project.Project) : BaseEasyApiChildConfigurable("远程", { RemoteConfigPanel() }) { init { this.project = project } }
+class ApiMocktleRemoteConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("远程", { RemoteConfigPanel() }) { init { this.project = project } }
 
-class EasyApiBuiltInConfigurable(project: com.intellij.openapi.project.Project) : BaseEasyApiChildConfigurable("内置配置", { BuiltInConfigPanel() }) { init { this.project = project } }
+class ApiMocktleBuiltInConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("内置配置", { BuiltInConfigPanel() }) { init { this.project = project } }
 
-class EasyApiOtherConfigurable(project: com.intellij.openapi.project.Project) : BaseEasyApiChildConfigurable("其他", { OtherSettingsPanel() }) { init { this.project = project } }
+class ApiMocktleOtherConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("其他", { OtherSettingsPanel() }) { init { this.project = project } }

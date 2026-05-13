@@ -1,9 +1,9 @@
 package com.apimocktle.dashboard
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import org.junit.Assert.*
 
-class RequestPersistenceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RequestPersistenceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var persistence: RequestPersistence
 

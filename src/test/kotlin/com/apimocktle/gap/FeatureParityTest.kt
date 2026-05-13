@@ -3,11 +3,11 @@ package com.apimocktle.gap
 import com.apimocktle.exporter.feign.FeignClassExporter
 import com.apimocktle.exporter.jaxrs.JaxRsClassExporter
 import com.apimocktle.exporter.springmvc.SpringMvcClassExporter
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import org.junit.Assert.*
 
-class FeatureParityTest : EasyApiLightCodeInsightFixtureTestCase() {
+class FeatureParityTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun createConfigReader() = TestConfigReader.empty(project)
 

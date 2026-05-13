@@ -1,9 +1,9 @@
 package com.apimocktle.psi.type
 
 import com.intellij.psi.PsiClass
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class InheritanceHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class InheritanceHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun setUp() {
         super.setUp()

@@ -1,11 +1,11 @@
 package com.apimocktle.config
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 
-class ConfigSyncServiceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ConfigSyncServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var configSyncService: ConfigSyncService
 

@@ -5,7 +5,7 @@ import com.apimocktle.psi.model.FieldOption
 import com.apimocktle.psi.model.ObjectModel
 import com.apimocktle.psi.model.ObjectModelValueConverter
 import com.apimocktle.psi.type.JsonType
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import kotlinx.coroutines.runBlocking
 
@@ -70,7 +70,7 @@ class EnumResolutionTest {
     //  Case 1: Enum-typed field — default (no config)
     // ================================================================
 
-    class Case1_Default : EasyApiLightCodeInsightFixtureTestCase() {
+    class Case1_Default : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         override fun createConfigReader() = TestConfigReader.empty(project)
 
@@ -160,7 +160,7 @@ class EnumResolutionTest {
     //  Case 1: Enum-typed field — enum.use.custom=code
     // ================================================================
 
-    class Case1_CustomCode : EasyApiLightCodeInsightFixtureTestCase() {
+    class Case1_CustomCode : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         override fun createConfigReader() = TestConfigReader.fromRules(
             project, "enum.use.custom" to "code"
@@ -218,7 +218,7 @@ class EnumResolutionTest {
     //  Case 1: Enum-typed field — enum.use.custom=desc
     // ================================================================
 
-    class Case1_CustomDesc : EasyApiLightCodeInsightFixtureTestCase() {
+    class Case1_CustomDesc : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         override fun createConfigReader() = TestConfigReader.fromRules(
             project, "enum.use.custom" to "desc"
@@ -276,7 +276,7 @@ class EnumResolutionTest {
     //  Case 1: Enum-typed field — enum.use.custom=name
     // ================================================================
 
-    class Case1_CustomName : EasyApiLightCodeInsightFixtureTestCase() {
+    class Case1_CustomName : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         override fun createConfigReader() = TestConfigReader.fromRules(
             project, "enum.use.custom" to "name"
@@ -333,7 +333,7 @@ class EnumResolutionTest {
     //  Case 1: Enum-typed field — enum.use.custom=ordinal
     // ================================================================
 
-    class Case1_CustomOrdinal : EasyApiLightCodeInsightFixtureTestCase() {
+    class Case1_CustomOrdinal : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         override fun createConfigReader() = TestConfigReader.fromRules(
             project, "enum.use.custom" to "ordinal"
@@ -391,7 +391,7 @@ class EnumResolutionTest {
     //  Case 2: Normal-typed field with @see — explicit field
     // ================================================================
 
-    class Case2_SeeWithExplicitField : EasyApiLightCodeInsightFixtureTestCase() {
+    class Case2_SeeWithExplicitField : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         override fun createConfigReader() = TestConfigReader.empty(project)
 
@@ -487,7 +487,7 @@ class EnumResolutionTest {
     //  Case 2: Normal-typed field with @see — no member (auto-match)
     // ================================================================
 
-    class Case2_SeeWithAutoMatch : EasyApiLightCodeInsightFixtureTestCase() {
+    class Case2_SeeWithAutoMatch : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         override fun createConfigReader() = TestConfigReader.empty(project)
 
@@ -612,7 +612,7 @@ class EnumResolutionTest {
     //  Case 2: @see with desc field options include descriptions
     // ================================================================
 
-    class Case2_OptionDescriptions : EasyApiLightCodeInsightFixtureTestCase() {
+    class Case2_OptionDescriptions : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         override fun createConfigReader() = TestConfigReader.empty(project)
 

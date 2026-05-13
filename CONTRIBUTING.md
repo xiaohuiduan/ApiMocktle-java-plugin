@@ -1,6 +1,6 @@
-# Contributing to EasyAPI
+# Contributing to ApiMocktle
 
-Thank you for your interest in contributing to EasyAPI! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to ApiMocktle! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -90,8 +90,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 ## Project Structure
 
 ```
-easy-api/
-├── src/main/kotlin/com/itangcent/easyapi/
+apiMocktle/
+├── src/main/kotlin/com/apimocktle/
 │   ├── core/          # Core infrastructure
 │   ├── psi/           # PSI utilities
 │   ├── exporter/      # Export functionality

@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 import java.io.InputStreamReader
 
 /**
- * Base test case class for EasyAPI plugin tests using LightJavaCodeInsightFixtureTestCase.
+ * Base test case class for ApiMocktle plugin tests using LightJavaCodeInsightFixtureTestCase.
  *
  * ## Customizing Configuration
  *
@@ -27,7 +27,7 @@ import java.io.InputStreamReader
  * ```kotlin
  * override fun createConfigReader(): ConfigReader? {
  *     return TestConfigReader().apply {
- *         load("custom_rule.easyapi")
+ *         load("custom_rule.apimocktle")
  *     }
  * }
  * ```
@@ -38,13 +38,13 @@ import java.io.InputStreamReader
  * to load different configs via [createConfigReader]:
  * ```kotlin
  * class MyFeatureTest {
- *     class WithDefaultConfig : EasyApiLightCodeInsightFixtureTestCase() {
+ *     class WithDefaultConfig : ApiMocktleLightCodeInsightFixtureTestCase() {
  *         // tests with default config
  *     }
  *
- *     class WithCustomConfig : EasyApiLightCodeInsightFixtureTestCase() {
+ *     class WithCustomConfig : ApiMocktleLightCodeInsightFixtureTestCase() {
  *         override fun createConfigReader(): ConfigReader? {
- *             return TestConfigReader().apply { load("custom.easyapi") }
+ *             return TestConfigReader().apply { load("custom.apimocktle") }
  *         }
  *         // tests with custom config
  *     }
@@ -103,7 +103,7 @@ import java.io.InputStreamReader
  * it must include `import com.itangcent.jackson.OrderedDTO;` even though they share
  * the same package declaration.
  */
-abstract class EasyApiLightCodeInsightFixtureTestCase : LightJavaCodeInsightFixtureTestCase() {
+abstract class ApiMocktleLightCodeInsightFixtureTestCase : LightJavaCodeInsightFixtureTestCase() {
 
     /**
      * Creates a custom ConfigReader for the test.

@@ -1,10 +1,10 @@
 package com.apimocktle.psi.helper
 
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class ApiMetadataResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiMetadataResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var metadataResolver: ApiMetadataResolver
 

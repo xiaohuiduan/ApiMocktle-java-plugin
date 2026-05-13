@@ -6,10 +6,10 @@ import com.intellij.psi.PsiParameter
 import com.apimocktle.exporter.model.ParameterBinding
 import com.apimocktle.psi.helper.UnifiedAnnotationHelper
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class SpringParameterBindingResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class SpringParameterBindingResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: SpringParameterBindingResolver
 

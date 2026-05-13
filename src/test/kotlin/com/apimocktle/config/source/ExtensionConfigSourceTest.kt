@@ -2,10 +2,10 @@ package com.apimocktle.config.source
 
 import com.apimocktle.config.parser.ConfigTextParser
 import com.apimocktle.extension.ExtensionConfigRegistry
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class ExtensionConfigSourceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ExtensionConfigSourceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private val configTextParser = ConfigTextParser(null)
 

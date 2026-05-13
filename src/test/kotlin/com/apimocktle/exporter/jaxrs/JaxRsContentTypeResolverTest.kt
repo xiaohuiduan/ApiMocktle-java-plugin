@@ -1,9 +1,9 @@
 package com.apimocktle.exporter.jaxrs
 
 import com.apimocktle.psi.helper.UnifiedAnnotationHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class JaxRsContentTypeResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class JaxRsContentTypeResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: JaxRsContentTypeResolver
 

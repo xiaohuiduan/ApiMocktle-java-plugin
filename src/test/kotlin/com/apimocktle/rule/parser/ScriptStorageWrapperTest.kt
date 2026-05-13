@@ -1,10 +1,10 @@
 package com.apimocktle.rule.parser
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.util.storage.SessionStorage
 import org.junit.Assert.*
 
-class ScriptStorageWrapperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ScriptStorageWrapperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var storage: SessionStorage
     private lateinit var wrapper: ScriptStorageWrapper

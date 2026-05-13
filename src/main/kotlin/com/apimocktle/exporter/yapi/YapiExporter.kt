@@ -220,9 +220,9 @@ class YapiExporter(private val project: Project) : ApiExporter {
         val metadata = result.metadata as? YapiExportMetadata ?: return false
         swing {
             val notification = com.intellij.notification.Notification(
-                "EasyAPI Notifications",
-                "导出到YAPI",
-                "已导出 ${result.count} 个端点到YAPI",
+                "ApiMocktle Notifications",
+                "导出到ApiMocktle",
+                "已导出 ${result.count} 个端点到ApiMocktle",
                 com.intellij.notification.NotificationType.INFORMATION
             )
             for ((cartName, cartUrl) in metadata.cartLinks) {

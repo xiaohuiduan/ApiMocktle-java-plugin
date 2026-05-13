@@ -1,10 +1,10 @@
 package com.apimocktle.exporter.jaxrs
 
 import com.apimocktle.psi.helper.UnifiedAnnotationHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class JaxRsPathResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class JaxRsPathResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: JaxRsPathResolver
 

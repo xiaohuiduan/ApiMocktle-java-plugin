@@ -1,9 +1,9 @@
 package com.apimocktle.exporter.springmvc
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class ReturnTypeUnwrapperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ReturnTypeUnwrapperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testUnwrapNullType() {
         val result = ReturnTypeUnwrapper.unwrapPsiType(null)

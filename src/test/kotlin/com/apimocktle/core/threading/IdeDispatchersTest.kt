@@ -1,10 +1,10 @@
 package com.apimocktle.core.threading
 
 import com.intellij.openapi.application.ModalityState
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class IdeDispatchersTest : EasyApiLightCodeInsightFixtureTestCase() {
+class IdeDispatchersTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testReadActionDispatcher() {
         assertNotNull(IdeDispatchers.ReadAction)

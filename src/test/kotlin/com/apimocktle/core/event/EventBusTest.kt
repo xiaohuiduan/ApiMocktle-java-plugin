@@ -1,11 +1,11 @@
 package com.apimocktle.core.event
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class EventBusTest : EasyApiLightCodeInsightFixtureTestCase() {
+class EventBusTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var eventBus: EventBus
 

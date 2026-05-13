@@ -1,11 +1,11 @@
 package com.apimocktle.psi.type
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
 /**
  * Focused tests for [ResolvedMethod.superMethod], [superMethods], and [searchAnnotation].
  */
-class ResolvedMethodTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ResolvedMethodTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     override fun setUp() {
         super.setUp()

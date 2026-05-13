@@ -7,9 +7,9 @@ import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import com.apimocktle.ide.support.SelectionScope
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class ApiCallActionTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiCallActionTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var userCtrl: PsiClass
     private lateinit var greetingMethod: PsiMethod
@@ -30,9 +30,9 @@ class ApiCallActionTest : EasyApiLightCodeInsightFixtureTestCase() {
         assertTrue("Should be an AnAction", action is com.intellij.openapi.actionSystem.AnAction)
     }
 
-    fun testActionExtendsEasyApiAction() {
+    fun testActionExtendsApiMocktleAction() {
         val action = ApiCallAction()
-        assertTrue("Should extend EasyApiAction", action is EasyApiAction)
+        assertTrue("Should extend ApiMocktleAction", action is ApiMocktleAction)
     }
 
     fun testUpdateEnabledWithMethodInEditor() {

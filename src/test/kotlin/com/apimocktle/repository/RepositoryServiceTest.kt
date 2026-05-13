@@ -3,9 +3,9 @@ package com.apimocktle.repository
 import com.intellij.testFramework.registerServiceInstance
 import com.apimocktle.settings.DefaultSettingBinder
 import com.apimocktle.settings.Settings
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class RepositoryServiceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var repositoryService: RepositoryService
     private lateinit var defaultSettingBinder: DefaultSettingBinder

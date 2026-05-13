@@ -461,7 +461,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      */
     private fun showCopyNotification() {
         NotificationGroupManager.getInstance()
-            .getNotificationGroup("EasyApi Notifications")
+            .getNotificationGroup("ApiMocktle Notifications")
             .createNotification("已复制到剪贴板", NotificationType.INFORMATION)
             .notify(project)
     }

@@ -18,7 +18,7 @@ import kotlinx.coroutines.runBlocking
  *
  * @see ApiDashboardService for the dashboard functionality
  */
-class ApiCallAction : EasyApiAction() {
+class ApiCallAction : ApiMocktleAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return

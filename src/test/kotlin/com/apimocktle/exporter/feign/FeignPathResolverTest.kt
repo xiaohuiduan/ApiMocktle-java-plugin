@@ -1,10 +1,10 @@
 package com.apimocktle.exporter.feign
 
 import com.apimocktle.psi.helper.UnifiedAnnotationHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class FeignPathResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class FeignPathResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: FeignPathResolver
 

@@ -3,12 +3,12 @@ package com.apimocktle.rule
 import com.intellij.testFramework.registerServiceInstance
 import com.apimocktle.config.ConfigReader
 import com.apimocktle.config.ConfigReloadListener
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import org.junit.Assert.*
 import org.junit.Test
 
-class RuleProviderGetInstanceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderGetInstanceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     @Test
     fun testGetInstance() {
         val instance = RuleProvider.getInstance(project)
@@ -17,7 +17,7 @@ class RuleProviderGetInstanceTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 }
 
-class RuleProviderEmptyKeyTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderEmptyKeyTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     override fun createConfigReader(): ConfigReader = TestConfigReader.empty(project)
 
     @Test
@@ -29,7 +29,7 @@ class RuleProviderEmptyKeyTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 }
 
-class RuleProviderSingleRuleTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderSingleRuleTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     override fun createConfigReader(): ConfigReader = TestConfigReader.fromRules(
         project,
         "api.name" to "Test API",
@@ -47,7 +47,7 @@ class RuleProviderSingleRuleTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 }
 
-class RuleProviderMultipleRulesTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderMultipleRulesTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     override fun createConfigReader(): ConfigReader = TestConfigReader.fromRules(
         project,
         "api.tag" to "tag1",
@@ -67,7 +67,7 @@ class RuleProviderMultipleRulesTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 }
 
-class RuleProviderIndexedFiltersTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderIndexedFiltersTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     override fun createConfigReader(): ConfigReader = TestConfigReader.fromRules(
         project,
         "api.name" to "Base API",
@@ -96,7 +96,7 @@ class RuleProviderIndexedFiltersTest : EasyApiLightCodeInsightFixtureTestCase() 
     }
 }
 
-class RuleProviderAliasesTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderAliasesTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     override fun createConfigReader(): ConfigReader = TestConfigReader.fromRules(
         project,
         "api.name" to "Primary Name",
@@ -115,7 +115,7 @@ class RuleProviderAliasesTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 }
 
-class RuleProviderCacheTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderCacheTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     override fun createConfigReader(): ConfigReader = TestConfigReader.fromRules(
         project,
         "api.name" to "Test API"
@@ -132,7 +132,7 @@ class RuleProviderCacheTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 }
 
-class RuleProviderMultipleKeysTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderMultipleKeysTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     override fun createConfigReader(): ConfigReader = TestConfigReader.fromRules(
         project,
         "api.name" to "Test API",
@@ -154,7 +154,7 @@ class RuleProviderMultipleKeysTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 }
 
-class RuleProviderConfigReloadTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderConfigReloadTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     private lateinit var configReader: TestConfigReader
 
     override fun createConfigReader(): ConfigReader {
@@ -181,7 +181,7 @@ class RuleProviderConfigReloadTest : EasyApiLightCodeInsightFixtureTestCase() {
     }
 }
 
-class RuleProviderRuleOrderTest : EasyApiLightCodeInsightFixtureTestCase() {
+class RuleProviderRuleOrderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     override fun createConfigReader(): ConfigReader = TestConfigReader.fromRules(
         project,
         "json.rule.convert[#regex:org.springframework.http.ResponseEntity<(.*?)>]" to "\${1}",

@@ -5,11 +5,11 @@ import com.apimocktle.exporter.model.ApiParameter
 import com.apimocktle.exporter.model.ParameterBinding
 import com.apimocktle.exporter.model.ParameterType
 import com.apimocktle.psi.type.TypeResolver
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import org.junit.Assert.*
 
-class EndpointBuilderTest : EasyApiLightCodeInsightFixtureTestCase() {
+class EndpointBuilderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var endpointBuilder: EndpointBuilder
 

@@ -3,14 +3,14 @@ package com.apimocktle.core
 import com.intellij.openapi.project.Project
 
 /**
- * Project-level service for EasyAPI plugin.
+ * Project-level service for ApiMocktle plugin.
  *
  * This service provides project-scoped functionality and serves as
  * a central point for project-level plugin components.
  *
- * @see EasyApiApplicationService for application-level service
+ * @see ApiMocktleApplicationService for application-level service
  */
-class EasyApiProjectService(private val project: Project) {
+class ApiMocktleProjectService(private val project: Project) {
     companion object {
         /**
          * Gets the project service instance.
@@ -18,6 +18,6 @@ class EasyApiProjectService(private val project: Project) {
          * @param project The project
          * @return The service instance
          */
-        fun getInstance(project: Project): EasyApiProjectService = project.getService(EasyApiProjectService::class.java)
+        fun getInstance(project: Project): ApiMocktleProjectService = project.getService(ApiMocktleProjectService::class.java)
     }
 }

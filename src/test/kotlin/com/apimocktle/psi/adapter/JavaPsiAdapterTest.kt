@@ -1,8 +1,8 @@
 package com.apimocktle.psi.adapter
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class JavaPsiAdapterTest : EasyApiLightCodeInsightFixtureTestCase() {
+class JavaPsiAdapterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var adapter: JavaPsiAdapter
 

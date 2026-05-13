@@ -1,10 +1,10 @@
 package com.apimocktle.exporter.springmvc
 
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class SpringControllerRecognizerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class SpringControllerRecognizerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var recognizer: SpringControllerRecognizer
 

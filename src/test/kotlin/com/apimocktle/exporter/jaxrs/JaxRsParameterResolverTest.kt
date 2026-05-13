@@ -1,10 +1,10 @@
 package com.apimocktle.exporter.jaxrs
 
 import com.apimocktle.psi.helper.UnifiedAnnotationHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class JaxRsParameterResolverTest : EasyApiLightCodeInsightFixtureTestCase() {
+class JaxRsParameterResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var resolver: JaxRsParameterResolver
 

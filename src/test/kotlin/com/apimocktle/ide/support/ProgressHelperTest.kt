@@ -2,11 +2,11 @@ package com.apimocktle.ide.support
 
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicator
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 
-class ProgressHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ProgressHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testRunWithProgressInUnitTestMode() = runBlocking {
         var indicatorPassed = false

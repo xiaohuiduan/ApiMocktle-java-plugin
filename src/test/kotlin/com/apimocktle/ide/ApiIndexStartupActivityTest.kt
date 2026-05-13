@@ -1,9 +1,9 @@
 package com.apimocktle.ide
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class ApiIndexStartupActivityTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiIndexStartupActivityTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var startupActivity: ApiIndexStartupActivity
 

@@ -1,8 +1,8 @@
 package com.apimocktle.util.ide
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class MavenHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class MavenHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testGetMavenIdReturnsNullWhenNoMavenOrGradle() {
         loadFile("model/UserInfo.java")

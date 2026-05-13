@@ -1,10 +1,10 @@
 package com.apimocktle.exporter.feign
 
 import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class FeignClientRecognizerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class FeignClientRecognizerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var recognizer: FeignClientRecognizer
 

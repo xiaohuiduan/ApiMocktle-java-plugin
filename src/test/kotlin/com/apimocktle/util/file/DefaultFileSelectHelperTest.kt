@@ -1,8 +1,8 @@
 package com.apimocktle.util.file
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class DefaultFileSelectHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class DefaultFileSelectHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var fileSelectHelper: DefaultFileSelectHelper
 

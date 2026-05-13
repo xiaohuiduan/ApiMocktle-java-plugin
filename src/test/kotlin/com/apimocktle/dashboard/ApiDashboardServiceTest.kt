@@ -1,9 +1,9 @@
 package com.apimocktle.dashboard
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class ApiDashboardServiceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiDashboardServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var apiDashboardService: ApiDashboardService
 

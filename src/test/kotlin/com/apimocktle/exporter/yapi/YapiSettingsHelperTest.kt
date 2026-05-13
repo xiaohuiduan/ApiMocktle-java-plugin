@@ -4,11 +4,11 @@ import com.apimocktle.settings.SettingBinder
 import com.apimocktle.settings.Settings
 import com.apimocktle.settings.update
 import com.apimocktle.testFramework.ConstantSettingBinder
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.wrap
 import kotlinx.coroutines.runBlocking
 
-class YapiSettingsHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class YapiSettingsHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var helper: DefaultYapiSettingsHelper
     private lateinit var testSettingBinder: ConstantSettingBinder

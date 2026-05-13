@@ -1,9 +1,9 @@
 package com.apimocktle.ide
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class DumbModeHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class DumbModeHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testWaitForSmartModeInUnitTestMode() = runBlocking {
         DumbModeHelper.waitForSmartMode(project)

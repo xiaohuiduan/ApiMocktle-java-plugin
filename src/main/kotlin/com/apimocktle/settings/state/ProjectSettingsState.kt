@@ -5,9 +5,9 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 
 /**
- * 项目级设置状态，存储在项目的 `easyapi.xml` 中。
+ * 项目级设置状态，存储在项目的 `apimocktle.xml` 中。
  */
-@State(name = "EasyApiProjectSettings", storages = [Storage("easyapi.xml")])
+@State(name = "ApiMocktleProjectSettings", storages = [Storage("apimocktle.xml")])
 class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State> {
     /**
      * 项目级设置数据类。

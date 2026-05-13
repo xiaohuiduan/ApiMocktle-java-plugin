@@ -38,7 +38,7 @@ abstract class FieldFormatAction(
             CopyPasteManager.getInstance().setContents(StringSelection(text))
             Notifications.Bus.notify(
                 Notification(
-                    "EasyAPI Notifications",
+                    "ApiMocktle Notifications",
                     title,
                     "已复制到剪贴板",
                     NotificationType.INFORMATION

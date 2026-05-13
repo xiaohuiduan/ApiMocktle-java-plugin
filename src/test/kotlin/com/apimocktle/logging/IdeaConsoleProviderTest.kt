@@ -1,8 +1,8 @@
 package com.apimocktle.logging
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class IdeaConsoleProviderTest : EasyApiLightCodeInsightFixtureTestCase() {
+class IdeaConsoleProviderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testGetConsoleReturnsNonNull() {
         val provider = IdeaConsoleProvider.getInstance(project)

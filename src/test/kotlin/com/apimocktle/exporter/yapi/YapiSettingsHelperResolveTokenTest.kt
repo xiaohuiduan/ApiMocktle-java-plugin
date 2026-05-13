@@ -3,12 +3,12 @@ package com.apimocktle.exporter.yapi
 import com.apimocktle.settings.SettingBinder
 import com.apimocktle.settings.update
 import com.apimocktle.testFramework.ConstantSettingBinder
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.wrap
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 
-class YapiSettingsHelperResolveTokenTest : EasyApiLightCodeInsightFixtureTestCase() {
+class YapiSettingsHelperResolveTokenTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var helper: DefaultYapiSettingsHelper
     private lateinit var testSettingBinder: ConstantSettingBinder

@@ -861,7 +861,7 @@ class BuiltInConfigPanel : SettingsPanel {
     }
 
     private fun defaultBuiltInConfig(): String {
-        return javaClass.classLoader.getResourceAsStream("config/builtin.easyapi.config")
+        return javaClass.classLoader.getResourceAsStream("config/builtin.apimocktle.config")
             ?.bufferedReader(Charsets.UTF_8)
             ?.use { it.readText() }
             ?: ""
@@ -911,7 +911,7 @@ class OtherSettingsPanel : SettingsPanel {
                     applyImported(settings, imported)
                     resetFrom(settings)
                 }.onFailure {
-                    Messages.showErrorDialog("导入失败：${it.message}", "EasyApi 设置")
+                    Messages.showErrorDialog("导入失败：${it.message}", "ApiMocktle 设置")
                 }
             }
         }
@@ -925,7 +925,7 @@ class OtherSettingsPanel : SettingsPanel {
                 runCatching {
                     file.writeText(GsonUtils.toJson(settings))
                 }.onFailure {
-                    Messages.showErrorDialog("导出失败：${it.message}", "EasyApi 设置")
+                    Messages.showErrorDialog("导出失败：${it.message}", "ApiMocktle 设置")
                 }
             }
         }

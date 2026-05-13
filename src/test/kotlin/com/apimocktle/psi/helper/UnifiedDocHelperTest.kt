@@ -1,9 +1,9 @@
 package com.apimocktle.psi.helper
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.runBlocking
 
-class UnifiedDocHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class UnifiedDocHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var docHelper: UnifiedDocHelper
 

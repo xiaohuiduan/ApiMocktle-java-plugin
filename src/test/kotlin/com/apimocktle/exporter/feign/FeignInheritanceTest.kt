@@ -5,14 +5,14 @@ import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.exporter.model.path
 import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
 /**
  * Tests that FeignClassExporter correctly exports methods inherited from a super interface,
  * including class-level @RequestMapping path prefixes.
  */
-class FeignInheritanceTest : EasyApiLightCodeInsightFixtureTestCase() {
+class FeignInheritanceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: FeignClassExporter
 

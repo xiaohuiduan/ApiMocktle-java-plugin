@@ -1,10 +1,10 @@
 package com.apimocktle.core.threading
 
 import com.intellij.openapi.application.ApplicationManager
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlinx.coroutines.*
 
-class ReadActionDispatcherTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ReadActionDispatcherTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var dispatcher: ReadActionDispatcher
 

@@ -1,6 +1,6 @@
 package com.apimocktle.exporter.springmvc
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import com.apimocktle.exporter.EndpointBuilder
 import com.apimocktle.exporter.model.HttpMethod
@@ -12,7 +12,7 @@ import com.apimocktle.rule.engine.RuleEngine
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 
-class ActuatorEndpointScannerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ActuatorEndpointScannerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var actuatorEndpointScanner: ActuatorEndpointScanner
 

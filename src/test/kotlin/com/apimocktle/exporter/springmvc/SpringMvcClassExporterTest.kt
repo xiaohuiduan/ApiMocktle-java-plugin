@@ -1,6 +1,6 @@
 package com.apimocktle.exporter.springmvc
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import com.apimocktle.exporter.ClassExporter
 import com.apimocktle.psi.helper.DocHelper
@@ -8,7 +8,7 @@ import com.apimocktle.psi.helper.UnifiedDocHelper
 import com.apimocktle.exporter.model.httpMetadata
 import kotlinx.coroutines.runBlocking
 
-class SpringMvcClassExporterTest : EasyApiLightCodeInsightFixtureTestCase() {
+class SpringMvcClassExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: SpringMvcClassExporter
 

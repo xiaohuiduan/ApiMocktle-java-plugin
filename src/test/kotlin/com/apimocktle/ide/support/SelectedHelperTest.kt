@@ -8,7 +8,7 @@ import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
 /**
  * Tests that [SelectedHelper] and [SelectionScope] always resolve to the
@@ -24,7 +24,7 @@ import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
  * SelectedHelper should prefer PSI_ELEMENT (cursor context) over NAVIGATABLE_ARRAY
  * (resolved target) to always find the containing class/method in the source file.
  */
-class SelectedHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class SelectedHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var deprecatedUserCtrl: PsiClass
     private lateinit var greetingMethod: PsiMethod

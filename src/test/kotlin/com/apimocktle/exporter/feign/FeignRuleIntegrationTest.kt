@@ -2,10 +2,10 @@ package com.apimocktle.exporter.feign
 
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class FeignRuleIntegrationTest : EasyApiLightCodeInsightFixtureTestCase() {
+class FeignRuleIntegrationTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: FeignClassExporter
 

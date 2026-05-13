@@ -4,11 +4,11 @@ import com.apimocktle.exporter.model.ApiEndpoint
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import kotlinx.coroutines.delay
 
-class ApiIndexManagerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiIndexManagerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var apiIndexManager: ApiIndexManager
     private lateinit var apiIndex: ApiIndex

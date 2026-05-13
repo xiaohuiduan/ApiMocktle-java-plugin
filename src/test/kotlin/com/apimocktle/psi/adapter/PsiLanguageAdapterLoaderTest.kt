@@ -1,8 +1,8 @@
 package com.apimocktle.psi.adapter
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 
-class PsiLanguageAdapterLoaderTest : EasyApiLightCodeInsightFixtureTestCase() {
+class PsiLanguageAdapterLoaderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     fun testLoadAdaptersReturnsAtLeastJavaAdapter() {
         val adapters = PsiLanguageAdapterLoader.loadAdapters()

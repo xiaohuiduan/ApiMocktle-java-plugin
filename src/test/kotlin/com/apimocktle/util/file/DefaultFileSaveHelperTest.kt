@@ -1,9 +1,9 @@
 package com.apimocktle.util.file
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import java.nio.charset.StandardCharsets
 
-class DefaultFileSaveHelperTest : EasyApiLightCodeInsightFixtureTestCase() {
+class DefaultFileSaveHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var fileSaveHelper: DefaultFileSaveHelper
 

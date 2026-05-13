@@ -2,11 +2,11 @@ package com.apimocktle.dashboard
 
 import com.apimocktle.cache.ApiIndex
 import com.apimocktle.exporter.model.HttpMetadata
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 import com.apimocktle.settings.update
 
-class ApiScannerTest : EasyApiLightCodeInsightFixtureTestCase() {
+class ApiScannerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var apiScanner: ApiScanner
     private lateinit var apiIndex: ApiIndex

@@ -22,16 +22,16 @@ import java.util.UUID
  *
  * ## Output Format
  * ```
- * ----EasyApiBoundary
+ * ----ApiMocktleBoundary
  * Content-Disposition: form-data; name="username"
  *
  * john
- * ----EasyApiBoundary
+ * ----ApiMocktleBoundary
  * Content-Disposition: form-data; name="avatar"; filename="photo.jpg"
  * Content-Type: image/jpeg
  *
  * <binary data>
- * ----EasyApiBoundary--
+ * ----ApiMocktleBoundary--
  * ```
  *
  * @see FormParam for parameter types
@@ -51,7 +51,7 @@ object MultipartBodyBuilder {
     )
 
     fun build(params: List<FormParam>): MultipartBody {
-        val boundary = "----EasyApi${UUID.randomUUID().toString().replace("-", "")}"
+        val boundary = "----ApiMocktle${UUID.randomUUID().toString().replace("-", "")}"
         val crlf = "\r\n"
         val out = ByteArrayOutputStream()
 

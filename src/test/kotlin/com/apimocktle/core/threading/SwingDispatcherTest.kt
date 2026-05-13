@@ -1,10 +1,10 @@
 package com.apimocktle.core.threading
 
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.runBlocking
 
-class SwingDispatcherTest : EasyApiLightCodeInsightFixtureTestCase() {
+class SwingDispatcherTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var swingDispatcher: SwingDispatcher
 

@@ -7,10 +7,10 @@ import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
 import com.apimocktle.psi.model.FieldModel
 import com.apimocktle.psi.model.ObjectModel
-import com.apimocktle.testFramework.EasyApiLightCodeInsightFixtureTestCase
+import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
 
-class Swagger3ConfigIntegrationTest : EasyApiLightCodeInsightFixtureTestCase() {
+class Swagger3ConfigIntegrationTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var exporter: SpringMvcClassExporter
 

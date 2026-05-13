@@ -6,7 +6,7 @@ import java.nio.file.Path
  * Unified interface for file-based cache storage.
  *
  * Two implementations:
- * - [ProjectCacheRepository] — project-scoped, stored under `.idea/easyapi-cache/`
+ * - [ProjectCacheRepository] — project-scoped, stored under `.idea/apimocktle-cache/`
  * - [AppCacheRepository] — global, stored under `~/.easy-api/cache/`
  */
 interface CacheRepository {
