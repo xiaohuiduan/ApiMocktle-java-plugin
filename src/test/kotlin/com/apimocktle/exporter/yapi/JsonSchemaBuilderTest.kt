@@ -229,9 +229,77 @@ class JsonSchemaBuilderTest {
         val schema = parseJson(builder.build(model))
 
         assertEquals("object", schema["type"])
+        assertEquals("Map", schema["description"])
         @Suppress("UNCHECKED_CAST")
-        val additionalProps = schema["additionalProperties"] as Map<String, Any?>
-        assertEquals("integer", additionalProps["type"])
+        val properties = schema["properties"] as Map<String, Any?>
+        // Sample key for String type is "string"
+        @Suppress("UNCHECKED_CAST")
+        val valueSchema = properties["string"] as Map<String, Any?>
+        assertEquals("integer", valueSchema["type"])
+    }
+
+    @Test
+    fun testBuildMapModelWithObjectValue() {
+        // Simulates Result<Map<String, PassengerRespDTO>> → data field
+        val model = ObjectModel.Object(
+            mapOf(
+                "code" to FieldModel(ObjectModel.Single(JsonType.INT)),
+                "data" to FieldModel(
+                    ObjectModel.MapModel(
+                        ObjectModel.Single(JsonType.STRING),
+                        ObjectModel.Object(
+                            mapOf(
+                                "id" to FieldModel(ObjectModel.Single(JsonType.STRING)),
+                                "username" to FieldModel(ObjectModel.Single(JsonType.STRING)),
+                                "realName" to FieldModel(ObjectModel.Single(JsonType.STRING))
+                            )
+                        )
+                    )
+                ),
+                "message" to FieldModel(ObjectModel.Single(JsonType.STRING))
+            )
+        )
+        val schema = parseJson(builder.build(model))
+
+        @Suppress("UNCHECKED_CAST")
+        val properties = schema["properties"] as Map<String, Any?>
+
+        // data field should be an object with properties (not additionalProperties)
+        @Suppress("UNCHECKED_CAST")
+        val dataProp = properties["data"] as Map<String, Any?>
+        assertEquals("object", dataProp["type"])
+        assertEquals("Map", dataProp["description"])
+        assertTrue("data should have properties", dataProp.containsKey("properties"))
+        assertFalse("data should NOT use additionalProperties", dataProp.containsKey("additionalProperties"))
+
+        // The sample key "string" should contain the PassengerRespDTO schema
+        @Suppress("UNCHECKED_CAST")
+        val dataProperties = dataProp["properties"] as Map<String, Any?>
+        assertTrue("sample key 'string' should exist", dataProperties.containsKey("string"))
+
+        @Suppress("UNCHECKED_CAST")
+        val dtoSchema = dataProperties["string"] as Map<String, Any?>
+        assertEquals("object", dtoSchema["type"])
+        @Suppress("UNCHECKED_CAST")
+        val dtoProps = dtoSchema["properties"] as Map<String, Any?>
+        assertTrue(dtoProps.containsKey("id"))
+        assertTrue(dtoProps.containsKey("username"))
+        assertTrue(dtoProps.containsKey("realName"))
+    }
+
+    @Test
+    fun testBuildMapModelWithIntKey() {
+        val model = ObjectModel.MapModel(
+            ObjectModel.Single(JsonType.INT),
+            ObjectModel.Single(JsonType.STRING)
+        )
+        val schema = parseJson(builder.build(model))
+
+        assertEquals("object", schema["type"])
+        @Suppress("UNCHECKED_CAST")
+        val properties = schema["properties"] as Map<String, Any?>
+        // Sample key for Integer type is "0"
+        assertTrue("should have sample key '0'", properties.containsKey("0"))
     }
 
     @Test

@@ -14,7 +14,7 @@ import java.util.IdentityHashMap
  * JSON Schema format compatible with YAPI. It supports:
  * - All JSON primitive types (string, number, integer, boolean)
  * - Nested objects and arrays
- * - Map types with additionalProperties
+ * - Map types with example-key properties
  * - Field descriptions, defaults, and mock data
  * - Enum values with descriptions
  * - Circular reference detection
@@ -259,20 +259,45 @@ class JsonSchemaBuilder(private val maxVisits: Int = MAX_VISITS) {
 
     /**
      * Builds a schema for a map/dictionary type.
-     * Uses additionalProperties to define value types.
-     * 
+     *
+     * Uses `properties` with a representative sample key instead of
+     * `additionalProperties`.  YAPI (and many downstream consumers) cannot
+     * correctly render `additionalProperties` in mock-preview mode, which
+     * causes Map fields to appear as `{}`.  By emitting a concrete example
+     * property whose name reflects the key type, YAPI can generate a
+     * meaningful preview while the schema still communicates "this is a map".
+     *
      * @param model The map model
      * @param visitCounts Tracking map for circular reference detection
-     * @return A schema map with type and additionalProperties
+     * @return A schema map with type, properties, and a description
      */
     private fun buildMapSchema(
         model: ObjectModel.MapModel,
         visitCounts: IdentityHashMap<ObjectModel.Object, Int>
     ): LinkedHashMap<String, Any?> {
+        val sampleKey = keySampleName(model.keyType)
+        val valueSchema = buildSchema(model.valueType, visitCounts)
+
         return linkedMapOf(
             "type" to "object",
-            "additionalProperties" to buildSchema(model.valueType, visitCounts)
+            "description" to "Map",
+            "properties" to linkedMapOf<String, Any?>(sampleKey to valueSchema)
         )
+    }
+
+    /**
+     * Returns a representative key name for the given key-type model,
+     * used as the sample property name when rendering Map types.
+     */
+    private fun keySampleName(keyType: ObjectModel): String {
+        return when (keyType) {
+            is ObjectModel.Single -> when (keyType.type) {
+                JsonType.INT, JsonType.SHORT, JsonType.LONG -> "0"
+                JsonType.STRING -> "string"
+                else -> "key"
+            }
+            else -> "key"
+        }
     }
 
     /**
