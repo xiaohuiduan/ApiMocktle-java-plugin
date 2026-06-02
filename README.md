@@ -4,6 +4,11 @@
 
 ## 更新日志
 
+### v2.2.0 — 修复 YAPI 导出 Map 类型响应体丢失
+
+- **修复**：`Result<Map<String, Xxx>>` 等包含 Map 泛型的返回类型，导出到 YAPI 后 Map 字段值结构显示为 `{}` 的问题
+- **改进**：`JsonSchemaBuilder` 的 Map 类型改用 `properties` + 示例 key 生成 JSON Schema，兼容 YAPI 的 mock 预览渲染
+
 ### v2.1.0 — 统一名字 & EasyApi → ApiMocktle
 
 - **名字统一**：清理所有 EasyApi 名字，避免与[EasyApi](https://github.com/tangcent/easy-yapi)插件冲突，设置页、右键菜单统一显示为 ApiMocktle
