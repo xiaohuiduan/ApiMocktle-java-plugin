@@ -2,6 +2,7 @@ package com.apimocktle.agent
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.sun.net.httpserver.HttpExchange
+import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -9,7 +10,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 
 /**
- * Agent HTTP Server
+ * Agent HTTP Server — lightweight HTTP API using com.sun.net.httpserver.
  *
  * Endpoints:
  *   PUT  /mock/rules  - push mock rules
@@ -37,60 +38,70 @@ object AgentHttpServer {
 
         val httpServer = HttpServer.create(InetSocketAddress(port), 0)
 
-        httpServer.createContext("/mock/rules") { exchange ->
-            when (exchange.requestMethod) {
-                "PUT" -> {
-                    try {
-                        val body = readBody(exchange)
-                        val newRules: List<MockRule> = mapper.readValue(
-                            body,
-                            mapper.typeFactory.constructCollectionType(List::class.java, MockRule::class.java)
-                        )
-                        MockRuleRegistry.update(newRules)
-                        retransformCglibInterceptor(instrumentation)
-                        sendJson(exchange, 200, mapOf("ok" to true, "count" to newRules.size))
-                    } catch (e: Exception) {
-                        sendJson(exchange, 400, mapOf("ok" to false, "error" to (e.message ?: "unknown")))
+        httpServer.createContext("/mock/rules", object : HttpHandler {
+            override fun handle(exchange: HttpExchange) {
+                when (exchange.requestMethod) {
+                    "PUT" -> {
+                        try {
+                            val body = readBody(exchange)
+                            val newRules: List<MockRule> = mapper.readValue(
+                                body,
+                                mapper.typeFactory.constructCollectionType(List::class.java, MockRule::class.java)
+                            )
+                            MockRuleRegistry.update(newRules)
+                            retransformClass(instrumentation, "org.springframework.aop.framework.CglibAopProxy\$DynamicAdvisedInterceptor")
+                            retransformClass(instrumentation, "feign.ReflectiveFeign\$FeignInvocationHandler")
+                            retransformClass(instrumentation, "org.apache.ibatis.binding.MapperProxy")
+                            sendJson(exchange, 200, mapOf("ok" to true, "count" to newRules.size))
+                        } catch (e: Exception) {
+                            sendJson(exchange, 400, mapOf("ok" to false, "error" to (e.message ?: "unknown")))
+                        }
                     }
+                    "DELETE" -> {
+                        MockRuleRegistry.clear()
+                        CallLogCollector.clear()
+                        sendJson(exchange, 200, mapOf("ok" to true))
+                    }
+                    else -> sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
                 }
-                "DELETE" -> {
-                    MockRuleRegistry.clear()
-                    CallLogCollector.clear()
-                    sendJson(exchange, 200, mapOf("ok" to true))
+            }
+        })
+
+        httpServer.createContext("/mock/logs", object : HttpHandler {
+            override fun handle(exchange: HttpExchange) {
+                if (exchange.requestMethod != "GET") {
+                    sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
+                    return
                 }
-                else -> sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
+                try {
+                    val logs = CallLogCollector.drainAll()
+                    sendJson(exchange, 200, logs)
+                } catch (e: Exception) {
+                    sendJson(exchange, 500, mapOf("error" to (e.message ?: "unknown")))
+                }
             }
-        }
+        })
 
-        httpServer.createContext("/mock/logs") { exchange ->
-            if (exchange.requestMethod != "GET") {
-                sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
-                return@createContext
+        httpServer.createContext("/discover", object : HttpHandler {
+            override fun handle(exchange: HttpExchange) {
+                if (exchange.requestMethod != "GET") {
+                    sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
+                    return
+                }
+                try {
+                    val result = RuntimeDiscovery.discover(instrumentation)
+                    sendJson(exchange, 200, result)
+                } catch (e: Exception) {
+                    sendJson(exchange, 500, mapOf("error" to (e.message ?: "unknown")))
+                }
             }
-            try {
-                val logs = CallLogCollector.drainAll()
-                sendJson(exchange, 200, logs)
-            } catch (e: Exception) {
-                sendJson(exchange, 500, mapOf("error" to (e.message ?: "unknown")))
-            }
-        }
+        })
 
-        httpServer.createContext("/discover") { exchange ->
-            if (exchange.requestMethod != "GET") {
-                sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
-                return@createContext
+        httpServer.createContext("/status", object : HttpHandler {
+            override fun handle(exchange: HttpExchange) {
+                sendJson(exchange, 200, AgentStatus(connected = true, version = "1.0.0", pid = ProcessHandle.current().pid()))
             }
-            try {
-                val result = RuntimeDiscovery.discover(instrumentation)
-                sendJson(exchange, 200, result)
-            } catch (e: Exception) {
-                sendJson(exchange, 500, mapOf("error" to (e.message ?: "unknown")))
-            }
-        }
-
-        httpServer.createContext("/status") { exchange ->
-            sendJson(exchange, 200, AgentStatus(connected = true, version = "1.0.0", pid = ProcessHandle.current().pid()))
-        }
+        })
 
         httpServer.executor = Executors.newFixedThreadPool(2)
         httpServer.start()
@@ -103,14 +114,10 @@ object AgentHttpServer {
         instrumentationRef = null
     }
 
-    /** Force retransform DynamicAdvisedInterceptor (may be loaded after premain). */
-    private fun retransformCglibInterceptor(instrumentation: java.lang.instrument.Instrumentation) {
-        val target = "org.springframework.aop.framework.CglibAopProxy\$DynamicAdvisedInterceptor"
-        for (clazz in instrumentation.allLoadedClasses) {
-            if (clazz.name == target) {
-                try {
-                    instrumentation.retransformClasses(clazz)
-                } catch (_: Throwable) {}
+    private fun retransformClass(instrumentation: java.lang.instrument.Instrumentation, className: String) {
+        for (clazz in (instrumentation.allLoadedClasses ?: emptyArray())) {
+            if (clazz.name == className) {
+                try { instrumentation.retransformClasses(clazz) } catch (_: Throwable) {}
                 break
             }
         }

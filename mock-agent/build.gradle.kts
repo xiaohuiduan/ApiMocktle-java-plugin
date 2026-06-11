@@ -63,3 +63,37 @@ tasks.shadowJar {
 
 // 使 build 任务依赖 shadowJar
 tasks.build { dependsOn(tasks.shadowJar) }
+
+// ==================== Integration Tests ====================
+
+val mockTestAppJar = findProperty("mockTestAppJar") as String? ?: ""
+val intTest by sourceSets.creating {
+    compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+}
+
+dependencies {
+    "intTestImplementation"(kotlin("stdlib"))
+    "intTestImplementation"("junit:junit:4.13.2")
+    "intTestImplementation"("com.fasterxml.jackson.core:jackson-databind:2.12.2")
+    "intTestImplementation"("com.fasterxml.jackson.core:jackson-core:2.12.2")
+    "intTestImplementation"("com.fasterxml.jackson.core:jackson-annotations:2.12.2")
+}
+
+tasks.register<Test>("intTest") {
+    description = "Run integration tests with mock-test-app + mock-agent"
+    group = "verification"
+    testClassesDirs = intTest.output.classesDirs
+    classpath = intTest.runtimeClasspath
+    useJUnit()
+
+    // Pass system properties to the test
+    systemProperty("mock.agent.jar", tasks.shadowJar.get().archiveFile.get().asFile.absolutePath)
+    systemProperty("mock.test.app.jar", mockTestAppJar)
+
+    // Only run if mockTestAppJar is provided
+    onlyIf { mockTestAppJar.isNotEmpty() }
+
+    dependsOn(tasks.shadowJar)
+    shouldRunAfter(tasks.test)
+}

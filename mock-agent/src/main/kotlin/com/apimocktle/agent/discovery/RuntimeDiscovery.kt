@@ -56,17 +56,14 @@ object RuntimeDiscovery {
 
     /**
      * 检测是否为 MyBatis Mapper 接口
-     * 条件：接口被 MapperProxy 代理，或有 @Mapper 注解
+     * 条件：接口上有 @Mapper 注解
+     *
+     * 注意：不使用包名模式匹配（mapper/dao/repository），避免误报
+     * （如 Spring 的 PersistenceExceptionTranslator 包名含 "dao"）
      */
     private fun isMyBatisMapper(clazz: Class<*>): Boolean {
         if (!clazz.isInterface) return false
-        // 检查 @Mapper 注解
-        if (clazz.annotations.any { it.annotationClass.simpleName == "Mapper" }) return true
-        // 检查是否在 MyBatis 的 SqlSession 管理下（通过接口名模式推断）
-        // 常见模式：包名含 mapper/dao/repository，且是接口
-        val pkg = clazz.packageName.lowercase()
-        return (pkg.contains("mapper") || pkg.contains("dao") || pkg.contains("repository"))
-                && clazz.methods.isNotEmpty()
+        return clazz.annotations.any { it.annotationClass.simpleName == "Mapper" }
     }
 
     /**

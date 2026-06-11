@@ -3,18 +3,14 @@ package com.apimocktle.agent
 /**
  * Mock Agent entry point.
  *
- * Intercepts Spring AOP CGLIB proxy entry point:
- *   DynamicAdvisedInterceptor.intercept(Object, Method, Object[], MethodProxy)
+ * Intercepts Spring AOP proxy entry points:
+ *   1. CGLIB:  DynamicAdvisedInterceptor.intercept()  → GenericAdvice
+ *   2. JDK:    JdkDynamicAopProxy.invoke()            → JdkProxyAdvice
+ *   3. Mapper: MapperProxy.invoke()                    → MapperProxyAdvice
  *
- * This covers ALL Spring CGLIB proxied beans (Service, Component, etc.).
- *
- * Feign/MyBatis calls are NOT intercepted at their own proxy level because:
- * - Feign uses ReflectiveFeign$FeignInvocationHandler (internal proxy, not Spring AOP)
- * - MyBatis uses MapperProxy (internal proxy)
- * - Both use classloaders incompatible with ByteBuddy Advice inline
- *
- * Instead, mock the Service method (e.g. OrderService.createOrder) directly —
- * this skips all internal Feign/Mapper calls.
+ * Agent classes (ReflectiveAgentBridge, MockRule, etc.) live on the system classloader.
+ * Advice classes use Class.forName(..., ClassLoader.getSystemClassLoader()) to access them,
+ * avoiding classloader visibility issues with bootstrap classloader / JDK modules.
  */
 class MockAgentMain {
 
@@ -34,7 +30,14 @@ class MockAgentMain {
         private fun start(args: String?, instrumentation: java.lang.instrument.Instrumentation) {
             val port = parsePort(args)
             try {
-                // Install GenericAdvice on Spring's DynamicAdvisedInterceptor
+                // Install advice on all three interception points:
+                // 1. CGLIB:  DynamicAdvisedInterceptor.intercept()       → GenericAdvice
+                // 2. Feign:  ReflectiveFeign$FeignInvocationHandler      → JdkProxyAdvice
+                // 3. Mapper: MapperProxy.invoke()                         → MapperProxyAdvice
+                //
+                // JdkProxyAdvice and MapperProxyAdvice use pure reflection (Class.forName +
+                // Thread.currentThread().getContextClassLoader()) to access Agent classes,
+                // avoiding classloader visibility issues with Spring Boot's LaunchedClassLoader.
                 com.apimocktle.agent.interceptor.CustomInterceptor.ensureGlobalInstalled(instrumentation)
 
                 AgentHttpServer.start(port, instrumentation)

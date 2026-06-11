@@ -71,12 +71,57 @@ public class GenericAdvice {
         }
     }
 
+    /**
+     * Decode JSON to target type using Jackson.
+     * Tries the given classloader first, falls back to system classloader if Jackson not found.
+     * This handles the case where the target class is on Spring Boot's LaunchedClassLoader
+     * but Jackson is on the system classloader.
+     */
     public static Object decodeWithJackson(String json, Type returnType, ClassLoader cl) throws Exception {
-        Class<?> mc = Class.forName("com.fasterxml.jackson.databind.ObjectMapper", true, cl);
+        // Find a classloader that can see Jackson
+        ClassLoader jacksonCl = findJacksonClassLoader(cl);
+
+        Class<?> mc = Class.forName("com.fasterxml.jackson.databind.ObjectMapper", true, jacksonCl);
         Object mapper = mc.getDeclaredConstructor().newInstance();
+
+        // Register JavaTimeModule if available (Spring Boot apps typically have it)
+        try {
+            Class<?> jtmClass = Class.forName(
+                "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule", true, jacksonCl);
+            Object module = jtmClass.getDeclaredConstructor().newInstance();
+            mc.getMethod("registerModule",
+                Class.forName("com.fasterxml.jackson.databind.Module", true, jacksonCl))
+                .invoke(mapper, module);
+        } catch (ClassNotFoundException ignored) {
+            // jackson-datatype-jsr310 not on classpath, skip
+        }
+
         Object tf = mc.getMethod("getTypeFactory").invoke(mapper);
         Object jt = tf.getClass().getMethod("constructType", Type.class).invoke(tf, returnType);
         return mc.getMethod("readValue", String.class,
-            Class.forName("com.fasterxml.jackson.databind.JavaType", true, cl)).invoke(mapper, json, jt);
+            Class.forName("com.fasterxml.jackson.databind.JavaType", true, jacksonCl)).invoke(mapper, json, jt);
+    }
+
+    /**
+     * Find a classloader that can load Jackson ObjectMapper.
+     * Walks up the parent chain from the given classloader, then tries system CL.
+     */
+    private static ClassLoader findJacksonClassLoader(ClassLoader cl) {
+        // Try the given classloader and its parents
+        ClassLoader current = cl;
+        while (current != null) {
+            try {
+                Class.forName("com.fasterxml.jackson.databind.ObjectMapper", true, current);
+                return current;
+            } catch (ClassNotFoundException ignored) {}
+            current = current.getParent();
+        }
+        // Try system classloader
+        try {
+            Class.forName("com.fasterxml.jackson.databind.ObjectMapper", true, ClassLoader.getSystemClassLoader());
+            return ClassLoader.getSystemClassLoader();
+        } catch (ClassNotFoundException ignored) {}
+        // Fallback to original
+        return cl;
     }
 }

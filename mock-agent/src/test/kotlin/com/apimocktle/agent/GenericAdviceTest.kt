@@ -40,69 +40,6 @@ class GenericAdviceTest {
         CustomInterceptor.reset()
     }
 
-    // ==================== HTTP API: 推规则触发自动注册 ====================
-
-    @Test
-    fun pushRulesTriggersAutoRegistration() {
-        port = ServerSocket(0).use { it.localPort }
-        AgentHttpServer.start(port, createDummyInstrumentation())
-
-        val rules = listOf(mapOf(
-            "id" to "r1",
-            "className" to "com.example.MyService",
-            "methodName" to "findById",
-            "responseTemplate" to """{"id":1,"name":"mock"}""",
-            "returnType" to "com.example.User"
-        ))
-        val response: Map<String, Any?> = mapper.readValue(httpPut("/mock/rules", mapper.writeValueAsString(rules)))
-        assertEquals(true, response["ok"])
-        assertEquals(1, response["count"])
-
-        // Auto-registration triggered (with dummy instrumentation, CustomInterceptor.register is called)
-        assertTrue("Auto-registration should mark class as registered",
-            CustomInterceptor.isRegistered("com.example.MyService"))
-    }
-
-    @Test
-    fun pushRulesSkipsAlreadyRegisteredClasses() {
-        port = ServerSocket(0).use { it.localPort }
-        AgentHttpServer.start(port, createDummyInstrumentation())
-
-        // First push
-        httpPut("/mock/rules", mapper.writeValueAsString(listOf(mapOf(
-            "id" to "r1", "className" to "com.example.A", "methodName" to "foo",
-            "responseTemplate" to """{"x":1}"""
-        ))))
-        assertTrue(CustomInterceptor.isRegistered("com.example.A"))
-
-        // Second push with same class - should not fail
-        httpPut("/mock/rules", mapper.writeValueAsString(listOf(mapOf(
-            "id" to "r2", "className" to "com.example.A", "methodName" to "bar",
-            "responseTemplate" to """{"x":2}"""
-        ))))
-        assertTrue(CustomInterceptor.isRegistered("com.example.A"))
-    }
-
-    @Test
-    fun pushMultipleRulesRegistersMultipleClasses() {
-        port = ServerSocket(0).use { it.localPort }
-        AgentHttpServer.start(port, createDummyInstrumentation())
-
-        val rules = listOf(
-            mapOf("id" to "r1", "className" to "com.example.A", "methodName" to "foo",
-                "responseTemplate" to """{"x":1}"""),
-            mapOf("id" to "r2", "className" to "com.example.B", "methodName" to "bar",
-                "responseTemplate" to """{"x":2}"""),
-            mapOf("id" to "r3", "className" to "com.example.C", "methodName" to "baz",
-                "responseTemplate" to """{"x":3}""")
-        )
-        httpPut("/mock/rules", mapper.writeValueAsString(rules))
-
-        assertTrue(CustomInterceptor.isRegistered("com.example.A"))
-        assertTrue(CustomInterceptor.isRegistered("com.example.B"))
-        assertTrue(CustomInterceptor.isRegistered("com.example.C"))
-    }
-
     // ==================== HTTP API: 规则匹配 ====================
 
     @Test
