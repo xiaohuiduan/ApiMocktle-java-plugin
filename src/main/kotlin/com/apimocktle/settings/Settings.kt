@@ -15,7 +15,6 @@ data class Settings(
     override var feignEnable: Boolean = false,
     override var jaxrsEnable: Boolean = true,
     override var actuatorEnable: Boolean = false,
-    override var grpcEnable: Boolean = true,
     override var extensionConfigs: String = defaultExtensionCodes(),
     override var queryExpanded: Boolean = true,
     override var formExpanded: Boolean = true,
@@ -37,13 +36,10 @@ data class Settings(
     override var builtInConfig: String? = null,
     override var remoteConfig: Array<String> = emptyArray(),
     override var autoScanEnabled: Boolean = true,
-    override var grpcArtifactConfigs: Array<String> = emptyArray(),
-    override var grpcAdditionalJars: Array<String> = emptyArray(),
-    override var grpcCallEnabled: Boolean = false,
-    override var grpcRepositories: Array<String> = emptyArray(),
     override var concurrentScanEnabled: Boolean = false,
     override var projectEnvironments: String = "",
-    override var globalEnvironments: String = ""
+    override var globalEnvironments: String = "",
+    override var autoInjectAgent: Boolean = true
 ) : ProjectSettingsSupport, ApplicationSettingsSupport {
 
     companion object {
@@ -61,7 +57,6 @@ data class Settings(
         if (feignEnable != other.feignEnable) return false
         if (jaxrsEnable != other.jaxrsEnable) return false
         if (actuatorEnable != other.actuatorEnable) return false
-        if (grpcEnable != other.grpcEnable) return false
         if (queryExpanded != other.queryExpanded) return false
         if (formExpanded != other.formExpanded) return false
         if (pathMulti != other.pathMulti) return false
@@ -83,13 +78,10 @@ data class Settings(
         if (builtInConfig != other.builtInConfig) return false
         if (!remoteConfig.contentEquals(other.remoteConfig)) return false
         if (autoScanEnabled != other.autoScanEnabled) return false
-        if (!grpcArtifactConfigs.contentEquals(other.grpcArtifactConfigs)) return false
-        if (!grpcAdditionalJars.contentEquals(other.grpcAdditionalJars)) return false
-        if (grpcCallEnabled != other.grpcCallEnabled) return false
-        if (!grpcRepositories.contentEquals(other.grpcRepositories)) return false
         if (concurrentScanEnabled != other.concurrentScanEnabled) return false
         if (projectEnvironments != other.projectEnvironments) return false
         if (globalEnvironments != other.globalEnvironments) return false
+        if (autoInjectAgent != other.autoInjectAgent) return false
 
         return true
     }
@@ -98,7 +90,6 @@ data class Settings(
         var result = feignEnable.hashCode()
         result = 31 * result + jaxrsEnable.hashCode()
         result = 31 * result + actuatorEnable.hashCode()
-        result = 31 * result + grpcEnable.hashCode()
         result = 31 * result + queryExpanded.hashCode()
         result = 31 * result + formExpanded.hashCode()
         result = 31 * result + pathMulti.hashCode()
@@ -120,13 +111,10 @@ data class Settings(
         result = 31 * result + (builtInConfig?.hashCode() ?: 0)
         result = 31 * result + remoteConfig.contentHashCode()
         result = 31 * result + autoScanEnabled.hashCode()
-        result = 31 * result + grpcArtifactConfigs.contentHashCode()
-        result = 31 * result + grpcAdditionalJars.contentHashCode()
-        result = 31 * result + grpcCallEnabled.hashCode()
-        result = 31 * result + grpcRepositories.contentHashCode()
         result = 31 * result + concurrentScanEnabled.hashCode()
         result = 31 * result + projectEnvironments.hashCode()
         result = 31 * result + globalEnvironments.hashCode()
+        result = 31 * result + autoInjectAgent.hashCode()
         return result
     }
 }

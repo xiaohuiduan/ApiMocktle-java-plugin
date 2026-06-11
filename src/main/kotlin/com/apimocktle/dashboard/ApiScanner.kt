@@ -24,8 +24,6 @@ import com.apimocktle.exporter.ClassExporter
 import com.apimocktle.exporter.core.CompositeApiClassRecognizer
 import com.apimocktle.exporter.feign.FeignClassExporter
 import com.apimocktle.exporter.feign.FeignClientRecognizer
-import com.apimocktle.exporter.grpc.GrpcClassExporter
-import com.apimocktle.exporter.grpc.GrpcServiceRecognizer
 import com.apimocktle.exporter.jaxrs.JaxRsClassExporter
 import com.apimocktle.exporter.jaxrs.JaxRsResourceRecognizer
 import com.apimocktle.exporter.model.ApiEndpoint
@@ -473,13 +471,6 @@ class ApiScanner(private val project: Project) {
                 availabilityService.hasAnyClassInProject(SpringActuatorConstants.ENDPOINT_ANNOTATIONS)
             ) {
                 add(ActuatorEndpointExporter(project))
-            }
-
-            if (settings.grpcEnable &&
-                (availabilityService.hasAnyClassInProject(GrpcServiceRecognizer.GRPC_SERVICE_ANNOTATIONS) ||
-                        availabilityService.hasClassInProject(GrpcServiceRecognizer.BINDABLE_SERVICE_FQN))
-            ) {
-                add(GrpcClassExporter(project))
             }
         }
     }

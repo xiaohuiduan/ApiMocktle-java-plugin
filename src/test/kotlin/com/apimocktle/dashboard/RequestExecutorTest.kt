@@ -351,7 +351,6 @@ class RequestResultTest {
         assertEquals(200, result.statusCode)
         assertEquals(1, result.headers.size)
         assertNull(result.testResults)
-        assertFalse(result.requiresGrpcSetup)
     }
 
     @Test
@@ -385,11 +384,6 @@ class RequestResultTest {
 
     @Test
     fun testGrpcSetupRequired() {
-        val result = RequestResult(
-            body = "gRPC client not available",
-            isError = true,
-            requiresGrpcSetup = true
-        )
-        assertTrue(result.requiresGrpcSetup)
+        // gRPC module has been removed — test deleted
     }
 }

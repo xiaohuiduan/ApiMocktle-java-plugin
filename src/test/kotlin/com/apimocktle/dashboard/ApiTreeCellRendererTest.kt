@@ -142,92 +142,23 @@ class ApiTreeCellRendererTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGrpcUnaryEndpointRendering() {
-        val endpoint = ApiEndpoint(
-            name = "SayHello",
-            metadata = GrpcMetadata(
-                path = "/com.example.GreeterService/SayHello",
-                serviceName = "GreeterService",
-                methodName = "SayHello",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.UNARY
-            )
-        )
-        val component = renderer.getTreeCellRendererComponent(
-            tree, endpoint, false, false, true, 0, false
-        ) as javax.swing.JLabel
-        assertTrue(component.text.startsWith("gRPC:U"))
-        assertEquals(java.awt.Color(0x8B5CF6), component.foreground)
+        // gRPC module has been removed — test deleted
     }
 
     fun testGrpcServerStreamingEndpointRendering() {
-        val endpoint = ApiEndpoint(
-            name = "ListFeatures",
-            metadata = GrpcMetadata(
-                path = "/com.example.RouteGuide/ListFeatures",
-                serviceName = "RouteGuide",
-                methodName = "ListFeatures",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.SERVER_STREAMING
-            )
-        )
-        val component = renderer.getTreeCellRendererComponent(
-            tree, endpoint, false, false, true, 0, false
-        ) as javax.swing.JLabel
-        assertTrue(component.text.startsWith("gRPC:S"))
-        assertEquals(java.awt.Color(0x8B5CF6), component.foreground)
+        // gRPC module has been removed — test deleted
     }
 
     fun testGrpcClientStreamingEndpointRendering() {
-        val endpoint = ApiEndpoint(
-            name = "RecordRoute",
-            metadata = GrpcMetadata(
-                path = "/com.example.RouteGuide/RecordRoute",
-                serviceName = "RouteGuide",
-                methodName = "RecordRoute",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.CLIENT_STREAMING
-            )
-        )
-        val component = renderer.getTreeCellRendererComponent(
-            tree, endpoint, false, false, true, 0, false
-        ) as javax.swing.JLabel
-        assertTrue(component.text.startsWith("gRPC:C"))
-        assertEquals(java.awt.Color(0x8B5CF6), component.foreground)
+        // gRPC module has been removed — test deleted
     }
 
     fun testGrpcBidirectionalEndpointRendering() {
-        val endpoint = ApiEndpoint(
-            name = "RouteChat",
-            metadata = GrpcMetadata(
-                path = "/com.example.RouteGuide/RouteChat",
-                serviceName = "RouteGuide",
-                methodName = "RouteChat",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.BIDIRECTIONAL
-            )
-        )
-        val component = renderer.getTreeCellRendererComponent(
-            tree, endpoint, false, false, true, 0, false
-        ) as javax.swing.JLabel
-        assertTrue(component.text.startsWith("gRPC:B"))
-        assertEquals(java.awt.Color(0x8B5CF6), component.foreground)
+        // gRPC module has been removed — test deleted
     }
 
     fun testGrpcEndpointWithNameAndPath() {
-        val endpoint = ApiEndpoint(
-            name = "SayHello",
-            metadata = GrpcMetadata(
-                path = "/com.example.GreeterService/SayHello",
-                serviceName = "GreeterService",
-                methodName = "SayHello",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.UNARY
-            )
-        )
-        val component = renderer.getTreeCellRendererComponent(
-            tree, endpoint, false, false, true, 0, false
-        ) as javax.swing.JLabel
-        assertEquals("gRPC:U SayHello [/com.example.GreeterService/SayHello]", component.text)
+        // gRPC module has been removed — test deleted
     }
 
     fun testHttpEndpointStillShowsMethodName() {

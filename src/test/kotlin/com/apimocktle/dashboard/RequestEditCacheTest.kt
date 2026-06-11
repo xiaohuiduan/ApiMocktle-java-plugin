@@ -39,25 +39,12 @@ class RequestEditCacheTest {
 
     @Test
     fun testGrpcRequestEditCacheDefaults() {
-        val cache = GrpcRequestEditCache()
-        assertNull("Key should default to null", cache.key)
-        assertNull("Service name should default to null", cache.serviceName)
-        assertNull("Method name should default to null", cache.methodName)
+        // gRPC module has been removed — test deleted
     }
 
     @Test
     fun testGrpcRequestEditCacheWithValues() {
-        val cache = GrpcRequestEditCache(
-            key = "grpc-key",
-            serviceName = "UserService",
-            methodName = "GetUser",
-            host = "localhost:9090",
-            body = """{"id": "1"}"""
-        )
-        assertEquals("grpc-key", cache.key)
-        assertEquals("UserService", cache.serviceName)
-        assertEquals("GetUser", cache.methodName)
-        assertEquals("localhost:9090", cache.host)
+        // gRPC module has been removed — test deleted
     }
 
     @Test

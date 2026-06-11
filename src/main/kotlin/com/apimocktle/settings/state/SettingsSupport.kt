@@ -20,7 +20,6 @@ interface ApplicationSettingsSupport {
     var feignEnable: Boolean
     var jaxrsEnable: Boolean
     var actuatorEnable: Boolean
-    var grpcEnable: Boolean
     var extensionConfigs: String
     var queryExpanded: Boolean
     var formExpanded: Boolean
@@ -44,23 +43,16 @@ interface ApplicationSettingsSupport {
     var remoteConfig: Array<String>
     /** 文件变更时自动扫描API */
     var autoScanEnabled: Boolean
-    /** gRPC 构件配置，格式：groupId:artifactId[:version][:enabled] */
-    var grpcArtifactConfigs: Array<String>
-    /** gRPC 运行时额外 JAR 路径 */
-    var grpcAdditionalJars: Array<String>
-    /** 启用 gRPC 调用功能 */
-    var grpcCallEnabled: Boolean
-    /** gRPC 运行时解析的仓库路径，格式：type:enabled:path */
-    var grpcRepositories: Array<String>
     /** 启用并发 API 扫描 */
     var concurrentScanEnabled: Boolean
     var globalEnvironments: String
+    /** 自动注入 Mock Agent 到 Application 运行配置 */
+    var autoInjectAgent: Boolean
 
     fun copyTo(newSetting: ApplicationSettingsSupport) {
         newSetting.feignEnable = this.feignEnable
         newSetting.jaxrsEnable = this.jaxrsEnable
         newSetting.actuatorEnable = this.actuatorEnable
-        newSetting.grpcEnable = this.grpcEnable
         newSetting.extensionConfigs = this.extensionConfigs
         newSetting.queryExpanded = this.queryExpanded
         newSetting.formExpanded = this.formExpanded
@@ -82,11 +74,8 @@ interface ApplicationSettingsSupport {
         newSetting.httpClient = this.httpClient
         newSetting.remoteConfig = this.remoteConfig
         newSetting.autoScanEnabled = this.autoScanEnabled
-        newSetting.grpcArtifactConfigs = this.grpcArtifactConfigs
-        newSetting.grpcAdditionalJars = this.grpcAdditionalJars
-        newSetting.grpcCallEnabled = this.grpcCallEnabled
-        newSetting.grpcRepositories = this.grpcRepositories
         newSetting.concurrentScanEnabled = this.concurrentScanEnabled
         newSetting.globalEnvironments = this.globalEnvironments
+        newSetting.autoInjectAgent = this.autoInjectAgent
     }
 }

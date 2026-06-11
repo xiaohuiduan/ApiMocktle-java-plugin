@@ -19,7 +19,7 @@ class RepositoryService(private val project: Project) {
 
     fun getRepositories(): List<RepositoryConfig> {
         val settings = settingBinder.read()
-        val userRepos = settings.grpcRepositories
+        val userRepos = settings.remoteConfig
             .mapNotNull { RepositoryConfig.parse(it) }
             .filter { it.enabled }
 
@@ -30,7 +30,7 @@ class RepositoryService(private val project: Project) {
 
     fun getAllRepositories(): List<RepositoryConfig> {
         val settings = settingBinder.read()
-        val userRepos = settings.grpcRepositories
+        val userRepos = settings.remoteConfig
             .mapNotNull { RepositoryConfig.parse(it) }
 
         return userRepos.ifEmpty {

@@ -14,7 +14,6 @@ class ApplicationSettingsStateTest {
         assertFalse(s.feignEnable)
         assertTrue(s.jaxrsEnable)
         assertFalse(s.actuatorEnable)
-        assertTrue(s.grpcEnable)
         assertTrue(s.queryExpanded)
         assertTrue(s.formExpanded)
         assertEquals("ALL", s.pathMulti)

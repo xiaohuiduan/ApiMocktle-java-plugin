@@ -42,27 +42,6 @@ data class HttpRequestEditCache(
 ) : RequestEditCache
 
 /**
- * Cache for edited gRPC request data in the dashboard.
- *
- * @param key Unique identifier for this cached request
- * @param name The request name
- * @param host The target host (host:port format)
- * @param serviceName The gRPC service name
- * @param methodName The gRPC method name
- * @param packageName The gRPC package name
- * @param body The request message body (JSON)
- */
-data class GrpcRequestEditCache(
-    override val key: String? = null,
-    val name: String? = null,
-    val host: String? = null,
-    val serviceName: String? = null,
-    val methodName: String? = null,
-    val packageName: String? = null,
-    val body: String? = null
-) : RequestEditCache
-
-/**
  * A key-value pair for editable request data.
  *
  * Used for headers, parameters, and other configurable values.

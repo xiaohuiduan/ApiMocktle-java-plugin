@@ -36,16 +36,13 @@ data class ExportContext(
 
 enum class ExportFormat(
     val supportsHttp: Boolean = true,
-    val supportsGrpc: Boolean,
     val displayName: String
 ) {
-    YAPI(supportsGrpc = false, displayName = "YAPI");
+    YAPI(displayName = "YAPI");
 
     fun isAvailableFor(endpoints: List<ApiEndpoint>): Boolean {
         if (endpoints.isEmpty()) return true
-        val hasGrpc = endpoints.any { it.isGrpc }
-        val hasHttp = endpoints.any { it.isHttp }
-        return (hasGrpc && supportsGrpc) || (hasHttp && supportsHttp)
+        return endpoints.any { it.isHttp }
     }
 }
 

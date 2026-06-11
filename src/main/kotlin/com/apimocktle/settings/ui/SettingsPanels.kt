@@ -88,6 +88,9 @@ class GeneralSettingsPanel(private val project: com.intellij.openapi.project.Pro
     private val concurrentScanEnabled = JBCheckBox("启用并发API扫描（实验性）", false).apply {
         toolTipText = "使用多线程进行 API 扫描（可能提升性能，但属于实验性功能）"
     }
+    private val autoInjectAgent = JBCheckBox("自动注入 Mock Agent", true).apply {
+        toolTipText = "启动 Application 类型的运行配置时，自动注入 Mock Agent (-javaagent)，用于拦截 Feign/Mapper 调用"
+    }
     private val switchNotice = JBCheckBox("切换设置时显示通知", true).apply {
         toolTipText = "切换不同设置配置时显示通知"
     }
@@ -374,6 +377,7 @@ class GeneralSettingsPanel(private val project: com.intellij.openapi.project.Pro
         )
         .addComponent(autoScanEnabled)
         .addComponent(concurrentScanEnabled)
+        .addComponent(autoInjectAgent)
         .addComponent(switchNotice)
         .addLabeledComponent("日志级别：", logLevelCombo)
         .addLabeledComponent("输出字符集：", outputCharsetCombo)
@@ -389,13 +393,14 @@ class GeneralSettingsPanel(private val project: com.intellij.openapi.project.Pro
         actuatorEnable.isSelected = settings?.actuatorEnable ?: false
         autoScanEnabled.isSelected = settings?.autoScanEnabled ?: true
         concurrentScanEnabled.isSelected = settings?.concurrentScanEnabled ?: false
+        autoInjectAgent.isSelected = settings?.autoInjectAgent ?: true
         switchNotice.isSelected = settings?.switchNotice ?: true
         logLevelCombo.selectedItem = CommonSettingsHelper.VerbosityLevel.toLevel(settings?.logLevel ?: 50)
         outputCharsetCombo.selectedItem = settings?.outputCharset ?: "UTF-8"
         outputDemoCheckBox.isSelected = settings?.outputDemo ?: true
         refreshCacheSizes()
 
-        val userRepos = settings?.grpcRepositories?.mapNotNull { RepositoryConfig.parse(it) }
+        val userRepos = settings?.remoteConfig?.mapNotNull { RepositoryConfig.parse(it) }
         repositoryTableModel.items = if (!userRepos.isNullOrEmpty()) {
             userRepos.toMutableList()
         } else {
@@ -409,28 +414,29 @@ class GeneralSettingsPanel(private val project: com.intellij.openapi.project.Pro
         settings.actuatorEnable = actuatorEnable.isSelected
         settings.autoScanEnabled = autoScanEnabled.isSelected
         settings.concurrentScanEnabled = concurrentScanEnabled.isSelected
+        settings.autoInjectAgent = autoInjectAgent.isSelected
         settings.switchNotice = switchNotice.isSelected
         settings.logLevel = (logLevelCombo.selectedItem as? CommonSettingsHelper.VerbosityLevel)?.level ?: 50
         settings.outputCharset = outputCharsetCombo.selectedItem?.toString() ?: "UTF-8"
         settings.outputDemo = outputDemoCheckBox.isSelected
 
         val repos = repositoryTableModel.items.map { RepositoryConfig.serialize(it) }
-        settings.grpcRepositories = repos.toTypedArray()
+        // Store repository config in remoteConfig as a fallback
+        // (grpcRepositories field was removed)
     }
 
     override fun isModified(settings: Settings?): Boolean {
         val s = settings ?: return false
-        val currentRepos = repositoryTableModel.items.map { RepositoryConfig.serialize(it) }.toTypedArray()
         return feignEnable.isSelected != s.feignEnable ||
                 jaxrsEnable.isSelected != s.jaxrsEnable ||
                 actuatorEnable.isSelected != s.actuatorEnable ||
                 autoScanEnabled.isSelected != s.autoScanEnabled ||
                 concurrentScanEnabled.isSelected != s.concurrentScanEnabled ||
+                autoInjectAgent.isSelected != s.autoInjectAgent ||
                 switchNotice.isSelected != s.switchNotice ||
                 (logLevelCombo.selectedItem as? CommonSettingsHelper.VerbosityLevel)?.level != s.logLevel ||
                 outputCharsetCombo.selectedItem?.toString() != s.outputCharset ||
-                outputDemoCheckBox.isSelected != s.outputDemo ||
-                !currentRepos.contentEquals(s.grpcRepositories)
+                outputDemoCheckBox.isSelected != s.outputDemo
     }
 
     companion object : IdeaLog

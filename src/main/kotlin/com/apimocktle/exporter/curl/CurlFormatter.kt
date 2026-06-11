@@ -1,7 +1,6 @@
 package com.apimocktle.exporter.curl
 
 import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.model.GrpcMetadata
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.ParameterBinding
@@ -19,16 +18,16 @@ import com.apimocktle.psi.model.ObjectModelJsonConverter
 object CurlFormatter {
 
     /**
-     * Formats a single API endpoint as a cURL command (for HTTP) or grpcurl command (for gRPC).
-     * 
+     * Formats a single API endpoint as a cURL command.
+     *
      * @param endpoint The API endpoint to format
      * @param host Optional host URL to prepend to the path
-     * @return A cURL or grpcurl command string
+     * @return A cURL command string
      */
     fun format(endpoint: ApiEndpoint, host: String = ""): String {
         return when (val meta = endpoint.metadata) {
             is HttpMetadata -> formatHttp(endpoint, meta, host)
-            is GrpcMetadata -> formatGrpc(endpoint, meta, host)
+            else -> ""
         }
     }
 
@@ -51,26 +50,9 @@ object CurlFormatter {
     }
 
     /**
-     * Formats a gRPC endpoint as a grpcurl command.
-     *
-     * Generates: grpcurl -plaintext -d '{json}' 'host:port' 'package.Service/Method'
-     */
-    private fun formatGrpc(endpoint: ApiEndpoint, meta: GrpcMetadata, host: String): String {
-        val target = if (host.isNotBlank()) host.removePrefix("http://").removePrefix("https://") else "localhost:50051"
-        val servicePath = "${meta.packageName}.${meta.serviceName}/${meta.path.substringAfterLast('/')}"
-        val parts = mutableListOf("grpcurl", "-plaintext")
-        meta.body?.let { body ->
-            parts.add("-d '${escapeShell(ObjectModelJsonConverter.toJson(body))}'")
-        }
-        parts.add("'${escapeShell(target)}'")
-        parts.add("'${escapeShell(servicePath)}'")
-        return parts.joinToString(" ")
-    }
-
-    /**
      * Formats multiple API endpoints as a shell script with markdown-style sections.
      * Each endpoint is separated by a divider and includes its name as a comment.
-     * 
+     *
      * @param endpoints The list of API endpoints to format
      * @param host Optional host URL to prepend to paths
      * @return A shell script containing cURL commands for all endpoints
@@ -79,7 +61,7 @@ object CurlFormatter {
         return endpoints.joinToString("\n\n---\n\n") { endpoint ->
             val apiName = when (val meta = endpoint.metadata) {
                 is HttpMetadata -> endpoint.name ?: "${meta.method.name}:${meta.path}"
-                is GrpcMetadata -> endpoint.name ?: "gRPC:${meta.serviceName}/${meta.path.substringAfterLast('/')}"
+                else -> endpoint.name ?: endpoint.metadata.protocol
             }
             buildString {
                 append("## $apiName\n")

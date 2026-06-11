@@ -2,7 +2,6 @@ package com.apimocktle.exporter.lifecycle
 
 import com.apimocktle.exporter.ClassExporter
 import com.apimocktle.exporter.feign.FeignClassExporter
-import com.apimocktle.exporter.grpc.GrpcClassExporter
 import com.apimocktle.exporter.jaxrs.JaxRsClassExporter
 import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.exporter.springmvc.ActuatorEndpointExporter
@@ -17,7 +16,6 @@ class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     private lateinit var springExporter: SpringMvcClassExporter
     private lateinit var jaxRsExporter: JaxRsClassExporter
     private lateinit var feignExporter: FeignClassExporter
-    private lateinit var grpcExporter: GrpcClassExporter
     private lateinit var actuatorExporter: ActuatorEndpointExporter
 
     override fun setUp() {
@@ -26,7 +24,6 @@ class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         springExporter = SpringMvcClassExporter(project)
         jaxRsExporter = JaxRsClassExporter(project)
         feignExporter = FeignClassExporter(project)
-        grpcExporter = GrpcClassExporter(project)
         actuatorExporter = ActuatorEndpointExporter(project)
     }
 
@@ -77,15 +74,6 @@ class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         loadFile("feign/Param.java")
         loadFile("spring/FeignClient.java")
         loadFile("api/feign/UserClient.java")
-
-        loadFile("grpc/BindableService.java")
-        loadFile("grpc/GrpcService.java")
-        loadFile("grpc/StreamObserver.java")
-        loadFile("grpc/EchoRequest.java")
-        loadFile("grpc/EchoResponse.java")
-        loadFile("grpc/EchoServiceGrpc.java")
-        loadFile("grpc/EchoServiceImpl.java")
-        loadFile("grpc/UserInfo.java")
 
         loadFile("spring/Endpoint.java")
         loadFile("spring/ReadOperation.java")
@@ -173,25 +161,14 @@ class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         }
     }
 
-    // ── gRPC lifecycle events ────────────────────────────────────
+    // ── gRPC lifecycle events (removed — gRPC module deleted) ────
 
-    fun testGrpcClassParseEvents() = runTest {
-        val psiClass = findClass("com.itangcent.grpc.service.EchoServiceImpl")
-        assertNotNull(psiClass)
-
-        val endpoints = grpcExporter.export(psiClass!!)
-        assertTrue("Should export endpoints", endpoints.isNotEmpty())
+    fun testGrpcClassParseEvents() {
+        // gRPC module has been removed — test deleted
     }
 
-    fun testGrpcExportAfterEvent() = runTest {
-        val psiClass = findClass("com.itangcent.grpc.service.EchoServiceImpl")
-        assertNotNull(psiClass)
-
-        val endpoints = grpcExporter.export(psiClass!!)
-        assertTrue("Should export endpoints", endpoints.isNotEmpty())
-        for (endpoint in endpoints) {
-            assertNotNull("Endpoint should have source method", endpoint.sourceMethod)
-        }
+    fun testGrpcExportAfterEvent() {
+        // gRPC module has been removed — test deleted
     }
 
     // ── Actuator lifecycle events ────────────────────────────────

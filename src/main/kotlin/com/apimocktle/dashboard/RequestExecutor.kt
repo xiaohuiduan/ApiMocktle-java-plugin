@@ -9,27 +9,19 @@ import com.apimocktle.config.DOUBLE_BRACE_PATTERN
 import com.apimocktle.config.DOLLAR_BRACE_PATTERN
 import com.apimocktle.dashboard.env.EnvironmentService
 import com.apimocktle.dashboard.script.*
-import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.model.GrpcMetadata
-import com.apimocktle.exporter.model.HttpMetadata
-import com.apimocktle.exporter.model.grpcMetadata
-import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.exporter.model.isGrpc
-import com.apimocktle.grpc.DynamicJarClient
 import com.apimocktle.http.*
-import com.apimocktle.logging.IdeaConsoleProvider
 import com.apimocktle.logging.IdeaLog
-import com.apimocktle.core.threading.readSync
+import com.apimocktle.logging.IdeaConsoleProvider
 import kotlinx.coroutines.CancellationException
 import kotlin.system.measureTimeMillis
 
 /**
- * Pure-logic executor for HTTP and gRPC requests.
+ * Pure-logic executor for HTTP requests.
  *
  * This class encapsulates the full request execution pipeline:
  * 1. Variable resolution (host, path, headers, body)
  * 2. Pre-request script execution (modifies request before sending)
- * 3. HTTP/gRPC request execution
+ * 3. HTTP request execution
  * 4. Post-response script execution (test assertions)
  *
  * It has **no UI dependencies** — the caller (typically [EndpointDetailsPanel])
@@ -58,7 +50,6 @@ import kotlin.system.measureTimeMillis
  * ```
  *
  * @see HttpRequestInput for the input data class
- * @see GrpcRequestInput for gRPC request input
  * @see RequestResult for the output data class
  */
 @Service(Service.Level.PROJECT)
@@ -363,55 +354,6 @@ class RequestExecutor(private val project: Project) : IdeaLog {
         )
     }
 
-    /**
-     * Executes a gRPC request.
-     *
-     * @param input The gRPC request input
-     * @return The request result
-     */
-    suspend fun executeGrpc(input: GrpcRequestInput): RequestResult {
-        val meta = input.grpcMetadata
-        LOG.info("gRPC request: endpoint=${input.endpointName}, path=${meta.path}")
-
-        val resolvedHost = resolveVariables(input.host)
-        val grpcClient = DynamicJarClient.getInstance(project)
-
-        if (!grpcClient.isAvailable()) {
-            LOG.warn("gRPC client not available for request to ${meta.path}")
-            return RequestResult(
-                body = "错误：gRPC客户端不可用",
-                isError = true,
-                requiresGrpcSetup = true
-            )
-        }
-
-        val body = input.body?.takeIf { it.isNotBlank() }?.let { txt ->
-            resolveVariables(txt)
-        }
-        LOG.info("gRPC request details: host=$resolvedHost, bodyLength=${body?.length ?: 0}")
-
-        return try {
-            val sm = input.sourceMethod?.let { method -> readSync { method } }
-            val grpcResult = if (sm != null) {
-                grpcClient.invoke(resolvedHost, meta.path, body, sm)
-            } else {
-                grpcClient.invoke(resolvedHost, meta.path, body)
-            }
-
-            LOG.info("gRPC response received: endpoint=${meta.path}, isError=${grpcResult.isError}, statusCode=${grpcResult.statusCode}, length=${grpcResult.body.length}")
-
-            RequestResult(
-                body = grpcResult.body,
-                isError = grpcResult.isError,
-                statusCode = grpcResult.statusCode,
-                headers = if (grpcResult.statusName != null) listOf("grpc-status" to grpcResult.statusName) else emptyList()
-            )
-        } catch (e: Exception) {
-            LOG.warn("gRPC request failed with exception: ${e.message}", e)
-            RequestResult(body = "错误：${e.message ?: e.javaClass.simpleName}", isError = true)
-        }
-    }
-
     companion object : IdeaLog {
         fun getInstance(project: Project): RequestExecutor = project.service()
     }
@@ -457,23 +399,6 @@ data class HttpRequestInput(
 )
 
 /**
- * Immutable input for a gRPC request execution.
- *
- * @property host The gRPC server host
- * @property grpcMetadata The gRPC method metadata
- * @property body The request body (JSON)
- * @property endpointName Display name of the endpoint
- * @property sourceMethod Optional PSI method for reflection-based invocation
- */
-data class GrpcRequestInput(
-    val host: String,
-    val grpcMetadata: GrpcMetadata,
-    val body: String? = null,
-    val endpointName: String = "",
-    val sourceMethod: com.intellij.psi.PsiMethod? = null
-)
-
-/**
  * Result of a request execution.
  *
  * This is a UI-independent representation of the response.
@@ -481,16 +406,14 @@ data class GrpcRequestInput(
  *
  * @property body The response body text
  * @property isError Whether the response indicates an error
- * @property statusCode The HTTP status code or gRPC status code
+ * @property statusCode The HTTP status code
  * @property headers The response headers as name-value pairs
  * @property testResults Optional test results from post-response script execution
- * @property requiresGrpcSetup True if gRPC client is not configured (UI should prompt setup)
  */
 data class RequestResult(
     val body: String,
     val isError: Boolean,
     val statusCode: Int? = null,
     val headers: List<Pair<String, String>> = emptyList(),
-    val testResults: List<TestResult>? = null,
-    val requiresGrpcSetup: Boolean = false
+    val testResults: List<TestResult>? = null
 )

@@ -27,6 +27,7 @@
         <projectService serviceImplementation="com.apimocktle.util.storage.SessionStorage"/>
         <projectService serviceImplementation="com.apimocktle.rule.engine.RuleEngine"/>
         <projectService serviceImplementation="com.apimocktle.http.HttpClientProvider"/>
+        <projectService serviceImplementation="com.apimocktle.agent.MockAgentManager"/>
         <projectService serviceImplementation="com.apimocktle.logging.IdeaConsoleProvider"/>
         <projectService serviceInterface="com.apimocktle.config.ConfigReader"
                         serviceImplementation="com.apimocktle.config.DefaultConfigReader"/>
@@ -40,9 +41,6 @@
 
         <projectService serviceInterface="com.apimocktle.util.markdown.MarkdownRender"
                         serviceImplementation="com.apimocktle.util.markdown.BundledMarkdownRender"/>
-        <projectService serviceImplementation="com.apimocktle.exporter.grpc.GrpcMethodResolver"/>
-        <projectService serviceImplementation="com.apimocktle.grpc.CompositeDescriptorResolver"/>
-
         <projectService serviceImplementation="com.apimocktle.exporter.EndpointBuilder"/>
         <projectService serviceImplementation="com.apimocktle.cache.VcsBranchChangeListener"/>
 
@@ -72,6 +70,7 @@
         <notificationGroup id="ApiMocktle Notifications" displayType="BALLOON"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.apimocktle.ide.linemarker.ApiMethodLineMarkerProvider"/>
         <searchEverywhereContributor implementation="com.apimocktle.ide.search.ApiSearchEverywhereContributorFactory"/>
+        <runConfigurationExtension implementation="com.apimocktle.agent.MockAgentRunConfigurationExtension"/>
     </extensions>
 
     <actions>

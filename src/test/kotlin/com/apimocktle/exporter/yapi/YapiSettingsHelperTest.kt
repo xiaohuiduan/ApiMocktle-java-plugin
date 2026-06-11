@@ -37,32 +37,17 @@ class YapiSettingsHelperTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     @org.junit.Test
-    fun `test resolveToken returns module token from settings when validator accepts it`() {
-        testSettingBinder.update {
-            yapiTokens = """
-                module-a=token-a
-                module-b=token-b
-            """.trimIndent()
-        }
-        val token = runBlocking {
-            helper.resolveToken("module-b") { it == "token-b" }
-        }
-        assertEquals("token-b", token)
+    fun `test resolveServerUrl returns default when not configured and not dumb`() {
+        testSettingBinder.save(Settings())
+        val serverUrl = runBlocking { helper.resolveServerUrl(dumb = false) }
+        // When not configured and not in dumb mode, returns the default URL
+        assertNotNull(serverUrl)
     }
 
     @org.junit.Test
-    fun `test resolveToken ignores comments and blank token entries`() {
-        testSettingBinder.update {
-            yapiTokens = """
-                # comment
-                module-a=token-a
-                invalid-line
-                module-b=
-            """.trimIndent()
-        }
-        val token = runBlocking {
-            helper.resolveToken("module-a") { it == "token-a" }
-        }
-        assertEquals("token-a", token)
+    fun `test resolvePersonalToken returns configured token`() {
+        testSettingBinder.update { yapiPersonalToken = "test-token-value" }
+        val token = runBlocking { helper.resolvePersonalToken() }
+        assertEquals("test-token-value", token)
     }
 }

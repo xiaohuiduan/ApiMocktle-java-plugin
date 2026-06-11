@@ -1,7 +1,6 @@
 package com.apimocktle.dashboard
 
 import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.model.GrpcMetadata
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import java.awt.Color
@@ -62,21 +61,19 @@ class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
     /**
      * Builds the display text for an API endpoint.
      * Format: "METHOD name [path]" or "METHOD path" if no name.
-     * For gRPC endpoints, shows "gRPC:U", "gRPC:S", "gRPC:C", "gRPC:B" based on streaming type.
-     * For HTTP endpoints, shows the HTTP method name.
-     * 
+     *
      * @param endpoint The API endpoint to format
      * @return Formatted display string
      */
     private fun buildApiText(endpoint: ApiEndpoint): String {
         val path = when (val meta = endpoint.metadata) {
             is HttpMetadata -> meta.path
-            is GrpcMetadata -> meta.path
+            else -> ""
         }
         return buildString {
             when (val meta = endpoint.metadata) {
                 is HttpMetadata -> append(meta.method.name)
-                is GrpcMetadata -> append("gRPC:${meta.streamingType.name.take(1)}")
+                else -> append(endpoint.metadata.protocol)
             }
             append(" ")
             append(endpoint.name ?: path)
@@ -87,8 +84,7 @@ class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
     }
 
     /**
-     * Returns the color for an API endpoint based on its protocol and method.
-     * gRPC endpoints use purple (#8B5CF6).
+     * Returns the color for an API endpoint based on its HTTP method.
      * HTTP endpoints use method-specific colors following common API documentation conventions:
      * - GET: Blue (#61affe)
      * - POST: Green (#49cc90)
@@ -103,7 +99,6 @@ class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
      */
     private fun getMethodColor(endpoint: ApiEndpoint): Color {
         return when (val meta = endpoint.metadata) {
-            is GrpcMetadata -> Color(0x8B5CF6)
             is HttpMetadata -> when (meta.method) {
                 HttpMethod.GET -> Color(0x61affe)
                 HttpMethod.POST -> Color(0x49cc90)
@@ -114,6 +109,7 @@ class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
                 HttpMethod.OPTIONS -> Color(0x0d5aa7)
                 HttpMethod.NO_METHOD -> Color(0x999999)
             }
+            else -> Color(0x999999)
         }
     }
 }

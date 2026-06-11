@@ -9,7 +9,6 @@ import com.apimocktle.core.threading.backgroundAsync
 import com.apimocktle.core.threading.swing
 import com.apimocktle.exporter.ApiExporterRegistry
 import com.apimocktle.exporter.ExportOrchestrator
-import com.apimocktle.exporter.grpc.GrpcServiceRecognizer
 import com.apimocktle.exporter.model.ExportFormat
 import com.apimocktle.exporter.model.ExportResult
 import com.apimocktle.exporter.model.OutputConfig
@@ -54,29 +53,7 @@ abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
             return
         }
 
-        // Check if format supports the selected elements
-        val selection = SelectedHelper.resolveSelection(e)
-        val hasGrpc = selection?.let { hasGrpcEndpoints(it) } ?: false
-
-        e.presentation.isEnabled = if (hasGrpc) {
-            exportFormat.supportsGrpc
-        } else {
-            exportFormat.supportsHttp
-        }
-    }
-
-    /**
-     * Quick check if the selection might contain gRPC endpoints.
-     * This is a heuristic check without full scanning.
-     */
-    private fun hasGrpcEndpoints(selection: SelectionScope): Boolean {
-        // Check if any selected class is a gRPC service
-        for (psiClass in selection.classes()) {
-            if (GrpcServiceRecognizer.extendsBindableService(psiClass)) {
-                return true
-            }
-        }
-        return false
+        e.presentation.isEnabled = exportFormat.supportsHttp
     }
 
     override fun actionPerformed(e: AnActionEvent) {

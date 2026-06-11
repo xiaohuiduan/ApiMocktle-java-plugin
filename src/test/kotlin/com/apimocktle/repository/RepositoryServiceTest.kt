@@ -27,7 +27,7 @@ class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetRepositoriesReturnsEnabledRepositories() {
-        defaultSettingBinder.save(Settings(grpcRepositories = arrayOf(
+        defaultSettingBinder.save(Settings(remoteConfig = arrayOf(
             "maven:true:/path/to/.m2/repository",
             "gradle:false:/path/to/.gradle/caches"
         )))
@@ -40,7 +40,7 @@ class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetRepositoriesFallsBackToDefaultsWhenAllDisabled() {
-        defaultSettingBinder.save(Settings(grpcRepositories = arrayOf(
+        defaultSettingBinder.save(Settings(remoteConfig = arrayOf(
             "maven:false:/path/to/.m2/repository",
             "gradle:false:/path/to/.gradle/caches"
         )))
@@ -51,7 +51,7 @@ class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetAllRepositoriesIncludesDisabled() {
-        defaultSettingBinder.save(Settings(grpcRepositories = arrayOf(
+        defaultSettingBinder.save(Settings(remoteConfig = arrayOf(
             "maven:true:/path/to/.m2/repository",
             "gradle:false:/path/to/.gradle/caches"
         )))
@@ -62,7 +62,7 @@ class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetRepositoriesIgnoresInvalidEntries() {
-        defaultSettingBinder.save(Settings(grpcRepositories = arrayOf(
+        defaultSettingBinder.save(Settings(remoteConfig = arrayOf(
             "maven:true:/path/to/.m2/repository",
             "invalid-entry",
             "",
@@ -76,7 +76,7 @@ class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetRepositoriesWithCustomRepository() {
-        defaultSettingBinder.save(Settings(grpcRepositories = arrayOf(
+        defaultSettingBinder.save(Settings(remoteConfig = arrayOf(
             "custom:true:/custom/repo/path"
         )))
 
@@ -88,7 +88,7 @@ class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetRepositoriesWithGradleRepository() {
-        defaultSettingBinder.save(Settings(grpcRepositories = arrayOf(
+        defaultSettingBinder.save(Settings(remoteConfig = arrayOf(
             "gradle:true:/path/to/.gradle/caches"
         )))
 
@@ -105,7 +105,7 @@ class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetRepositoriesWithEmptyArrayFallsBackToDefaults() {
-        defaultSettingBinder.save(Settings(grpcRepositories = emptyArray()))
+        defaultSettingBinder.save(Settings(remoteConfig = emptyArray()))
 
         val repos = repositoryService.getRepositories()
 
@@ -113,7 +113,7 @@ class RepositoryServiceTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetAllRepositoriesWithEmptyArrayFallsBackToDefaults() {
-        defaultSettingBinder.save(Settings(grpcRepositories = emptyArray()))
+        defaultSettingBinder.save(Settings(remoteConfig = emptyArray()))
 
         val repos = repositoryService.getAllRepositories()
 

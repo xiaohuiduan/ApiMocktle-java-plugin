@@ -13,9 +13,6 @@ import com.intellij.psi.PsiMethod
 import com.apimocktle.cache.ApiIndex
 import com.apimocktle.cache.ApiIndexManager
 import com.apimocktle.dashboard.ApiDashboardService
-import com.apimocktle.exporter.core.MetaAnnotationResolver
-import com.apimocktle.exporter.grpc.GrpcMethodResolver
-import com.apimocktle.exporter.grpc.GrpcServiceRecognizer
 import com.apimocktle.core.threading.IdeDispatchers
 import com.apimocktle.core.threading.backgroundAsync
 import com.apimocktle.core.threading.swing
@@ -73,12 +70,12 @@ class ApiMethodLineMarkerProvider : LineMarkerProvider {
 
     private fun isApiMethod(method: PsiMethod): Boolean {
         val availabilityService = ProjectClassAvailabilityService.getInstance(method.project)
-        
+
         return runBlocking {
             allApiAnnotations.any { annotationFqn ->
-                availabilityService.hasClassInProject(annotationFqn) && 
+                availabilityService.hasClassInProject(annotationFqn) &&
                     annotationHelper.hasAnn(method, annotationFqn)
-            } || isGrpcRpcMethod(method)
+            }
         }
     }
 
@@ -99,32 +96,6 @@ class ApiMethodLineMarkerProvider : LineMarkerProvider {
         "javax.ws.rs.PATCH",
         "javax.ws.rs.Path"
     )
-
-    /**
-     * Detects gRPC RPC methods by signature pattern:
-     * - Unary/server-streaming: (Req, StreamObserver<Resp>) -> void
-     * - Client/bidirectional: (StreamObserver<Resp>) -> StreamObserver<Req>
-     *
-     * Also checks that the containing class is a gRPC service (extends ImplBase or has @GrpcService).
-     */
-    private suspend fun isGrpcRpcMethod(method: PsiMethod): Boolean {
-        val availabilityService = ProjectClassAvailabilityService.getInstance(method.project)
-        
-        val hasGrpcFramework = availabilityService.hasAnyClassInProject(GrpcServiceRecognizer.GRPC_SERVICE_ANNOTATIONS) ||
-            availabilityService.hasClassInProject(GrpcServiceRecognizer.BINDABLE_SERVICE_FQN)
-        
-        if (!hasGrpcFramework) return false
-        
-        val containingClass = method.containingClass ?: return false
-        if (!looksLikeGrpcService(containingClass)) return false
-        val resolver = GrpcMethodResolver.getInstance(method.project)
-        return resolver.resolveStreamingType(method) != null
-    }
-
-    private suspend fun looksLikeGrpcService(cls: PsiClass): Boolean {
-        if (MetaAnnotationResolver.hasMetaAnnotation(cls, GrpcServiceRecognizer.GRPC_SERVICE_ANNOTATIONS)) return true
-        return GrpcServiceRecognizer.extendsBindableService(cls)
-    }
 
     private object ApiMethodNavigationHandler : GutterIconNavigationHandler<PsiElement>, IdeaLog {
 

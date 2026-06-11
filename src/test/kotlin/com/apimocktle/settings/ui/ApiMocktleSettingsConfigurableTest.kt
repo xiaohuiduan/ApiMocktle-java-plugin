@@ -69,7 +69,6 @@ class ApiMocktleSettingsConfigurableTest : ApiMocktleLightCodeInsightFixtureTest
         assertEquals("TAB_REMOTE should be '远程'", "远程", ApiMocktleSettingsConfigurable.TAB_REMOTE)
         assertEquals("TAB_BUILT_IN should be '内置'", "内置", ApiMocktleSettingsConfigurable.TAB_BUILT_IN)
         assertEquals("TAB_OTHER should be '其他'", "其他", ApiMocktleSettingsConfigurable.TAB_OTHER)
-        assertEquals("TAB_GRPC should be 'gRPC'", "gRPC", ApiMocktleSettingsConfigurable.TAB_GRPC)
         assertEquals("TAB_ENVIRONMENT should be '环境'", "环境", ApiMocktleSettingsConfigurable.TAB_ENVIRONMENT)
     }
 }

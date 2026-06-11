@@ -104,7 +104,6 @@ class ApiScannerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
             feignEnable = true
             jaxrsEnable = true
             actuatorEnable = true
-            grpcEnable = true
         }
         
         val endpoints = apiScanner.scanAll()

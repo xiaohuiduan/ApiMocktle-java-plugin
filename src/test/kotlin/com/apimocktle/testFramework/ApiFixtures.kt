@@ -143,7 +143,7 @@ object ApiFixtures {
     fun createSettings(): Settings {
         return Settings().apply {
             yapiServer = "http://localhost:3000"
-            yapiTokens = "test-project:abc123"
+            yapiPersonalToken = "test-project:abc123"
             outputCharset = "UTF-8"
             httpTimeOut = 30000
             unsafeSsl = false

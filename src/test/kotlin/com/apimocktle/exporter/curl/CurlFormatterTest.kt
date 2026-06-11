@@ -3,14 +3,10 @@ package com.apimocktle.exporter.curl
 import com.apimocktle.exporter.model.ApiEndpoint
 import com.apimocktle.exporter.model.ApiHeader
 import com.apimocktle.exporter.model.ApiParameter
-import com.apimocktle.exporter.model.GrpcMetadata
-import com.apimocktle.exporter.model.GrpcStreamingType
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.ParameterBinding
 import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.psi.model.FieldModel
-import com.apimocktle.psi.model.ObjectModel
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -259,134 +255,31 @@ class CurlFormatterTest {
 
     @Test
     fun testFormatGrpcBasic() {
-        val endpoint = ApiEndpoint(
-            name = "SayHello",
-            metadata = GrpcMetadata(
-                path = "/com.example.GreeterService/SayHello",
-                serviceName = "GreeterService",
-                methodName = "SayHello",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.UNARY
-            )
-        )
-
-        val result = CurlFormatter.format(endpoint, "localhost:50051")
-
-        assertTrue(result.startsWith("grpcurl"))
-        assertTrue(result.contains("-plaintext"))
-        assertTrue(result.contains("localhost:50051"))
-        assertTrue(result.contains("com.example.GreeterService/SayHello"))
-        assertFalse(result.contains("curl -X"))
+        // gRPC module has been removed — test deleted
     }
 
     @Test
     fun testFormatGrpcWithBody() {
-        val body = ObjectModel.Object(
-            mapOf(
-                "name" to FieldModel(ObjectModel.single("string"))
-            )
-        )
-        val endpoint = ApiEndpoint(
-            name = "SayHello",
-            metadata = GrpcMetadata(
-                path = "/com.example.GreeterService/SayHello",
-                serviceName = "GreeterService",
-                methodName = "SayHello",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.UNARY,
-                body = body
-            )
-        )
-
-        val result = CurlFormatter.format(endpoint, "localhost:50051")
-
-        assertTrue(result.contains("-d"))
-        assertTrue(result.contains("name"))
+        // gRPC module has been removed — test deleted
     }
 
     @Test
     fun testFormatGrpcStripsHttpPrefix() {
-        val endpoint = ApiEndpoint(
-            name = "SayHello",
-            metadata = GrpcMetadata(
-                path = "/com.example.GreeterService/SayHello",
-                serviceName = "GreeterService",
-                methodName = "SayHello",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.UNARY
-            )
-        )
-
-        val resultHttp = CurlFormatter.format(endpoint, "http://myhost:50051")
-        assertTrue(resultHttp.contains("myhost:50051"))
-        assertFalse(resultHttp.contains("http://"))
-
-        val resultHttps = CurlFormatter.format(endpoint, "https://myhost:50051")
-        assertTrue(resultHttps.contains("myhost:50051"))
-        assertFalse(resultHttps.contains("https://"))
+        // gRPC module has been removed — test deleted
     }
 
     @Test
     fun testFormatGrpcDefaultHost() {
-        val endpoint = ApiEndpoint(
-            name = "SayHello",
-            metadata = GrpcMetadata(
-                path = "/com.example.GreeterService/SayHello",
-                serviceName = "GreeterService",
-                methodName = "SayHello",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.UNARY
-            )
-        )
-
-        val result = CurlFormatter.format(endpoint)
-
-        assertTrue(result.contains("localhost:50051"))
+        // gRPC module has been removed — test deleted
     }
 
     @Test
     fun testFormatGrpcNoBody() {
-        val endpoint = ApiEndpoint(
-            name = "SayHello",
-            metadata = GrpcMetadata(
-                path = "/com.example.GreeterService/SayHello",
-                serviceName = "GreeterService",
-                methodName = "SayHello",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.UNARY
-            )
-        )
-
-        val result = CurlFormatter.format(endpoint, "localhost:50051")
-
-        assertFalse(result.contains("-d"))
+        // gRPC module has been removed — test deleted
     }
 
     @Test
     fun testFormatAllWithMixedEndpoints() {
-        val httpEndpoint = ApiEndpoint(
-            name = "Get User",
-            metadata = httpMetadata(
-                path = "/api/users/1",
-                method = HttpMethod.GET
-            )
-        )
-        val grpcEndpoint = ApiEndpoint(
-            name = "SayHello",
-            metadata = GrpcMetadata(
-                path = "/com.example.GreeterService/SayHello",
-                serviceName = "GreeterService",
-                methodName = "SayHello",
-                packageName = "com.example",
-                streamingType = GrpcStreamingType.UNARY
-            )
-        )
-
-        val result = CurlFormatter.formatAll(listOf(httpEndpoint, grpcEndpoint), "localhost:8080")
-
-        assertTrue(result.contains("curl"))
-        assertTrue(result.contains("grpcurl"))
-        assertTrue(result.contains("## Get User"))
-        assertTrue(result.contains("## SayHello"))
+        // gRPC module has been removed — test deleted
     }
 }

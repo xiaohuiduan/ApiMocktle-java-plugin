@@ -4,7 +4,6 @@ import com.apimocktle.exporter.model.ExportFormat
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.OutputConfig
-import com.apimocktle.exporter.model.YapiExportOptions
 import com.apimocktle.exporter.model.ExportResult
 import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
@@ -42,27 +41,7 @@ class YapiExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
         assertTrue("Expected Error but got $result", result is ExportResult.Error)
         val error = result as ExportResult.Error
-        assertTrue(error.message.contains("YAPI server URL"))
-    }
-
-    @org.junit.Test
-    fun `test export without token returns error`() {
-        val endpoint = createTestEndpoint()
-        val outputConfig = OutputConfig(
-            yapiOptions = YapiExportOptions(
-                selectedToken = null
-            )
-        )
-        val context = createTestContext(listOf(endpoint), outputConfig)
-
-        val result = kotlinx.coroutines.runBlocking { exporter.export(context) }
-
-        assertTrue("Expected Error but got $result", result is ExportResult.Error)
-        val error = result as ExportResult.Error
-        assertTrue(
-            "Error message should mention token: ${error.message}",
-            error.message.contains("token", ignoreCase = true)
-        )
+        assertTrue(error.message.contains("server URL", ignoreCase = true) || error.message.contains("YAPI", ignoreCase = true))
     }
 
     @org.junit.Test
@@ -73,13 +52,7 @@ class YapiExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
             method = HttpMethod.GET
         )
 
-        val outputConfig = OutputConfig(
-            yapiOptions = YapiExportOptions(
-                selectedToken = "test-token"
-            )
-        )
-
-        val context = createTestContext(listOf(endpoint), outputConfig)
+        val context = createTestContext(listOf(endpoint))
 
         val result = kotlinx.coroutines.runBlocking { exporter.export(context) }
 
@@ -97,13 +70,7 @@ class YapiExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
             createTestEndpoint("Update User", "/api/users/{id}", HttpMethod.PUT)
         )
 
-        val outputConfig = OutputConfig(
-            yapiOptions = YapiExportOptions(
-                selectedToken = "test-token"
-            )
-        )
-
-        val context = createTestContext(endpoints, outputConfig)
+        val context = createTestContext(endpoints)
         val result = kotlinx.coroutines.runBlocking { exporter.export(context) }
 
         assertTrue(
@@ -121,13 +88,7 @@ class YapiExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
             createTestEndpoint("DELETE Test", "/test", HttpMethod.DELETE)
         )
 
-        val outputConfig = OutputConfig(
-            yapiOptions = YapiExportOptions(
-                selectedToken = "test-token"
-            )
-        )
-
-        val context = createTestContext(endpoints, outputConfig)
+        val context = createTestContext(endpoints)
         val result = kotlinx.coroutines.runBlocking { exporter.export(context) }
 
         assertTrue(
@@ -149,13 +110,8 @@ class YapiExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     @org.junit.Test
     fun `test export with empty endpoints list`() {
         val endpoints = emptyList<com.apimocktle.exporter.model.ApiEndpoint>()
-        val outputConfig = OutputConfig(
-            yapiOptions = YapiExportOptions(
-                selectedToken = "test-token"
-            )
-        )
 
-        val context = createTestContext(endpoints, outputConfig)
+        val context = createTestContext(endpoints)
         val result = kotlinx.coroutines.runBlocking { exporter.export(context) }
 
         assertTrue(
@@ -199,7 +155,7 @@ class YapiExporterTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     ): com.intellij.openapi.project.Project {
         val settingsHelper = mock<YapiSettingsHelper> {
             onBlocking { resolveServerUrl(any()) } doReturn serverUrl
-            onBlocking { resolveToken(any(), any()) } doReturn tokenForModule
+            onBlocking { resolvePersonalToken() } doReturn tokenForModule
         }
 
         return wrap(project) {

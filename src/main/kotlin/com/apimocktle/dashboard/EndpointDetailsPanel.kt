@@ -18,19 +18,14 @@ import com.apimocktle.core.threading.swing
 import com.apimocktle.dashboard.env.EnvironmentService
 import com.apimocktle.dashboard.script.*
 import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.model.GrpcMetadata
-import com.apimocktle.exporter.model.GrpcStreamingType
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.ParameterBinding
 import com.apimocktle.exporter.model.ParameterType
 import com.apimocktle.http.*
-import com.apimocktle.grpc.GrpcStatus
 import com.apimocktle.logging.IdeaLog
 import com.intellij.openapi.ui.Messages
 import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.exporter.model.grpcMetadata
-import com.apimocktle.exporter.model.isGrpc
 import com.apimocktle.psi.model.ObjectModelJsonConverter
 import kotlinx.coroutines.*
 import java.awt.BorderLayout
@@ -462,35 +457,6 @@ class EndpointDetailsPanel(
         })
     }
 
-    private fun buildGrpcResponseView() {
-        responseTabPane.removeAll()
-
-        val responseBodyScrollPane = JBScrollPane(responseBodyArea).apply {
-            verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
-            horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        }
-
-        val wrapper = object : JPanel(null) {
-            override fun getPreferredSize(): java.awt.Dimension = responseBodyScrollPane.preferredSize
-            override fun getMinimumSize(): java.awt.Dimension = responseBodyScrollPane.minimumSize
-
-            override fun doLayout() {
-                responseBodyScrollPane.setBounds(0, 0, width, height)
-                val btnSize = prettyToggleBtn.preferredSize
-                prettyToggleBtn.setBounds(
-                    width - btnSize.width - 22,
-                    4,
-                    btnSize.width,
-                    btnSize.height
-                )
-            }
-        }
-        wrapper.add(prettyToggleBtn)
-        wrapper.add(responseBodyScrollPane)
-
-        responseTabPane.addTab("响应", wrapper)
-    }
-
     private fun setupDeleteButtonColumn(table: JBTable, model: DefaultTableModel) {
         val deleteColIndex = model.columnCount - 1
         val deleteColumn = table.columnModel.getColumn(deleteColIndex)
@@ -688,7 +654,6 @@ class EndpointDetailsPanel(
             currentEndpointKey = computeCacheKey(endpoint)
 
             when (val meta = endpoint.metadata) {
-                is GrpcMetadata -> showGrpcEndpoint(endpoint, meta)
                 is HttpMetadata -> {
                     nameLabel.text = endpoint.name ?: "未命名"
                     methodLabel.text = meta.method.name
@@ -731,112 +696,6 @@ class EndpointDetailsPanel(
             postResponseScript = postResponseScriptArea.text.takeIf { it.isNotBlank() }
         )
         scriptCacheService.save(scope, cache)
-    }
-
-    private fun showGrpcEndpoint(endpoint: ApiEndpoint, meta: GrpcMetadata) {
-        nameLabel.text = endpoint.name ?: "未命名"
-
-        val streamingBadge = when (meta.streamingType) {
-            GrpcStreamingType.UNARY -> "一元"
-            GrpcStreamingType.SERVER_STREAMING -> "服务端流"
-            GrpcStreamingType.CLIENT_STREAMING -> "客户端流"
-            GrpcStreamingType.BIDIRECTIONAL -> "双向流"
-        }
-        methodLabel.text = "gRPC [$streamingBadge]"
-        methodLabel.foreground = Color(0x8B5CF6)
-
-        pathField.text = "${meta.packageName}/${meta.methodName}"
-        pathField.isEditable = false
-
-        buildGrpcResponseView()
-
-        val cachedEdit = editCacheService.load(endpoint, currentEndpointKey) as? GrpcRequestEditCache
-        if (cachedEdit != null) {
-            loadGrpcFromCache(meta, cachedEdit)
-        } else {
-            loadGrpcFromEndpoint(meta)
-        }
-
-        rebuildTabsForGrpc(meta)
-        clearResponse()
-        showResponseDemo()
-    }
-
-    private fun loadGrpcFromCache(meta: GrpcMetadata, cache: GrpcRequestEditCache) {
-        cache.host?.let { host ->
-            val hosts = hostCacheHelper.getHosts()
-            hostComboBox.removeAllItems()
-            if (hosts.isEmpty()) {
-                hostComboBox.addItem(host)
-            } else {
-                if (host !in hosts) {
-                    hostComboBox.addItem(host)
-                }
-                hosts.forEach { hostComboBox.addItem(it) }
-                hostComboBox.selectedItem = host
-            }
-        } ?: run {
-            val hosts = hostCacheHelper.getHosts()
-            hostComboBox.removeAllItems()
-            if (hosts.isEmpty()) {
-                hostComboBox.addItem("localhost:50051")
-            } else {
-                hosts.forEach { hostComboBox.addItem(it) }
-            }
-            hostComboBox.selectedIndex = 0
-        }
-
-        bodyArea.text = cache.body ?: meta.body?.let { ObjectModelJsonConverter.toJson(it) } ?: ""
-    }
-
-    private fun loadGrpcFromEndpoint(meta: GrpcMetadata) {
-        val hosts = hostCacheHelper.getHosts()
-        hostComboBox.removeAllItems()
-        if (hosts.isEmpty()) {
-            hostComboBox.addItem("localhost:50051")
-        } else {
-            hosts.forEach { hostComboBox.addItem(it) }
-        }
-        hostComboBox.selectedIndex = 0
-
-        bodyArea.text = meta.body?.let { ObjectModelJsonConverter.toJson(it) } ?: ""
-    }
-
-    private fun rebuildTabsForGrpc(meta: GrpcMetadata) {
-        tabPane.removeAll()
-        tabPane.addTab("请求消息", createBodyPanel())
-        tabPane.addTab("信息", createGrpcInfoPanel(meta))
-    }
-
-    private fun createGrpcInfoPanel(meta: GrpcMetadata): JPanel {
-        val panel = JPanel().apply {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            border = JBUI.Borders.empty(8)
-        }
-
-        fun addRow(label: String, value: String) {
-            val row = JPanel().apply {
-                layout = BoxLayout(this, BoxLayout.X_AXIS)
-                alignmentX = java.awt.Component.LEFT_ALIGNMENT
-                border = JBUI.Borders.emptyBottom(4)
-            }
-            row.add(JBLabel("$label:").apply {
-                preferredSize = Dimension(130, preferredSize.height)
-                minimumSize = Dimension(130, minimumSize.height)
-                maximumSize = Dimension(130, maximumSize.height)
-            })
-            row.add(JBLabel(value))
-            row.add(Box.createHorizontalGlue())
-            panel.add(row)
-        }
-
-        addRow("服务", meta.serviceName)
-        addRow("包名", meta.packageName)
-        addRow("流类型", meta.streamingType.name)
-        meta.protoFile?.let { addRow("Proto文件", it) }
-
-        panel.add(Box.createVerticalGlue())
-        return panel
     }
 
     private fun loadFromCache(endpoint: ApiEndpoint, cache: HttpRequestEditCache) {
@@ -1014,7 +873,6 @@ class EndpointDetailsPanel(
         val endpoint = currentEndpoint ?: return
         val responseBody = when (val meta = endpoint.metadata) {
             is HttpMetadata -> meta.responseBody
-            is GrpcMetadata -> meta.responseBody
             else -> null
         } ?: return
 
@@ -1055,12 +913,6 @@ class EndpointDetailsPanel(
     private fun sendRequest() {
         val endpoint = currentEndpoint ?: return
 
-        if (endpoint.isGrpc) {
-            if (!checkGrpcCallReady()) {
-                return
-            }
-        }
-
         val host = getSelectedHost()
         hostCacheHelper.addHost(host)
         loadHostHistory()
@@ -1068,72 +920,18 @@ class EndpointDetailsPanel(
         prepareSendUI(endpoint)
 
         currentRequestJob = scope.launch {
-            val response = if (endpoint.isGrpc) {
-                sendGrpcRequestInternal(endpoint, host)
-            } else {
-                sendHttpRequestInternal(endpoint, host)
-            }
-
+            val response = sendHttpRequestInternal(endpoint, host)
             handleResponse(endpoint, response)
         }
-    }
-
-    private fun checkGrpcCallReady(): Boolean {
-        val settings = com.apimocktle.settings.SettingBinder.getInstance(project).read()
-
-        if (!settings.grpcCallEnabled) {
-            val result = Messages.showOkCancelDialog(
-                project,
-                "gRPC调用未启用。是否现在启用？",
-                "gRPC调用未启用",
-                "打开设置",
-                "取消",
-                Messages.getQuestionIcon()
-            )
-            if (result == Messages.OK) {
-                openGrpcSettings()
-            }
-            return false
-        }
-
-        val resolver = com.apimocktle.grpc.GrpcRuntimeResolver.getInstance(project)
-        val resolved = resolver.resolve()
-        if (resolved == null) {
-            val result = Messages.showOkCancelDialog(
-                project,
-                "gRPC运行时包不可用。是否现在配置？",
-                "gRPC运行时不可用",
-                "打开设置",
-                "取消",
-                Messages.getWarningIcon()
-            )
-            if (result == Messages.OK) {
-                openGrpcSettings()
-            }
-            return false
-        }
-
-        return true
-    }
-
-    private fun openGrpcSettings() {
-        com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable.selectTab(
-            com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable.TAB_GRPC
-        )
-        com.intellij.openapi.options.ShowSettingsUtil.getInstance().showSettingsDialog(
-            project,
-            com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable::class.java
-        )
     }
 
     private fun prepareSendUI(endpoint: ApiEndpoint) {
         val meta = endpoint.metadata
         val path = when (meta) {
             is HttpMetadata -> meta.path
-            is GrpcMetadata -> meta.path
             else -> ""
         }
-        LOG.info("Sending ${if (endpoint.isGrpc) "gRPC" else endpoint.httpMetadata?.method?.name ?: "HTTP"} request to $path")
+        LOG.info("Sending ${endpoint.httpMetadata?.method?.name ?: "HTTP"} request to $path")
         sendButton.isEnabled = false
         sendButton.text = "发送中..."
         responseBodyArea.text = ""
@@ -1190,33 +988,6 @@ class EndpointDetailsPanel(
         return result
     }
 
-    private suspend fun sendGrpcRequestInternal(endpoint: ApiEndpoint, host: String): RequestResult {
-        val meta = endpoint.grpcMetadata ?: return RequestResult(body = "错误：不是gRPC端点", isError = true)
-
-        val input = GrpcRequestInput(
-            host = host,
-            grpcMetadata = meta,
-            body = bodyArea.text.takeIf { it.isNotBlank() },
-            endpointName = endpoint.name ?: "",
-            sourceMethod = endpoint.sourceMethod
-        )
-
-        val result = requestExecutor.executeGrpc(input)
-
-        if (result.requiresGrpcSetup) {
-            swing {
-                Messages.showInfoMessage(
-                    project,
-                    "没有可用的gRPC客户端。请在设置中配置gRPC运行时。\n\n" +
-                            "插件需要gRPC运行时JAR包。请从gRPC设置面板下载。",
-                    "gRPC客户端不可用"
-                )
-            }
-        }
-
-        return result
-    }
-
     private suspend fun handleResponse(endpoint: ApiEndpoint, response: RequestResult) {
         swing {
             if (currentEndpoint != endpoint) {
@@ -1236,18 +1007,9 @@ class EndpointDetailsPanel(
 
             when {
                 response.statusCode != null -> {
-                    val isGrpcStatus = response.statusCode in 0..16
-                    val statusText = if (isGrpcStatus) {
-                        GrpcStatus.formatStatus(response.statusCode)
-                    } else {
-                        response.statusCode.toString()
-                    }
+                    val statusText = response.statusCode.toString()
                     responseStatusLabel.text = "状态：$statusText"
                     responseStatusLabel.foreground = when {
-                        isGrpcStatus -> {
-                            if (response.statusCode == GrpcStatus.OK) Color(0x49cc90) else Color(0xf93e3e)
-                        }
-
                         response.statusCode in 200..299 -> Color(0x49cc90)
                         response.statusCode in 400..499 -> Color(0xfca130)
                         response.statusCode >= 500 -> Color(0xf93e3e)
@@ -1409,23 +1171,13 @@ class EndpointDetailsPanel(
         HttpMethod.NO_METHOD -> Color(0x999999)
     }
 
-    private fun getEndpointColor(endpoint: ApiEndpoint): Color =
-        if (endpoint.isGrpc) Color(0x8B5CF6) else getMethodColor(endpoint.httpMetadata?.method ?: HttpMethod.NO_METHOD)
-
     private fun resetCurrentEndpoint() {
         val endpoint = currentEndpoint ?: return
-        editCacheService.delete(currentEndpointKey, endpoint.isGrpc)
+        editCacheService.delete(currentEndpointKey, false)
         isLoading = true
         try {
-            if (endpoint.isGrpc) {
-                val meta = endpoint.grpcMetadata
-                if (meta != null) {
-                    loadGrpcFromEndpoint(meta)
-                }
-            } else {
-                loadFromEndpoint(endpoint)
-                autoSelectTab()
-            }
+            loadFromEndpoint(endpoint)
+            autoSelectTab()
             clearResponse()
             showResponseDemo()
         } finally {
@@ -1440,7 +1192,7 @@ class EndpointDetailsPanel(
             val key = readSync {
                 computeCacheKey(endpoint)
             }
-            editCacheService.delete(key, endpoint.isGrpc)
+            editCacheService.delete(key, false)
         }
     }
 
@@ -1451,68 +1203,55 @@ class EndpointDetailsPanel(
     private fun doSaveCurrentEdit() {
         val endpoint = currentEndpoint ?: return
 
-        if (endpoint.isGrpc) {
-            val cache = GrpcRequestEditCache(
-                key = currentEndpointKey,
-                name = endpoint.name,
-                host = getSelectedHost(),
-                serviceName = endpoint.grpcMetadata?.serviceName,
-                methodName = endpoint.grpcMetadata?.methodName,
-                packageName = endpoint.grpcMetadata?.packageName,
-                body = bodyArea.text.takeIf { it.isNotBlank() }
-            )
-            editCacheService.save(endpoint, cache, currentEndpointKey)
-        } else {
-            val headers = (0 until headersTableModel.rowCount)
-                .map { row ->
-                    val name = headersTableModel.getValueAt(row, 0)?.toString()?.trim().orEmpty()
-                    val value = headersTableModel.getValueAt(row, 1)?.toString()?.trim().orEmpty()
-                    EditableKeyValue(name, value)
-                }
-                .filter { it.name.isNotEmpty() }
+        val headers = (0 until headersTableModel.rowCount)
+            .map { row ->
+                val name = headersTableModel.getValueAt(row, 0)?.toString()?.trim().orEmpty()
+                val value = headersTableModel.getValueAt(row, 1)?.toString()?.trim().orEmpty()
+                EditableKeyValue(name, value)
+            }
+            .filter { it.name.isNotEmpty() }
 
-            val pathParams = (0 until pathParamsTableModel.rowCount)
-                .map { row ->
-                    val name = pathParamsTableModel.getValueAt(row, 0)?.toString()?.trim().orEmpty()
-                    val value = pathParamsTableModel.getValueAt(row, 1)?.toString()?.trim().orEmpty()
-                    val desc = pathParamsTableModel.getValueAt(row, 2)?.toString()?.trim().orEmpty()
-                    EditableKeyValue(name, value, desc)
-                }
-                .filter { it.name.isNotEmpty() }
+        val pathParams = (0 until pathParamsTableModel.rowCount)
+            .map { row ->
+                val name = pathParamsTableModel.getValueAt(row, 0)?.toString()?.trim().orEmpty()
+                val value = pathParamsTableModel.getValueAt(row, 1)?.toString()?.trim().orEmpty()
+                val desc = pathParamsTableModel.getValueAt(row, 2)?.toString()?.trim().orEmpty()
+                EditableKeyValue(name, value, desc)
+            }
+            .filter { it.name.isNotEmpty() }
 
-            val queryParams = (0 until paramsTableModel.rowCount)
-                .map { row ->
-                    val name = paramsTableModel.getValueAt(row, 0)?.toString()?.trim().orEmpty()
-                    val value = paramsTableModel.getValueAt(row, 1)?.toString()?.trim().orEmpty()
-                    val desc = paramsTableModel.getValueAt(row, 2)?.toString()?.trim().orEmpty()
-                    EditableKeyValue(name, value, desc)
-                }
-                .filter { it.name.isNotEmpty() }
+        val queryParams = (0 until paramsTableModel.rowCount)
+            .map { row ->
+                val name = paramsTableModel.getValueAt(row, 0)?.toString()?.trim().orEmpty()
+                val value = paramsTableModel.getValueAt(row, 1)?.toString()?.trim().orEmpty()
+                val desc = paramsTableModel.getValueAt(row, 2)?.toString()?.trim().orEmpty()
+                EditableKeyValue(name, value, desc)
+            }
+            .filter { it.name.isNotEmpty() }
 
-            val formParams = (0 until formTableModel.rowCount)
-                .map { row ->
-                    val name = formTableModel.getValueAt(row, 0)?.toString()?.trim().orEmpty()
-                    val value = formTableModel.getValueAt(row, 1)?.toString()?.trim().orEmpty()
-                    val desc = formTableModel.getValueAt(row, 2)?.toString()?.trim().orEmpty()
-                    EditableKeyValue(name, value, desc)
-                }
-                .filter { it.name.isNotEmpty() }
+        val formParams = (0 until formTableModel.rowCount)
+            .map { row ->
+                val name = formTableModel.getValueAt(row, 0)?.toString()?.trim().orEmpty()
+                val value = formTableModel.getValueAt(row, 1)?.toString()?.trim().orEmpty()
+                val desc = formTableModel.getValueAt(row, 2)?.toString()?.trim().orEmpty()
+                EditableKeyValue(name, value, desc)
+            }
+            .filter { it.name.isNotEmpty() }
 
-            val cache = HttpRequestEditCache(
-                key = currentEndpointKey,
-                name = endpoint.name,
-                path = pathField.text,
-                method = endpoint.httpMetadata?.method?.name ?: endpoint.metadata.protocol,
-                host = getSelectedHost(),
-                headers = headers,
-                pathParams = pathParams,
-                queryParams = queryParams,
-                formParams = formParams,
-                body = bodyArea.text.takeIf { it.isNotBlank() },
-                contentType = endpointContentType
-            )
-            editCacheService.save(endpoint, cache, currentEndpointKey)
-        }
+        val cache = HttpRequestEditCache(
+            key = currentEndpointKey,
+            name = endpoint.name,
+            path = pathField.text,
+            method = endpoint.httpMetadata?.method?.name ?: endpoint.metadata.protocol,
+            host = getSelectedHost(),
+            headers = headers,
+            pathParams = pathParams,
+            queryParams = queryParams,
+            formParams = formParams,
+            body = bodyArea.text.takeIf { it.isNotBlank() },
+            contentType = endpointContentType
+        )
+        editCacheService.save(endpoint, cache, currentEndpointKey)
     }
 
     private fun setupAutoSaveListeners() {

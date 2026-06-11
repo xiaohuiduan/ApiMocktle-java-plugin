@@ -11,8 +11,8 @@ import org.mockito.kotlin.*
 /**
  * Unit tests for [DefaultYapiApiClientProvider].
  *
- * Verifies token resolution, client caching per module, and failure propagation
- * when the server URL is not configured.
+ * Verifies that the provider correctly initializes by resolving the server URL
+ * and personal token, and creates clients with the given project ID.
  *
  * Extends [ApiMocktleLightCodeInsightFixtureTestCase] (JUnit 3 style) — tests are
  * discovered by the `test` method name prefix, not by annotation.
@@ -20,18 +20,16 @@ import org.mockito.kotlin.*
 class DefaultYapiApiClientProviderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var settingsHelper: YapiSettingsHelper
-    private lateinit var httpClient: HttpClient
 
     override fun setUp() {
         super.setUp()
-        httpClient = mock()
         settingsHelper = mock()
     }
 
     private fun buildProvider(serverUrl: String? = "http://yapi.example.com"): DefaultYapiApiClientProvider {
         runBlocking {
             whenever(settingsHelper.resolveServerUrl(any())).thenReturn(serverUrl)
-            whenever(settingsHelper.resetPromptedModules()).then {}
+            whenever(settingsHelper.resolvePersonalToken()).thenReturn("test-token")
         }
         val wrappedProject = wrap(project) {
             replaceService(YapiSettingsHelper::class, settingsHelper)
@@ -51,63 +49,23 @@ class DefaultYapiApiClientProviderTest : ApiMocktleLightCodeInsightFixtureTestCa
 
     fun testInitSucceedsAndExposesServerUrl() = runBlocking {
         val provider = buildProvider("http://yapi.example.com")
-        provider.init()
+        val result = provider.init()
+        assertTrue(result)
         assertEquals("http://yapi.example.com", provider.serverUrl)
     }
 
-    fun testGetYapiApiClientReturnsNullWhenTokenCannotBeResolved() = runBlocking {
+    fun testInitReturnsFalseWhenTokenCannotBeResolved() = runBlocking {
         val provider = buildProvider()
-        provider.init()
-        whenever(settingsHelper.resolveToken(any(), any())).thenReturn(null)
-
-        val client = provider.getYapiApiClient("module-a")
-        assertNull(client)
+        whenever(settingsHelper.resolvePersonalToken()).thenReturn(null)
+        val result = provider.init()
+        assertFalse(result)
     }
 
-    fun testGetYapiApiClientReturnsClientWhenTokenResolved() = runBlocking {
+    fun testGetClientReturnsClientWithGivenProjectId() = runBlocking {
         val provider = buildProvider()
         provider.init()
-        whenever(settingsHelper.resolveToken(eq("module-a"), any())).thenReturn("valid-token")
 
-        val client = provider.getYapiApiClient("module-a")
+        val client = provider.getClient("project-123")
         assertNotNull(client)
-    }
-
-    fun testGetYapiApiClientCachesClientPerModule() = runBlocking {
-        val provider = buildProvider()
-        provider.init()
-        whenever(settingsHelper.resolveToken(eq("module-a"), any())).thenReturn("token-a")
-
-        val first = provider.getYapiApiClient("module-a")
-        val second = provider.getYapiApiClient("module-a")
-
-        assertSame("Same instance should be returned for same module", first, second)
-        verify(settingsHelper, times(1)).resolveToken(eq("module-a"), any())
-        Unit
-    }
-
-    fun testGetYapiApiClientReturnsDifferentClientsForDifferentModules() = runBlocking {
-        val provider = buildProvider()
-        provider.init()
-        whenever(settingsHelper.resolveToken(eq("module-a"), any())).thenReturn("token-a")
-        whenever(settingsHelper.resolveToken(eq("module-b"), any())).thenReturn("token-b")
-
-        val clientA = provider.getYapiApiClient("module-a")
-        val clientB = provider.getYapiApiClient("module-b")
-
-        assertNotNull(clientA)
-        assertNotNull(clientB)
-        assertNotSame(clientA, clientB)
-    }
-
-    fun testGetYapiApiClientUsesSelectedTokenBypassingSettingsLookup() = runBlocking {
-        val provider = buildProvider()
-        provider.init()
-
-        val client = provider.getYapiApiClient("module-a", selectedToken = "pre-selected-token")
-
-        assertNotNull(client)
-        verify(settingsHelper, never()).resolveToken(any(), any())
-        Unit
     }
 }

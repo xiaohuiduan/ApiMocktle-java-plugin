@@ -5,7 +5,7 @@ import com.apimocktle.psi.type.SpecialTypeHandler
 
 /**
  * Protocol-agnostic API endpoint model.
- * Contains only fields shared across all API protocols (HTTP, gRPC, etc.).
+ * Contains only fields shared across all API protocols.
  * Protocol-specific fields are held in the [metadata] field.
  *
  * @param name The endpoint name/description
@@ -16,7 +16,7 @@ import com.apimocktle.psi.type.SpecialTypeHandler
  * @param sourceMethod The source PSI method
  * @param className The source class name
  * @param classDescription The source class description
- * @param metadata Protocol-specific metadata (HTTP or gRPC)
+ * @param metadata Protocol-specific metadata (HTTP)
  */
 data class ApiEndpoint(
     val name: String? = null,
@@ -116,20 +116,13 @@ data class ApiEndpoint(
 /** Convenience: true if this is an HTTP endpoint */
 val ApiEndpoint.isHttp: Boolean get() = metadata is HttpMetadata
 
-/** Convenience: true if this is a gRPC endpoint */
-val ApiEndpoint.isGrpc: Boolean get() = metadata is GrpcMetadata
-
 /** Convenience accessor for HTTP metadata, or null */
 val ApiEndpoint.httpMetadata: HttpMetadata? get() = metadata as? HttpMetadata
 
-/** Convenience accessor for gRPC metadata, or null */
-val ApiEndpoint.grpcMetadata: GrpcMetadata? get() = metadata as? GrpcMetadata
-
-/** Convenience accessor for path, works for both HTTP and gRPC endpoints */
+/** Convenience accessor for path */
 val ApiEndpoint.path: String
     get() = when (val meta = metadata) {
         is HttpMetadata -> meta.path
-        is GrpcMetadata -> meta.path
     }
 
 /**
@@ -264,10 +257,10 @@ sealed class ParameterBinding {
 
 /**
  * Base sealed interface for protocol-specific API metadata.
- * Each supported protocol (HTTP, gRPC, etc.) provides its own implementation.
+ * Each supported protocol provides its own implementation.
  */
 sealed interface ApiMetadata {
-    /** Human-readable protocol name for display (e.g., "HTTP", "gRPC") */
+    /** Human-readable protocol name for display (e.g., "HTTP") */
     val protocol: String
 }
 
@@ -324,47 +317,3 @@ fun httpMetadata(
     responseBody,
     responseType
 )
-
-/**
- * gRPC-specific metadata for gRPC service endpoints.
- *
- * @param path The gRPC service path (e.g., /package.ServiceName/MethodName)
- * @param serviceName The gRPC service name
- * @param methodName The gRPC method name
- * @param packageName The protobuf package name
- * @param streamingType The gRPC communication pattern
- * @param protoFile The source .proto file path (optional)
- * @param body The request body model
- * @param responseBody The response body model
- * @param responseType The response type name
- */
-data class GrpcMetadata(
-    val path: String,
-    val serviceName: String,
-    val methodName: String,
-    val packageName: String,
-    val streamingType: GrpcStreamingType,
-    val protoFile: String? = null,
-    val body: ObjectModel? = null,
-    val responseBody: ObjectModel? = null,
-    val responseType: String? = null
-) : ApiMetadata {
-    override val protocol: String = "gRPC"
-}
-
-/**
- * The four gRPC communication patterns.
- */
-enum class GrpcStreamingType {
-    /** Single request, single response */
-    UNARY,
-
-    /** Single request, stream of responses */
-    SERVER_STREAMING,
-
-    /** Stream of requests, single response */
-    CLIENT_STREAMING,
-
-    /** Stream of requests, stream of responses */
-    BIDIRECTIONAL
-}

@@ -52,41 +52,31 @@ class ExportDialogTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testFormatFilteringWithGrpcEndpoints() {
+        // gRPC module has been removed — test replaced with HTTP-only test
         val endpoints = listOf(
             ApiEndpoint(
-                name = "SayHello",
-                metadata = GrpcMetadata(
-                    path = "/com.example.Greeter/SayHello",
-                    serviceName = "Greeter",
-                    methodName = "SayHello",
-                    packageName = "com.example",
-                    streamingType = GrpcStreamingType.UNARY
-                )
+                name = "Get User",
+                metadata = httpMetadata(path = "/api/users", method = HttpMethod.GET)
             )
         )
-        
+
         val dialog = ExportDialog(project, endpoints.size, endpoints)
         assertNotNull("Dialog should be created", dialog)
     }
 
     fun testFormatFilteringWithMixedEndpoints() {
+        // gRPC module has been removed — test replaced with HTTP-only test
         val endpoints = listOf(
             ApiEndpoint(
                 name = "Get User",
                 metadata = httpMetadata(path = "/api/users", method = HttpMethod.GET)
             ),
             ApiEndpoint(
-                name = "SayHello",
-                metadata = GrpcMetadata(
-                    path = "/com.example.Greeter/SayHello",
-                    serviceName = "Greeter",
-                    methodName = "SayHello",
-                    packageName = "com.example",
-                    streamingType = GrpcStreamingType.UNARY
-                )
+                name = "Create User",
+                metadata = httpMetadata(path = "/api/users", method = HttpMethod.POST)
             )
         )
-        
+
         val dialog = ExportDialog(project, endpoints.size, endpoints)
         assertNotNull("Dialog should be created", dialog)
     }

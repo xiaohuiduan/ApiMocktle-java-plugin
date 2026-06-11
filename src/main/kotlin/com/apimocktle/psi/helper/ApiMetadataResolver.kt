@@ -36,7 +36,7 @@ import com.apimocktle.util.append
  *
  * ## Framework Applicability
  *
- * ### All Frameworks (SpringMVC, JAX-RS, Feign, gRPC, Actuator)
+ * ### All Frameworks (SpringMVC, JAX-RS, Feign, Actuator)
  * - [resolveApiName] — API endpoint name
  * - [resolveClassDoc] — class-level description
  * - [resolveMethodDoc] — method-level description
@@ -61,9 +61,6 @@ import com.apimocktle.util.append
  *   supports a single value.
  * - **Feign**: [resolvePathMulti] applies to Spring-style `@RequestMapping` with
  *   multiple paths. Native Feign uses `@RequestLine` which is always single-path.
- * - **gRPC**: HTTP-specific rules ([resolveAdditionalHeaders], [resolveAdditionalParams],
- *   [resolveAdditionalResponseHeaders], [resolveDefaultHttpMethod], [resolvePathMulti])
- *   are not applicable since gRPC uses its own protocol, not HTTP semantics.
  * - **Actuator**: [resolveDefaultHttpMethod] is not applicable since operation annotations
  *   (@ReadOperation, @WriteOperation, @DeleteOperation) always specify the method.
  *

@@ -13,7 +13,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.editor.ScrollType
 import com.apimocktle.cache.ApiIndex
 import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.model.GrpcMetadata
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.logging.IdeaLog
@@ -100,7 +99,6 @@ class ApiSearchEverywhereContributor(
         val searchLower = query.searchText.lowercase()
         val path = when (val meta = endpoint.metadata) {
             is HttpMetadata -> meta.path
-            is GrpcMetadata -> meta.path
             else -> ""
         }
 

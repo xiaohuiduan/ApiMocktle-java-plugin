@@ -1,8 +1,6 @@
 package com.apimocktle.ide.search
 
 import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.model.GrpcMetadata
-import com.apimocktle.exporter.model.GrpcStreamingType
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.httpMetadata
@@ -23,27 +21,6 @@ class ApiSearchEverywhereContributorTest {
             name = name,
             className = className,
             description = description
-        )
-    }
-
-    private fun createGrpcEndpoint(
-        path: String,
-        serviceName: String,
-        methodName: String,
-        packageName: String,
-        name: String? = null,
-        className: String? = null
-    ): ApiEndpoint {
-        return ApiEndpoint(
-            metadata = GrpcMetadata(
-                path = path,
-                serviceName = serviceName,
-                methodName = methodName,
-                packageName = packageName,
-                streamingType = GrpcStreamingType.UNARY
-            ),
-            name = name,
-            className = className
         )
     }
 
@@ -341,74 +318,6 @@ class ApiSearchEverywhereContributorTest {
         assertTrue(matchesQuery(endpoint, query))
     }
 
-    // --- gRPC endpoint matching tests ---
-
-    @Test
-    fun `matchesQuery with gRPC URL matches grpc endpoint`() {
-        val endpoint = createGrpcEndpoint(
-            path = "/my.package.UserService/GetUser",
-            serviceName = "UserService",
-            methodName = "GetUser",
-            packageName = "my.package"
-        )
-        val query = ApiSearchQuery.parse("grpc://localhost:8080/my.package.UserService/GetUser")
-
-        assertTrue(matchesQuery(endpoint, query))
-    }
-
-    @Test
-    fun `matchesQuery with grpcs URL matches grpc endpoint`() {
-        val endpoint = createGrpcEndpoint(
-            path = "/my.package.Service/Method",
-            serviceName = "Service",
-            methodName = "Method",
-            packageName = "my.package"
-        )
-        val query = ApiSearchQuery.parse("grpcs://example.com/my.package.Service/Method")
-
-        assertTrue(matchesQuery(endpoint, query))
-    }
-
-    @Test
-    fun `matchesQuery with grpc URL and query params`() {
-        val endpoint = createGrpcEndpoint(
-            path = "/my.Service/Method",
-            serviceName = "Service",
-            methodName = "Method",
-            packageName = "my"
-        )
-        val query = ApiSearchQuery.parse("grpc://localhost:8080/my.Service/Method?timeout=5s")
-
-        assertTrue(matchesQuery(endpoint, query))
-    }
-
-    @Test
-    fun `matchesQuery with text search matches grpc endpoint by path`() {
-        val endpoint = createGrpcEndpoint(
-            path = "/my.package.UserService/GetUser",
-            serviceName = "UserService",
-            methodName = "GetUser",
-            packageName = "my.package"
-        )
-        val query = ApiSearchQuery(null, "UserService")
-
-        assertTrue(matchesQuery(endpoint, query))
-    }
-
-    @Test
-    fun `matchesQuery with text search matches grpc endpoint by name`() {
-        val endpoint = createGrpcEndpoint(
-            path = "/my.package.UserService/GetUser",
-            serviceName = "UserService",
-            methodName = "GetUser",
-            packageName = "my.package",
-            name = "Get User"
-        )
-        val query = ApiSearchQuery(null, "Get User")
-
-        assertTrue(matchesQuery(endpoint, query))
-    }
-
     // --- Realistic scenario tests ---
 
     @Test
@@ -494,7 +403,6 @@ class ApiSearchEverywhereContributorTest {
         val searchLower = query.searchText.lowercase()
         val path = when (val meta = endpoint.metadata) {
             is HttpMetadata -> meta.path
-            is GrpcMetadata -> meta.path
             else -> ""
         }
 

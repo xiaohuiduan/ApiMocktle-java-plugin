@@ -15,6 +15,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.apimocktle.cache.ApiIndex
 import com.apimocktle.cache.ApiIndexManager
+import com.apimocktle.agent.AgentStatusBar
 import com.apimocktle.core.threading.backgroundAsync
 import com.apimocktle.core.threading.swing
 import com.apimocktle.exporter.ApiExporterRegistry
@@ -84,6 +85,9 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
 
     /** Script editor panel for module/class-level scripts */
     private lateinit var scriptEditorPanel: ScriptEditorPanel
+
+    /** Agent status bar displayed in the dashboard */
+    private val agentStatusBar = AgentStatusBar(project)
 
     /** Card layout for switching between endpoint details and script editor */
     private val rightCardLayout = CardLayout()
@@ -163,6 +167,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
         val topPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(toolbar)
+            add(agentStatusBar)
             add(inlineEnvWrapper)
         }
 
@@ -600,7 +605,6 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
             root.add(DefaultMutableTreeNode("提示："))
             root.add(DefaultMutableTreeNode("  - 确保类上有 @RestController 或 @Controller 注解"))
             root.add(DefaultMutableTreeNode("  - 确保方法上有 @RequestMapping 或类似注解"))
-            root.add(DefaultMutableTreeNode("  - gRPC：确保类继承 BindableService 或有 @GrpcService 注解"))
             root.add(DefaultMutableTreeNode("  - 点击刷新按钮重新扫描"))
             treeModel.setRoot(root)
             return
@@ -895,6 +899,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
         searchDebounceTimer?.stop()
         scriptEditorPanel.saveIfDirty()
         endpointDetailsPanel.dispose()
+        agentStatusBar.dispose()
     }
 
     /**

@@ -6,12 +6,9 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import com.apimocktle.cache.ProjectCacheRepository
 import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.model.GrpcMetadata
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.ParameterBinding
-import com.apimocktle.exporter.model.grpcMetadata
 import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.exporter.model.isGrpc
 import com.apimocktle.psi.model.ObjectModelJsonConverter
 import com.apimocktle.util.GsonUtils
 import com.apimocktle.util.storage.DbBeanBinder
@@ -43,47 +40,26 @@ class RequestEditCacheService(private val project: Project) {
         )
     }
 
-    private val grpcBeanBinder: DbBeanBinder<GrpcRequestEditCache> by lazy {
-        DbBeanBinder(
-            sqliteHelper,
-            "grpc_request_edit",
-            { GsonUtils.toJson(it) },
-            { GsonUtils.fromJson(it) }
-        )
-    }
-
     fun save(endpoint: ApiEndpoint, cache: RequestEditCache, key: String) {
         if (key.isBlank()) return
         when (cache) {
             is HttpRequestEditCache -> httpBeanBinder.save(key, cache.copy(key = key))
-            is GrpcRequestEditCache -> grpcBeanBinder.save(key, cache.copy(key = key))
+            else -> {}
         }
     }
 
     fun load(endpoint: ApiEndpoint, key: String): RequestEditCache? {
         if (key.isBlank()) return null
-        return if (endpoint.isGrpc) {
-            grpcBeanBinder.load(key)
-        } else {
-            httpBeanBinder.load(key)
-        }
+        return httpBeanBinder.load(key)
     }
 
-    fun delete(key: String, isGrpc: Boolean) {
+    fun delete(key: String, @Suppress("UNUSED_PARAMETER") isGrpc: Boolean) {
         if (key.isBlank()) return
-        if (isGrpc) {
-            grpcBeanBinder.delete(key)
-        } else {
-            httpBeanBinder.delete(key)
-        }
+        httpBeanBinder.delete(key)
     }
 
     fun createDefaultCache(endpoint: ApiEndpoint, key: String, host: String? = null): RequestEditCache {
-        return if (endpoint.isGrpc) {
-            createDefaultGrpcCache(endpoint, key, host)
-        } else {
-            createDefaultHttpCache(endpoint, key, host)
-        }
+        return createDefaultHttpCache(endpoint, key, host)
     }
 
     private fun createDefaultHttpCache(endpoint: ApiEndpoint, key: String, host: String?): HttpRequestEditCache {
@@ -111,19 +87,6 @@ class RequestEditCacheService(private val project: Project) {
                 .map { EditableKeyValue(it.name, it.defaultValue ?: it.example ?: "", it.description) },
             body = meta?.body?.let { ObjectModelJsonConverter.toJson(it) },
             contentType = meta?.contentType
-        )
-    }
-
-    private fun createDefaultGrpcCache(endpoint: ApiEndpoint, key: String, host: String?): GrpcRequestEditCache {
-        val meta = endpoint.grpcMetadata
-        return GrpcRequestEditCache(
-            key = key,
-            name = endpoint.name,
-            host = host,
-            serviceName = meta?.serviceName,
-            methodName = meta?.methodName,
-            packageName = meta?.packageName,
-            body = meta?.body?.let { ObjectModelJsonConverter.toJson(it) }
         )
     }
 

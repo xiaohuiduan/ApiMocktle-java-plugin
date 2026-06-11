@@ -24,7 +24,6 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
     private val remotePanel = RemoteConfigPanel()
     private val builtInPanel = BuiltInConfigPanel()
     private val otherPanel = OtherSettingsPanel()
-    private val grpcPanel = GrpcSettingsPanel(project)
     private val environmentPanel = EnvironmentSettingsPanel(project)
 
     companion object {
@@ -41,7 +40,6 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
         const val TAB_REMOTE = "远程"
         const val TAB_BUILT_IN = "内置"
         const val TAB_OTHER = "其他"
-        const val TAB_GRPC = "gRPC"
         const val TAB_ENVIRONMENT = "环境"
     }
 
@@ -59,7 +57,6 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
                 t.addTab(TAB_REMOTE, remotePanel.component)
                 t.addTab(TAB_BUILT_IN, builtInPanel.component)
                 t.addTab(TAB_OTHER, otherPanel.component)
-                t.addTab(TAB_GRPC, wrapNorth(grpcPanel.component))
                 t.addTab(TAB_ENVIRONMENT, environmentPanel.component)
             }
             panel!!.add(tabs, BorderLayout.CENTER)
@@ -97,7 +94,7 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
         val settings = settingBinder.read()
         return listOf(
             generalPanel, yapiPanel, httpPanel,
-            intelligentPanel, extensionPanel, remotePanel, builtInPanel, otherPanel, grpcPanel, environmentPanel
+            intelligentPanel, extensionPanel, remotePanel, builtInPanel, otherPanel, environmentPanel
         ).any { it.isModified(settings) }
     }
 
@@ -111,7 +108,6 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
         remotePanel.applyTo(settings)
         builtInPanel.applyTo(settings)
         otherPanel.applyTo(settings)
-        grpcPanel.applyTo(settings)
         environmentPanel.applyTo(settings)
         settingBinder.save(settings)
     }
@@ -126,7 +122,6 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
         remotePanel.resetFrom(settings)
         builtInPanel.resetFrom(settings)
         otherPanel.resetFrom(settings)
-        grpcPanel.resetFrom(settings)
         environmentPanel.resetFrom(settings)
     }
 
