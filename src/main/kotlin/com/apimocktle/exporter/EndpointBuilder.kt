@@ -23,8 +23,8 @@ import com.apimocktle.settings.Settings
 /**
  * Shared utility for building API endpoint components across all framework exporters.
  *
- * Centralizes common logic that was previously duplicated in SpringMVC, JAX-RS, Feign,
- * and Actuator exporters, including:
+ * Centralizes common logic that was previously duplicated in SpringMVC, Feign,
+ * and other exporters, including:
  * - Response body construction with rule-based overrides (`method.return`, `method.return.main`)
  * - Header deduplication and merging from multiple sources
  * - Request body parameter expansion
@@ -55,8 +55,8 @@ class EndpointBuilder(private val project: Project) {
     /**
      * Strategy interface for building an [ObjectModel] from a [PsiClass].
      *
-     * Allows framework-specific model construction (e.g., Actuator uses [JsonType],
-     * while standard SpringMVC/JAX-RS/Feign use [PsiClassHelper]).
+     * Allows framework-specific model construction (e.g., standard SpringMVC/Feign
+     * use [PsiClassHelper]).
      */
     fun interface ResponseModelBuilder {
         suspend fun buildModel(psiClass: PsiClass): ObjectModel?

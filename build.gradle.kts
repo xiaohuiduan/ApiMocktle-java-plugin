@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.apimocktle"
-version = "2.3.0"
+version = "3.0.0"
 
 repositories {
     mavenCentral()
@@ -18,7 +18,6 @@ dependencies {
     intellijPlatform {
         intellijIdeaCommunity("2023.3")
         bundledPlugins("com.intellij.java", "org.jetbrains.idea.maven", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "org.intellij.groovy", "org.intellij.intelliLang")
-        plugin("org.intellij.scala:2023.3.19")
         pluginVerifier()
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Plugin.Java)
@@ -27,9 +26,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
 
     implementation("com.google.code.gson:gson:2.11.0")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.2")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.12.2")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.12.2")
     implementation("org.xerial:sqlite-jdbc:3.34.0")
 
     testImplementation("junit:junit:4.13.2")

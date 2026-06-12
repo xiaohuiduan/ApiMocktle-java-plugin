@@ -5,8 +5,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.apimocktle.exporter.feign.FeignClientRecognizer
-import com.apimocktle.exporter.jaxrs.JaxRsResourceRecognizer
-import com.apimocktle.exporter.springmvc.ActuatorEndpointRecognizer
 import com.apimocktle.exporter.springmvc.SpringControllerRecognizer
 import com.apimocktle.settings.SettingBinder
 
@@ -24,14 +22,8 @@ class CompositeApiClassRecognizer(private val project: Project) {
         val settings = SettingBinder.getInstance(project).read()
         buildList {
             add(SpringControllerRecognizer())
-            if (settings.jaxrsEnable) {
-                add(JaxRsResourceRecognizer(enabled = true))
-            }
             if (settings.feignEnable) {
                 add(FeignClientRecognizer(enabled = true))
-            }
-            if (settings.actuatorEnable) {
-                add(ActuatorEndpointRecognizer(enabled = true))
             }
         }
     }

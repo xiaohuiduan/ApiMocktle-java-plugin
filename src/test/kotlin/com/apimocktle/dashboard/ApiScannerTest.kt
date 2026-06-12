@@ -102,8 +102,6 @@ class ApiScannerTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     fun testOnlyExportsSpringMvcWhenAvailable() = runTest {
         settingBinder.update {
             feignEnable = true
-            jaxrsEnable = true
-            actuatorEnable = true
         }
         
         val endpoints = apiScanner.scanAll()

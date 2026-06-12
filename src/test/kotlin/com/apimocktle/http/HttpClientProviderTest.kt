@@ -1,6 +1,5 @@
 package com.apimocktle.http
 
-import com.apimocktle.settings.HttpClientType
 import com.apimocktle.settings.SettingBinder
 import com.apimocktle.settings.Settings
 import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
@@ -28,12 +27,6 @@ class HttpClientProviderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     fun testGetClientReturnsApacheByDefault() {
         val client = httpClientProvider.getClient()
         assertNotNull("Default client should be non-null", client)
-        client.close()
-    }
-
-    fun testGetClientWithApacheType() {
-        val client = httpClientProvider.getClient(httpClient = HttpClientType.APACHE.value)
-        assertNotNull("Apache client should be non-null", client)
         client.close()
     }
 
@@ -65,9 +58,9 @@ class HttpClientProviderTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     }
 
     fun testGetClientCachesSameConfig() {
-        val client1 = httpClientProvider.getClient(httpClient = HttpClientType.APACHE.value, httpTimeOut = 5, unsafeSsl = false)
+        val client1 = httpClientProvider.getClient(httpTimeOut = 5, unsafeSsl = false)
         assertNotNull("First client should be non-null", client1)
-        val client2 = httpClientProvider.getClient(httpClient = HttpClientType.APACHE.value, httpTimeOut = 5, unsafeSsl = false)
+        val client2 = httpClientProvider.getClient(httpTimeOut = 5, unsafeSsl = false)
         assertNotNull("Second client should be non-null", client2)
     }
 

@@ -12,8 +12,6 @@ class ApplicationSettingsStateTest {
         val s = state.state
         assertNotNull(s)
         assertFalse(s.feignEnable)
-        assertTrue(s.jaxrsEnable)
-        assertFalse(s.actuatorEnable)
         assertTrue(s.queryExpanded)
         assertTrue(s.formExpanded)
         assertEquals("ALL", s.pathMulti)
@@ -36,14 +34,12 @@ class ApplicationSettingsStateTest {
         val state = ApplicationSettingsState()
         val newState = ApplicationSettingsState.State(
             feignEnable = true,
-            jaxrsEnable = false,
             httpTimeOut = 30,
             logLevel = 100
         )
         state.loadState(newState)
         val loaded = state.state
         assertTrue(loaded.feignEnable)
-        assertFalse(loaded.jaxrsEnable)
         assertEquals(30, loaded.httpTimeOut)
         assertEquals(100, loaded.logLevel)
     }

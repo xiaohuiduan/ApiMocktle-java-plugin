@@ -1,7 +1,7 @@
 package com.apimocktle.agent
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -12,7 +12,7 @@ import org.junit.Test
  */
 class MockAgentManagerTest {
 
-    private val mapper = jacksonObjectMapper()
+    private val gson = Gson()
 
     // ---- 规则 payload 序列化 ----
 
@@ -28,13 +28,14 @@ class MockAgentManagerTest {
             "maxTimes" to 5,
         )
 
-        val json = mapper.writeValueAsString(listOf(rule))
-        val deserialized: List<Map<String, Any?>> = mapper.readValue(json)
+        val json = gson.toJson(listOf(rule))
+        val type = object : TypeToken<List<Map<String, Any?>>>() {}.type
+        val deserialized: List<Map<String, Any?>> = gson.fromJson(json, type)
 
         assertEquals(1, deserialized.size)
         assertEquals("rule-1", deserialized[0]["id"])
         assertEquals("com.example.feign.OrderClient", deserialized[0]["className"])
-        assertEquals(100, (deserialized[0]["responseDelay"] as Int).toLong())
+        assertEquals(100L, (deserialized[0]["responseDelay"] as Number).toLong())
     }
 
     @Test
@@ -44,8 +45,9 @@ class MockAgentManagerTest {
             mapOf("id" to "r2", "className" to "com.example.B", "methodName" to "bar", "responseTemplate" to """{"ok":true}"""),
         )
 
-        val json = mapper.writeValueAsString(rules)
-        val deserialized: List<Map<String, Any?>> = mapper.readValue(json)
+        val json = gson.toJson(rules)
+        val type = object : TypeToken<List<Map<String, Any?>>>() {}.type
+        val deserialized: List<Map<String, Any?>> = gson.fromJson(json, type)
         assertEquals(2, deserialized.size)
     }
 
@@ -63,15 +65,17 @@ class MockAgentManagerTest {
             "durationMs": 5
         }]"""
 
-        val logs: List<Map<String, Any?>> = mapper.readValue(logJson)
+        val type = object : TypeToken<List<Map<String, Any?>>>() {}.type
+        val logs: List<Map<String, Any?>> = gson.fromJson(logJson, type)
         assertEquals(1, logs.size)
         assertEquals("com.example.feign.OrderClient", logs[0]["className"])
-        assertEquals(5, (logs[0]["durationMs"] as Int).toLong())
+        assertEquals(5L, (logs[0]["durationMs"] as Number).toLong())
     }
 
     @Test
     fun `空日志列表反序列化`() {
-        val logs: List<Map<String, Any?>> = mapper.readValue("[]")
+        val type = object : TypeToken<List<Map<String, Any?>>>() {}.type
+        val logs: List<Map<String, Any?>> = gson.fromJson("[]", type)
         assertTrue(logs.isEmpty())
     }
 
@@ -104,7 +108,8 @@ class MockAgentManagerTest {
             "version": "1.0.0"
         }"""
 
-        val result: Map<String, Any?> = mapper.readValue(discoverJson)
+        val type = object : TypeToken<Map<String, Any?>>() {}.type
+        val result: Map<String, Any?> = gson.fromJson(discoverJson, type)
         assertEquals("connected", result["status"])
 
         @Suppress("UNCHECKED_CAST")

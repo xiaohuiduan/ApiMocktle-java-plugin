@@ -51,8 +51,7 @@ class ExportDialogTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         assertNotNull("Dialog should be created", dialog)
     }
 
-    fun testFormatFilteringWithGrpcEndpoints() {
-        // gRPC module has been removed — test replaced with HTTP-only test
+    fun testFormatFilteringWithHttpOnlyEndpoints() {
         val endpoints = listOf(
             ApiEndpoint(
                 name = "Get User",
@@ -64,8 +63,7 @@ class ExportDialogTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         assertNotNull("Dialog should be created", dialog)
     }
 
-    fun testFormatFilteringWithMixedEndpoints() {
-        // gRPC module has been removed — test replaced with HTTP-only test
+    fun testFormatFilteringWithMultipleHttpEndpoints() {
         val endpoints = listOf(
             ApiEndpoint(
                 name = "Get User",

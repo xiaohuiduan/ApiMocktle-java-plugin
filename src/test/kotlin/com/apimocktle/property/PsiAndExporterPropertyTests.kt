@@ -4,7 +4,6 @@ import com.intellij.psi.PsiClass
 import com.intellij.testFramework.registerServiceInstance
 import com.apimocktle.config.ConfigReader
 import com.apimocktle.exporter.feign.FeignClientRecognizer
-import com.apimocktle.exporter.jaxrs.JaxRsResourceRecognizer
 import com.apimocktle.exporter.springmvc.RequestMappingResolver
 import com.apimocktle.exporter.springmvc.ReturnTypeUnwrapper
 import com.apimocktle.exporter.springmvc.SpringControllerRecognizer
@@ -40,25 +39,6 @@ class PsiAndExporterPropertyTests : ApiMocktleLightCodeInsightFixtureTestCase() 
         val engine = RuleEngine.getInstance(project)
         val recognizer = FeignClientRecognizer(engine, true)
         assertTrue(recognizer.isFeignClient(psiClass))
-    }
-
-    fun testJaxrsControllerRecognition() = runBlocking {
-        addJaxrsStubs()
-        myFixture.addFileToProject(
-            "demo/Jax.java",
-            """
-            package demo;
-            import javax.ws.rs.Path;
-            @Path("/a")
-            public class Jax {
-              public String x(){return "";}
-            }
-            """.trimIndent()
-        )
-        val psiClass = findClass("demo.Jax")!!
-        val engine = RuleEngine.getInstance(project)
-        val recognizer = JaxRsResourceRecognizer(engine, true)
-        assertTrue(recognizer.isResource(psiClass))
     }
 
     fun testSpringMvcHttpMethodAndPathExtraction() = runBlocking {
@@ -390,16 +370,6 @@ class PsiAndExporterPropertyTests : ApiMocktleLightCodeInsightFixtureTestCase() 
               String path() default "";
               String url() default "";
             }
-            """.trimIndent()
-        )
-    }
-
-    private fun addJaxrsStubs() {
-        myFixture.addFileToProject(
-            "javax/ws/rs/Path.java",
-            """
-            package javax.ws.rs;
-            public @interface Path { String value(); }
             """.trimIndent()
         )
     }

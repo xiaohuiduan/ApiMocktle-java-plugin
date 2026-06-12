@@ -11,13 +11,11 @@ import com.apimocktle.psi.doc.DocComment
  * Language-specific adapter for PSI element resolution.
  *
  * Provides a unified interface for working with PSI elements
- * across different JVM languages (Java, Kotlin, Groovy, Scala).
+ * across different JVM languages (Java, Kotlin).
  *
  * Implementations:
  * - [JavaPsiAdapter] - For Java source files
  * - [KotlinPsiAdapter] - For Kotlin source files
- * - [GroovyPsiAdapter] - For Groovy source files
- * - [ScalaPsiAdapter] - For Scala source files
  *
  * ## Usage
  * ```kotlin

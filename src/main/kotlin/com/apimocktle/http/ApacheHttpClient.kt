@@ -9,8 +9,6 @@ import org.apache.http.config.SocketConfig
 import org.apache.http.conn.ssl.NoopHostnameVerifier
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory
 import org.apache.http.client.entity.UrlEncodedFormEntity
-import org.apache.http.entity.ByteArrayEntity
-import org.apache.http.entity.ContentType
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
@@ -71,11 +69,6 @@ class ApacheHttpClient(
         request.headers.forEach { base.setHeader(it.name, it.value) }
         if (base is HttpEntityEnclosingRequestBase) {
             when {
-                request.isMultipart() && request.formParams.isNotEmpty() -> {
-                    val multipart = MultipartBodyBuilder.build(request.formParams)
-                    base.entity = ByteArrayEntity(multipart.bytes, ContentType.parse(multipart.contentType))
-                    base.setHeader("Content-Type", multipart.contentType)
-                }
                 request.formParams.isNotEmpty() -> {
                     val pairs = request.textFormParams().map { (k, v) -> BasicNameValuePair(k, v) }
                     base.entity = UrlEncodedFormEntity(pairs, Charsets.UTF_8)

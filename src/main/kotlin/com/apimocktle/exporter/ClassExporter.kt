@@ -11,7 +11,6 @@ import com.apimocktle.exporter.model.ApiEndpoint
  *
  * ## Implementations
  * - [SpringMvcClassExporter] - Exports Spring MVC controllers
- * - [JaxRsClassExporter] - Exports JAX-RS resources
  *
  * @see ApiEndpoint for the extracted endpoint model
  */

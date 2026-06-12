@@ -88,13 +88,7 @@ class ApiMethodLineMarkerProvider : LineMarkerProvider {
         "org.springframework.web.bind.annotation.PostMapping",
         "org.springframework.web.bind.annotation.PutMapping",
         "org.springframework.web.bind.annotation.DeleteMapping",
-        "org.springframework.web.bind.annotation.PatchMapping",
-        "javax.ws.rs.GET",
-        "javax.ws.rs.POST",
-        "javax.ws.rs.PUT",
-        "javax.ws.rs.DELETE",
-        "javax.ws.rs.PATCH",
-        "javax.ws.rs.Path"
+        "org.springframework.web.bind.annotation.PatchMapping"
     )
 
     private object ApiMethodNavigationHandler : GutterIconNavigationHandler<PsiElement>, IdeaLog {

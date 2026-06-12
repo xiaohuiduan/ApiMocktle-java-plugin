@@ -18,8 +18,7 @@ enum class RepositoryType {
 /**
  * Configuration for a single artifact repository.
  * 
- * Represents a location where the plugin can search for dependency JARs,
- * such as gRPC runtime libraries.
+ * Represents a location where the plugin can search for dependency JARs.
  * 
  * @property type The repository type
  * @property path The filesystem path to the repository

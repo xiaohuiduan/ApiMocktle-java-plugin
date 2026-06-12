@@ -9,6 +9,7 @@ import com.intellij.ui.components.*
 import com.intellij.ui.table.TableView
 import com.intellij.util.ui.ColumnInfo
 import com.intellij.util.ui.FormBuilder
+import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.ListTableModel
 import com.intellij.util.ui.UIUtil
 import com.apimocktle.cache.AppCacheRepository
@@ -17,11 +18,9 @@ import com.apimocktle.repository.DefaultRepositories
 import com.apimocktle.repository.RepositoryConfig
 import com.apimocktle.repository.RepositoryType
 import com.apimocktle.exporter.model.PathSelector
-import com.apimocktle.http.ApacheHttpClient
 import com.apimocktle.extension.ExtensionConfigRegistry
 import com.apimocktle.logging.IdeaLog
 import com.apimocktle.util.GsonUtils
-import com.apimocktle.settings.HttpClientType
 import com.apimocktle.settings.Settings
 import com.apimocktle.settings.YapiExportMode
 import java.awt.*
@@ -30,957 +29,344 @@ import javax.swing.*
 import javax.swing.border.TitledBorder
 import kotlin.concurrent.thread
 
-/**
- * Interface for settings UI panels.
- * 
- * Provides a contract for panels that display and edit plugin settings.
- * Each panel handles a specific category of settings.
- */
 interface SettingsPanel {
-    /** The UI component for this panel */
     val component: JComponent
-    
-    /**
-     * Resets the panel UI to reflect the given settings.
-     * 
-     * @param settings The settings to display
-     */
     fun resetFrom(settings: Settings?)
-    
-    /**
-     * Applies the panel UI values to the given settings.
-     * 
-     * @param settings The settings to modify
-     */
     fun applyTo(settings: Settings)
-    
-    /**
-     * Checks if the panel has unsaved changes.
-     * 
-     * @param settings The current settings
-     * @return true if the panel has modifications
-     */
     fun isModified(settings: Settings?): Boolean
 }
 
-/**
- * 通用设置面板。
- *
- * 提供以下配置：
- * - 框架支持开关（Feign、JAX-RS、Actuator）
- * - 日志级别选择
- * - 输出字符集和示例设置
- * - 缓存管理
- */
-class GeneralSettingsPanel(private val project: com.intellij.openapi.project.Project) : SettingsPanel {
-    private val feignEnable = JBCheckBox("启用 Feign 客户端支持").apply {
-        toolTipText = "将 Feign 客户端接口解析为 API 端点"
-    }
-    private val jaxrsEnable = JBCheckBox("启用 JAX-RS 支持", true).apply {
-        toolTipText = "解析 JAX-RS 注解（@Path、@GET 等）为 API 端点"
-    }
-    private val actuatorEnable = JBCheckBox("启用 Spring Actuator 支持").apply {
-        toolTipText = "导出 Spring Boot Actuator 端点（如 /health、/metrics）"
-    }
-    private val autoScanEnabled = JBCheckBox("文件变更时自动扫描API", true).apply {
-        toolTipText = "源文件修改后自动重新扫描 API"
-    }
-    private val concurrentScanEnabled = JBCheckBox("启用并发API扫描（实验性）", false).apply {
-        toolTipText = "使用多线程进行 API 扫描（可能提升性能，但属于实验性功能）"
-    }
-    private val autoInjectAgent = JBCheckBox("自动注入 Mock Agent", true).apply {
-        toolTipText = "启动 Application 类型的运行配置时，自动注入 Mock Agent (-javaagent)，用于拦截 Feign/Mapper 调用"
-    }
-    private val switchNotice = JBCheckBox("切换设置时显示通知", true).apply {
-        toolTipText = "切换不同设置配置时显示通知"
-    }
-
-    private val logLevelCombo = ComboBox(CommonSettingsHelper.VerbosityLevel.values())
-    private val outputCharsetCombo = ComboBox(arrayOf("UTF-8", "GBK", "ISO-8859-1"))
-    private val outputDemoCheckBox = JBCheckBox("在文档中输出示例", true).apply {
-        toolTipText = "在生成的文档中包含示例/演示值"
-    }
-
-    private val projectCacheSizeLabel = JBLabel("0 B")
-    private val globalCacheSizeLabel = JBLabel("0 B")
-    private val clearProjectCacheButton = JButton("清除")
-    private val clearGlobalCacheButton = JButton("清除")
-
-    private val cachePanel: JPanel
-
-    private val repositoryTableModel = ListTableModel<RepositoryConfig>(
-        arrayOf(
-            object : ColumnInfo<RepositoryConfig, String>("类型") {
-                override fun valueOf(item: RepositoryConfig?): String? = item?.displayName()
-            },
-            object : ColumnInfo<RepositoryConfig, String>("路径") {
-                override fun valueOf(item: RepositoryConfig?): String? = item?.path
-            },
-            object : ColumnInfo<RepositoryConfig, Boolean>("启用") {
-                override fun valueOf(item: RepositoryConfig?): Boolean = item?.enabled ?: true
-                override fun getColumnClass(): Class<*> = java.lang.Boolean::class.java
-                override fun isCellEditable(item: RepositoryConfig?): Boolean = true
-                override fun setValue(item: RepositoryConfig?, value: Boolean) {
-                    item?.enabled = value
-                }
-            }
-        ),
-        mutableListOf()
-    )
-
-    private val repositoryTable = TableView(repositoryTableModel)
-
-    init {
-        val projectRow = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply {
-            add(JLabel("项目缓存："))
-            add(projectCacheSizeLabel)
-            add(clearProjectCacheButton)
+private fun withHelp(
+    comp: JComponent,
+    project: com.intellij.openapi.project.Project?,
+    title: String,
+    message: String
+): JPanel {
+    val row = JPanel(BorderLayout(4, 0)).apply { isOpaque = false }
+    row.add(comp, BorderLayout.CENTER)
+    val btn = JButton("?").apply {
+        font = font.deriveFont(font.size * 0.8f)
+        preferredSize = Dimension(18, 18)
+        minimumSize = Dimension(18, 18)
+        maximumSize = Dimension(18, 18)
+        margin = JBUI.emptyInsets()
+        isFocusable = false
+        isContentAreaFilled = false
+        isBorderPainted = true
+        toolTipText = "点击查看说明"
+        addActionListener {
+            if (project != null) Messages.showMessageDialog(project, message, title, null)
+            else JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE)
         }
-        val globalRow = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply {
-            add(JLabel("全局缓存："))
-            add(globalCacheSizeLabel)
-            add(clearGlobalCacheButton)
-        }
-        cachePanel = JPanel(GridLayout(0, 1, 0, 2)).apply {
-            add(projectRow)
-            add(globalRow)
-        }
-
-        clearProjectCacheButton.addActionListener {
-            ProjectCacheRepository.getInstance(project).clear()
-            refreshCacheSizes()
-            Messages.showInfoMessage("项目缓存已清除。", "清除缓存")
-        }
-
-        clearGlobalCacheButton.addActionListener {
-            AppCacheRepository.getInstance().clear()
-            refreshCacheSizes()
-            Messages.showInfoMessage("全局缓存已清除。", "清除缓存")
-        }
-
-        repositoryTable.setShowGrid(false)
-        repositoryTable.intercellSpacing = Dimension(0, 0)
-        repositoryTable.columnModel.getColumn(0).preferredWidth = 120
-        repositoryTable.columnModel.getColumn(1).preferredWidth = 350
-        repositoryTable.columnModel.getColumn(2).preferredWidth = 60
     }
+    row.add(btn, BorderLayout.EAST)
+    return row
+}
 
-    private fun refreshCacheSizes() {
-        projectCacheSizeLabel.text = "..."
-        globalCacheSizeLabel.text = "..."
+// ── API 扫描 ────────────────────────────────────────────────
+class ApiScanPanel(project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
+    private val feignCb = JBCheckBox("Feign 客户端").apply { toolTipText = "将 Feign 客户端接口解析为 API 端点" }
+    private val autoCb = JBCheckBox("文件变更时自动扫描").apply { toolTipText = "源文件修改后自动重新扫描 API" }
+    private val concurrentCb = JBCheckBox("启用并发扫描（实验性）").apply { toolTipText = "使用多线程进行 API 扫描" }
+    private val queryExpCb = JBCheckBox("展开查询参数").apply { toolTipText = "将查询参数展开为独立字段"; isSelected = true }
+    private val formExpCb = JBCheckBox("展开表单参数").apply { toolTipText = "将表单参数展开为独立字段"; isSelected = true }
+    private val inferCb = JBCheckBox("推断响应体主类型（Result<T> → T）").apply { toolTipText = "自动提取实际数据类型"; isSelected = true }
+    private val urlTplCb = JBCheckBox("URL 模板（/users/{id}）").apply { toolTipText = "使用 RFC 6570 语法"; isSelected = true }
+
+    private val feign = withHelp(feignCb, project, "Feign 客户端支持", "扫描项目中的 @FeignClient 接口，提取其中的 API 信息并导出到 YAPI。")
+    private val autoScan = withHelp(autoCb, project, "自动扫描", "文件修改后自动重新扫描 API。关闭后需手动刷新。")
+    private val concurrent = withHelp(concurrentCb, project, "并发扫描", "多线程扫描，大型项目可加速。实验性功能。")
+    private val queryExp = withHelp(queryExpCb, project, "展开查询参数", "把 @RequestParam 参数展开为文档中的独立字段。")
+    private val formExp = withHelp(formExpCb, project, "展开表单参数", "把表单参数展开为独立字段。")
+    private val infer = withHelp(inferCb, project, "推断响应体主类型", "Result<T> → T，自动提取实际数据类型。")
+    private val urlTpl = withHelp(urlTplCb, project, "URL 模板", "路径变量用 {id} 语法显示。")
+
+    private val pathMulti = ComboBox(PathSelector.values().map { it.name }.toTypedArray())
+
+    override val component: JComponent = FormBuilder.createFormBuilder()
+        .addComponent(createSection("框架支持", listOf(feign)))
+        .addComponent(createSection("扫描行为", listOf(autoScan, concurrent)))
+        .addComponent(createSection("文档格式", listOf(queryExp, formExp, infer, urlTpl)))
+        .addLabeledComponent("路径多选策略：", pathMulti)
+        .addComponentFillVertically(JPanel(), 0)
+        .panel
+
+    override fun resetFrom(s: Settings?) {
+        feignCb.isSelected = s?.feignEnable ?: false; autoCb.isSelected = s?.autoScanEnabled ?: true
+        concurrentCb.isSelected = s?.concurrentScanEnabled ?: false; queryExpCb.isSelected = s?.queryExpanded ?: true
+        formExpCb.isSelected = s?.formExpanded ?: true; inferCb.isSelected = s?.inferReturnMain ?: true
+        urlTplCb.isSelected = s?.enableUrlTemplating ?: true; pathMulti.selectedItem = s?.pathMulti ?: "ALL"
+    }
+    override fun applyTo(s: Settings) {
+        s.feignEnable = feignCb.isSelected; s.autoScanEnabled = autoCb.isSelected; s.concurrentScanEnabled = concurrentCb.isSelected
+        s.queryExpanded = queryExpCb.isSelected; s.formExpanded = formExpCb.isSelected; s.inferReturnMain = inferCb.isSelected
+        s.enableUrlTemplating = urlTplCb.isSelected; s.pathMulti = pathMulti.selectedItem?.toString() ?: "ALL"
+    }
+    override fun isModified(s: Settings?): Boolean {
+        val ss = s ?: return false
+        return feignCb.isSelected != ss.feignEnable || autoCb.isSelected != ss.autoScanEnabled || concurrentCb.isSelected != ss.concurrentScanEnabled ||
+                queryExpCb.isSelected != ss.queryExpanded || formExpCb.isSelected != ss.formExpanded || inferCb.isSelected != ss.inferReturnMain ||
+                urlTplCb.isSelected != ss.enableUrlTemplating || pathMulti.selectedItem?.toString() != ss.pathMulti
+    }
+}
+
+// ── YAPI 导出 ───────────────────────────────────────────────
+class YapiExportPanel(private val project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
+    private val server = JBTextField()
+    private val token = JBTextField()
+    private val tokenBtn = JButton("检测令牌")
+    private val tokenResult = JBLabel()
+    private val urlTpl = JBCheckBox("URL 模板").apply { isSelected = true }
+    private val modeCombo = ComboBox(YapiExportMode.entries.toTypedArray())
+    private val reqJson5 = JBCheckBox("请求体 JSON5")
+    private val resJson5 = JBCheckBox("响应体 JSON5")
+
+    init { tokenBtn.addActionListener { checkToken() } }
+
+    override val component: JComponent = FormBuilder.createFormBuilder()
+        .addComponent(createSection("服务器", listOf(
+            withHelp(JPanel(BorderLayout()).apply { add(JLabel("地址："), BorderLayout.WEST); add(server, BorderLayout.CENTER) }, project, "YAPI 服务器地址", "你的 YAPI 服务地址，插件会向这个地址同步 API 文档。"),
+            withHelp(JPanel(BorderLayout(5, 0)).apply { add(JLabel("令牌："), BorderLayout.WEST); add(JPanel(BorderLayout(5,0)).apply { add(token, BorderLayout.CENTER); add(tokenBtn, BorderLayout.EAST) }, BorderLayout.CENTER) }, project, "个人令牌", "YAPI 个人访问令牌。获取：YAPI → 个人中心 → 令牌")
+        )))
+        .addComponent(tokenResult)
+        .addComponent(createSection("导出选项", listOf(urlTpl, JPanel(BorderLayout()).apply { add(JLabel("模式："), BorderLayout.WEST); add(modeCombo, BorderLayout.CENTER) }, reqJson5, resJson5)))
+        .addComponentFillVertically(JPanel(), 0)
+        .panel
+
+    private fun checkToken() {
+        val sv = server.text.trim(); val tk = token.text.trim()
+        if (sv.isBlank()) { Messages.showWarningDialog(project, "请先输入 YAPI 服务器地址", "提示"); return }
+        if (tk.isBlank()) { Messages.showWarningDialog(project, "请先输入个人令牌", "提示"); return }
+        tokenBtn.isEnabled = false; tokenResult.text = "检测中..."
         thread {
-            LOG.info("refreshCacheSizes: project=${project.name}@${project.basePath}")
-            var projectSize: Long = -1L
             try {
-                val repo = ProjectCacheRepository.getInstance(project)
-                projectSize = repo.cacheSize()
-            } catch (e: Exception) {
-                LOG.warn("Failed to get project cache size", e)
-            }
-
-            val globalSize = try {
-                AppCacheRepository.getInstance().cacheSize()
-            } catch (e: Exception) {
-                -1L
-            }
-
-            LOG.info("Cache refresh: projectSize=$projectSize, globalSize=$globalSize")
-
-            SwingUtilities.invokeLater {
-                projectCacheSizeLabel.text = when {
-                    projectSize < 0 -> "N/A"
-                    else -> formatFileSize(projectSize)
-                }
-                projectCacheSizeLabel.toolTipText = null
-                globalCacheSizeLabel.text = if (globalSize < 0) "N/A" else formatFileSize(globalSize)
-            }
-        }
-    }
-
-    /**
-     * Formats a file size in bytes to human-readable format.
-     */
-    private fun formatFileSize(size: Long): String {
-        return when {
-            size < 1024 -> "$size B"
-            size < 1024 * 1024 -> String.format("%.1f KB", size / 1024.0)
-            size < 1024 * 1024 * 1024 -> String.format("%.1f MB", size / (1024.0 * 1024.0))
-            else -> String.format("%.1f GB", size / (1024.0 * 1024.0 * 1024.0))
-        }
-    }
-
-    private fun createRepositoryPanel(): JPanel {
-        return JPanel(BorderLayout()).apply {
-            border = BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(),
-                "仓库",
-                TitledBorder.LEFT,
-                TitledBorder.TOP
-            )
-            val toolbarDecorator = ToolbarDecorator.createDecorator(repositoryTable)
-                .setAddAction {
-                    showAddRepositoryDialog()
-                }
-                .setRemoveAction {
-                    val selected = repositoryTable.selectedRow
-                    if (selected >= 0) {
-                        repositoryTableModel.removeRow(selected)
-                    }
-                }
-                .setEditAction {
-                    val selected = repositoryTable.selectedRow
-                    if (selected >= 0) {
-                        val config = repositoryTableModel.getItem(selected)
-                        showEditRepositoryDialog(config)
-                    }
-                }
-                .disableUpDownActions()
-            add(toolbarDecorator.createPanel(), BorderLayout.CENTER)
-        }
-    }
-
-    private fun showAddRepositoryDialog() {
-        val dialog = AddRepositoryDialog()
-        if (dialog.showAndGet()) {
-            repositoryTableModel.addRow(dialog.config)
-        }
-    }
-
-    private fun showEditRepositoryDialog(config: RepositoryConfig) {
-        val dialog = EditRepositoryDialog(config)
-        if (dialog.showAndGet()) {
-            repositoryTableModel.fireTableDataChanged()
-        }
-    }
-
-    private inner class AddRepositoryDialog : DialogWrapper(false) {
-        private val typeCombo = JComboBox(arrayOf("Maven本地", "Gradle缓存", "自定义"))
-        private val pathField = JTextField(40)
-        private val browseButton = JButton("浏览...")
-
-        lateinit var config: RepositoryConfig
-
-        init {
-            title = "添加仓库"
-            browseButton.addActionListener {
-                val fileChooser = JFileChooser()
-                fileChooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                fileChooser.isMultiSelectionEnabled = false
-                if (fileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
-                    pathField.text = fileChooser.selectedFile.absolutePath
-                }
-            }
-            typeCombo.addActionListener {
-                updatePathField()
-            }
-            updatePathField()
-            init()
-        }
-
-        private fun updatePathField() {
-            val isCustom = typeCombo.selectedItem == "自定义"
-            pathField.isEnabled = isCustom
-            browseButton.isEnabled = isCustom
-
-            if (!isCustom) {
-                val path = when (typeCombo.selectedItem) {
-                    "Maven本地" -> DefaultRepositories.MAVEN_LOCAL.toString()
-                    "Gradle缓存" -> DefaultRepositories.GRADLE_CACHE.toString()
-                    else -> ""
-                }
-                pathField.text = path
-            }
-        }
-
-        override fun createCenterPanel(): JComponent {
-            return JPanel(GridLayout(0, 2, 4, 4)).apply {
-                add(JLabel("类型："))
-                add(typeCombo)
-                add(JLabel("路径："))
-                val pathPanel = JPanel(BorderLayout()).apply {
-                    add(pathField, BorderLayout.CENTER)
-                    add(browseButton, BorderLayout.EAST)
-                }
-                add(pathPanel)
-                preferredSize = Dimension(500, preferredSize.height)
-            }
-        }
-
-        override fun doOKAction() {
-            val path = pathField.text.trim()
-            if (path.isEmpty()) {
-                return
-            }
-            val type = when (typeCombo.selectedItem) {
-                "Maven本地" -> RepositoryType.MAVEN_LOCAL
-                "Gradle缓存" -> RepositoryType.GRADLE_CACHE
-                else -> RepositoryType.CUSTOM
-            }
-            config = RepositoryConfig(type, path)
-            super.doOKAction()
-        }
-    }
-
-    private inner class EditRepositoryDialog(private val config: RepositoryConfig) : DialogWrapper(false) {
-        private val pathField = JTextField(40)
-        private val browseButton = JButton("浏览...")
-
-        init {
-            title = "编辑仓库：${config.displayName()}"
-            pathField.text = config.path
-            pathField.isEnabled = config.type == RepositoryType.CUSTOM
-            browseButton.isEnabled = config.type == RepositoryType.CUSTOM
-            browseButton.addActionListener {
-                val fileChooser = JFileChooser()
-                fileChooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                fileChooser.selectedFile = File(config.path)
-                if (fileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
-                    pathField.text = fileChooser.selectedFile.absolutePath
-                }
-            }
-            init()
-        }
-
-        override fun createCenterPanel(): JComponent {
-            return JPanel(GridLayout(0, 2, 4, 4)).apply {
-                add(JLabel("类型："))
-                add(JLabel(config.displayName()))
-                add(JLabel("路径："))
-                val pathPanel = JPanel(BorderLayout()).apply {
-                    add(pathField, BorderLayout.CENTER)
-                    add(browseButton, BorderLayout.EAST)
-                }
-                add(pathPanel)
-                preferredSize = Dimension(500, preferredSize.height)
-            }
-        }
-
-        override fun doOKAction() {
-            if (config.type == RepositoryType.CUSTOM) {
-                val path = pathField.text.trim()
-                if (path.isEmpty()) {
-                    return
-                }
-                config.path = path
-            }
-            super.doOKAction()
-        }
-    }
-
-    override val component: JComponent = FormBuilder.createFormBuilder()
-        .addComponent(
-            createTitledPanel(
-                "框架支持", listOf(
-                    feignEnable, jaxrsEnable, actuatorEnable
-                )
-            )
-        )
-        .addComponent(autoScanEnabled)
-        .addComponent(concurrentScanEnabled)
-        .addComponent(autoInjectAgent)
-        .addComponent(switchNotice)
-        .addLabeledComponent("日志级别：", logLevelCombo)
-        .addLabeledComponent("输出字符集：", outputCharsetCombo)
-        .addComponent(outputDemoCheckBox)
-        .addComponent(createTitledPanel("缓存管理", listOf(cachePanel)))
-        .addComponent(createRepositoryPanel())
-        .addComponentFillVertically(JPanel(), 0)
-        .panel
-
-    override fun resetFrom(settings: Settings?) {
-        feignEnable.isSelected = settings?.feignEnable ?: false
-        jaxrsEnable.isSelected = settings?.jaxrsEnable ?: true
-        actuatorEnable.isSelected = settings?.actuatorEnable ?: false
-        autoScanEnabled.isSelected = settings?.autoScanEnabled ?: true
-        concurrentScanEnabled.isSelected = settings?.concurrentScanEnabled ?: false
-        autoInjectAgent.isSelected = settings?.autoInjectAgent ?: true
-        switchNotice.isSelected = settings?.switchNotice ?: true
-        logLevelCombo.selectedItem = CommonSettingsHelper.VerbosityLevel.toLevel(settings?.logLevel ?: 50)
-        outputCharsetCombo.selectedItem = settings?.outputCharset ?: "UTF-8"
-        outputDemoCheckBox.isSelected = settings?.outputDemo ?: true
-        refreshCacheSizes()
-
-        val userRepos = settings?.remoteConfig?.mapNotNull { RepositoryConfig.parse(it) }
-        repositoryTableModel.items = if (!userRepos.isNullOrEmpty()) {
-            userRepos.toMutableList()
-        } else {
-            DefaultRepositories.detectFromEnvironment().toMutableList()
-        }
-    }
-
-    override fun applyTo(settings: Settings) {
-        settings.feignEnable = feignEnable.isSelected
-        settings.jaxrsEnable = jaxrsEnable.isSelected
-        settings.actuatorEnable = actuatorEnable.isSelected
-        settings.autoScanEnabled = autoScanEnabled.isSelected
-        settings.concurrentScanEnabled = concurrentScanEnabled.isSelected
-        settings.autoInjectAgent = autoInjectAgent.isSelected
-        settings.switchNotice = switchNotice.isSelected
-        settings.logLevel = (logLevelCombo.selectedItem as? CommonSettingsHelper.VerbosityLevel)?.level ?: 50
-        settings.outputCharset = outputCharsetCombo.selectedItem?.toString() ?: "UTF-8"
-        settings.outputDemo = outputDemoCheckBox.isSelected
-
-        val repos = repositoryTableModel.items.map { RepositoryConfig.serialize(it) }
-        // Store repository config in remoteConfig as a fallback
-        // (grpcRepositories field was removed)
-    }
-
-    override fun isModified(settings: Settings?): Boolean {
-        val s = settings ?: return false
-        return feignEnable.isSelected != s.feignEnable ||
-                jaxrsEnable.isSelected != s.jaxrsEnable ||
-                actuatorEnable.isSelected != s.actuatorEnable ||
-                autoScanEnabled.isSelected != s.autoScanEnabled ||
-                concurrentScanEnabled.isSelected != s.concurrentScanEnabled ||
-                autoInjectAgent.isSelected != s.autoInjectAgent ||
-                switchNotice.isSelected != s.switchNotice ||
-                (logLevelCombo.selectedItem as? CommonSettingsHelper.VerbosityLevel)?.level != s.logLevel ||
-                outputCharsetCombo.selectedItem?.toString() != s.outputCharset ||
-                outputDemoCheckBox.isSelected != s.outputDemo
-    }
-
-    companion object : IdeaLog
-}
-
-object CommonSettingsHelper {
-    enum class VerbosityLevel(val level: Int, val displayName: String) {
-        SILENT(0, "静默"),
-        ERROR(10, "错误"),
-        WARN(20, "警告"),
-        INFO(30, "信息"),
-        DEBUG(40, "调试"),
-        TRACE(50, "跟踪");
-
-        override fun toString(): String = displayName
-
-        companion object {
-            fun toLevel(level: Int): VerbosityLevel {
-                return values().minByOrNull { kotlin.math.abs(it.level - level) } ?: TRACE
-            }
-        }
-    }
-}
-
-class YapiSettingsPanel(private val project: com.intellij.openapi.project.Project) : SettingsPanel {
-    private val yapiServer = JBTextField()
-    private val yapiPersonalToken = JBTextField()
-    private val testTokenButton = JButton("检测令牌")
-    private val testTokenResult = JBLabel()
-    private val enableUrlTemplating = JBCheckBox("启用URL模板", true)
-    private val switchNotice = JBCheckBox("切换通知", true)
-    private val yapiExportModeCombo = ComboBox(YapiExportMode.entries.toTypedArray())
-    private val yapiReqBodyJson5 = JBCheckBox("请求体JSON5")
-    private val yapiResBodyJson5 = JBCheckBox("响应体JSON5")
-
-    private val tokenInputPanel = JPanel(BorderLayout(5, 0)).apply {
-        add(yapiPersonalToken, BorderLayout.CENTER)
-        val btnPanel = JPanel(BorderLayout(5, 0)).apply {
-            add(testTokenButton, BorderLayout.CENTER)
-            add(testTokenResult, BorderLayout.EAST)
-        }
-        add(btnPanel, BorderLayout.EAST)
-    }
-
-    init {
-        testTokenButton.addActionListener {
-            testToken()
-        }
-    }
-
-    override val component: JComponent = FormBuilder.createFormBuilder()
-        .addLabeledComponent("YAPI服务器：", yapiServer)
-        .addLabeledComponent("个人令牌：", tokenInputPanel)
-        .addComponent(enableUrlTemplating)
-        .addComponent(switchNotice)
-        .addLabeledComponent("导出模式：", yapiExportModeCombo)
-        .addComponent(yapiReqBodyJson5)
-        .addComponent(yapiResBodyJson5)
-        .addComponentFillVertically(JPanel(), 0)
-        .panel
-
-    private fun testToken() {
-        val server = yapiServer.text.trim()
-        val token = yapiPersonalToken.text.trim()
-        if (server.isBlank()) {
-            com.intellij.openapi.ui.Messages.showWarningDialog(project, "请先输入YAPI服务器地址", "提示")
-            return
-        }
-        if (token.isBlank()) {
-            com.intellij.openapi.ui.Messages.showWarningDialog(project, "请先输入个人令牌", "提示")
-            return
-        }
-        testTokenButton.isEnabled = false
-        testTokenResult.text = "检测中..."
-        kotlin.concurrent.thread {
-            try {
-                val url = java.net.URL("${server.removeSuffix("/")}/api/project/list?token=${java.net.URLEncoder.encode(token, "UTF-8")}")
-                val conn = url.openConnection() as java.net.HttpURLConnection
-                conn.connectTimeout = 5000
-                conn.readTimeout = 5000
-                conn.requestMethod = "GET"
-                val code = conn.responseCode
-                val body = if (code == 200) conn.inputStream.bufferedReader().readText()
-                           else conn.errorStream?.bufferedReader()?.readText() ?: ""
+                val url = java.net.URL("${sv.removeSuffix("/")}/api/project/list?token=${java.net.URLEncoder.encode(tk, "UTF-8")}")
+                val conn = url.openConnection() as java.net.HttpURLConnection; conn.connectTimeout = 5000; conn.readTimeout = 5000; conn.requestMethod = "GET"
+                val body = if (conn.responseCode == 200) conn.inputStream.bufferedReader().readText() else conn.errorStream?.bufferedReader()?.readText() ?: ""
                 val json = com.google.gson.JsonParser.parseString(body).asJsonObject
-                val errcode = json.get("errcode")?.asInt ?: json.get("code")?.asInt
-                val errmsg = json.get("errmsg")?.asString ?: json.get("message")?.asString ?: ""
-                javax.swing.SwingUtilities.invokeLater {
-                    if (errcode == 0 || errmsg.contains("成功")) {
-                        testTokenResult.text = "✓ 令牌有效"
-                        testTokenResult.foreground = java.awt.Color(0x2da44e)
-                    } else {
-                        testTokenResult.text = "✗ $errmsg"
-                        testTokenResult.foreground = java.awt.Color(0xcf222e)
-                    }
-                    testTokenButton.isEnabled = true
+                val code = json.get("errcode")?.asInt ?: json.get("code")?.asInt
+                val msg = json.get("errmsg")?.asString ?: json.get("message")?.asString ?: ""
+                SwingUtilities.invokeLater {
+                    if (code == 0 || msg.contains("成功")) { tokenResult.text = "✓ 有效"; tokenResult.foreground = Color(0x2da44e) }
+                    else { tokenResult.text = "✗ $msg"; tokenResult.foreground = Color(0xcf222e) }
+                    tokenBtn.isEnabled = true
                 }
-            } catch (e: Exception) {
-                javax.swing.SwingUtilities.invokeLater {
-                    testTokenResult.text = "✗ 连接失败：${e.message}"
-                    testTokenResult.foreground = java.awt.Color(0xcf222e)
-                    testTokenButton.isEnabled = true
-                }
-            }
+            } catch (e: Exception) { SwingUtilities.invokeLater { tokenResult.text = "✗ 连接失败"; tokenResult.foreground = Color(0xcf222e); tokenBtn.isEnabled = true } }
         }
     }
 
-    override fun resetFrom(settings: Settings?) {
-        yapiServer.text = settings?.yapiServer ?: ""
-        yapiPersonalToken.text = settings?.yapiPersonalToken ?: ""
-        testTokenResult.text = ""
-        enableUrlTemplating.isSelected = settings?.enableUrlTemplating ?: true
-        switchNotice.isSelected = settings?.switchNotice ?: true
-        yapiExportModeCombo.selectedItem = settings?.yapiExportMode?.let {
-            runCatching { YapiExportMode.valueOf(it) }.getOrNull()
-        } ?: YapiExportMode.ALWAYS_UPDATE
-        yapiReqBodyJson5.isSelected = settings?.yapiReqBodyJson5 ?: false
-        yapiResBodyJson5.isSelected = settings?.yapiResBodyJson5 ?: false
+    override fun resetFrom(s: Settings?) {
+        server.text = s?.yapiServer ?: ""; token.text = s?.yapiPersonalToken ?: ""; tokenResult.text = ""
+        urlTpl.isSelected = s?.enableUrlTemplating ?: true
+        modeCombo.selectedItem = s?.yapiExportMode?.let { runCatching { YapiExportMode.valueOf(it) }.getOrNull() } ?: YapiExportMode.ALWAYS_UPDATE
+        reqJson5.isSelected = s?.yapiReqBodyJson5 ?: false; resJson5.isSelected = s?.yapiResBodyJson5 ?: false
     }
-
-    override fun applyTo(settings: Settings) {
-        settings.yapiServer = yapiServer.text.takeIf { it.isNotBlank() }
-        settings.yapiPersonalToken = yapiPersonalToken.text.takeIf { it.isNotBlank() }
-        settings.enableUrlTemplating = enableUrlTemplating.isSelected
-        settings.switchNotice = switchNotice.isSelected
-        settings.yapiExportMode =
-            (yapiExportModeCombo.selectedItem as? YapiExportMode)?.name ?: YapiExportMode.ALWAYS_UPDATE.name
-        settings.yapiReqBodyJson5 = yapiReqBodyJson5.isSelected
-        settings.yapiResBodyJson5 = yapiResBodyJson5.isSelected
+    override fun applyTo(s: Settings) {
+        s.yapiServer = server.text.takeIf { it.isNotBlank() }; s.yapiPersonalToken = token.text.takeIf { it.isNotBlank() }
+        s.enableUrlTemplating = urlTpl.isSelected; s.yapiExportMode = (modeCombo.selectedItem as? YapiExportMode)?.name ?: YapiExportMode.ALWAYS_UPDATE.name
+        s.yapiReqBodyJson5 = reqJson5.isSelected; s.yapiResBodyJson5 = resJson5.isSelected
     }
-
-    override fun isModified(settings: Settings?): Boolean {
-        val s = settings ?: return false
-        return yapiServer.text != (s.yapiServer ?: "") ||
-                yapiPersonalToken.text != (s.yapiPersonalToken ?: "") ||
-                enableUrlTemplating.isSelected != s.enableUrlTemplating ||
-                switchNotice.isSelected != s.switchNotice ||
-                yapiExportModeCombo.selectedItem?.toString() != s.yapiExportMode ||
-                yapiReqBodyJson5.isSelected != s.yapiReqBodyJson5 ||
-                yapiResBodyJson5.isSelected != s.yapiResBodyJson5
+    override fun isModified(s: Settings?): Boolean {
+        val ss = s ?: return false
+        return server.text != (ss.yapiServer ?: "") || token.text != (ss.yapiPersonalToken ?: "") || urlTpl.isSelected != ss.enableUrlTemplating ||
+                modeCombo.selectedItem?.toString() != ss.yapiExportMode || reqJson5.isSelected != ss.yapiReqBodyJson5 || resJson5.isSelected != ss.yapiResBodyJson5
     }
 }
 
-class HttpSettingsPanel : SettingsPanel {
-    private val httpClientCombo = ComboBox(HttpClientType.values().map { it.value }.toTypedArray())
-    private val httpTimeout = JBTextField("30")
-    private val unsafeSsl = JBCheckBox("允许不安全的SSL").apply {
-        toolTipText = "允许连接到不受信任或自签名 SSL 证书的 HTTPS 服务器"
-    }
+// ── Mock Agent ──────────────────────────────────────────────
+class MockAgentPanel(project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
+    private val injectCb = JBCheckBox("自动注入 Mock Agent").apply { isSelected = true; toolTipText = "启动运行配置时自动注入 -javaagent" }
+    private val inject = withHelp(injectCb, project, "自动注入 Mock Agent", "启动 Spring Boot 运行配置时自动添加 -javaagent:mock-agent.jar，拦截 Feign/MyBatis 调用返回模拟数据。")
 
     override val component: JComponent = FormBuilder.createFormBuilder()
-        .addLabeledComponent("HTTP客户端：", httpClientCombo)
-        .addLabeledComponent("超时（秒）：", httpTimeout)
-        .addComponent(unsafeSsl)
+        .addComponent(createSection("Mock 拦截", listOf(inject)))
         .addComponentFillVertically(JPanel(), 0)
         .panel
-
-    override fun resetFrom(settings: Settings?) {
-        httpClientCombo.selectedItem = settings?.httpClient ?: HttpClientType.APACHE.value
-        httpTimeout.text = settings?.httpTimeOut?.toString() ?: "30"
-        unsafeSsl.isSelected = settings?.unsafeSsl ?: false
-    }
-
-    override fun applyTo(settings: Settings) {
-        settings.httpClient = httpClientCombo.selectedItem?.toString() ?: HttpClientType.APACHE.value
-        settings.httpTimeOut = httpTimeout.text.toIntOrNull() ?: 30
-        settings.unsafeSsl = unsafeSsl.isSelected
-    }
-
-    override fun isModified(settings: Settings?): Boolean {
-        val s = settings ?: return false
-        return httpClientCombo.selectedItem?.toString() != s.httpClient ||
-                httpTimeout.text != s.httpTimeOut.toString() ||
-                unsafeSsl.isSelected != s.unsafeSsl
-    }
+    override fun resetFrom(s: Settings?) { injectCb.isSelected = s?.autoInjectAgent ?: true }
+    override fun applyTo(s: Settings) { s.autoInjectAgent = injectCb.isSelected }
+    override fun isModified(s: Settings?): Boolean = injectCb.isSelected != (s?.autoInjectAgent ?: true)
 }
 
-class IntelligentSettingsPanel : SettingsPanel {
-    private val queryExpanded = JBCheckBox("展开查询参数", true).apply {
-        toolTipText = "将查询参数展开为导出文档中的独立字段"
-    }
-    private val formExpanded = JBCheckBox("展开表单参数", true).apply {
-        toolTipText = "将表单参数展开为导出文档中的独立字段"
-    }
-    private val inferReturnMain = JBCheckBox("从包装类推断返回主类型", true).apply {
-        toolTipText = "自动检测泛型响应包装类中的实际数据类型（如 Result<T>）"
-    }
-    private val enableUrlTemplating = JBCheckBox("启用URL模板（RFC 6570）", true).apply {
-        toolTipText = "使用 RFC 6570 URI 模板语法表示路径变量（如 /users/{id}）"
-    }
-    private val pathMultiCombo = ComboBox(PathSelector.values().map { it.name }.toTypedArray())
-
-    override val component: JComponent = FormBuilder.createFormBuilder()
-        .addComponent(queryExpanded)
-        .addComponent(formExpanded)
-        .addComponent(inferReturnMain)
-        .addComponent(enableUrlTemplating)
-        .addLabeledComponent("路径多选策略：", pathMultiCombo)
-        .addComponentFillVertically(JPanel(), 0)
-        .panel
-
-    override fun resetFrom(settings: Settings?) {
-        queryExpanded.isSelected = settings?.queryExpanded ?: true
-        formExpanded.isSelected = settings?.formExpanded ?: true
-        inferReturnMain.isSelected = settings?.inferReturnMain ?: true
-        enableUrlTemplating.isSelected = settings?.enableUrlTemplating ?: true
-        pathMultiCombo.selectedItem = settings?.pathMulti ?: "ALL"
-    }
-
-    override fun applyTo(settings: Settings) {
-        settings.queryExpanded = queryExpanded.isSelected
-        settings.formExpanded = formExpanded.isSelected
-        settings.inferReturnMain = inferReturnMain.isSelected
-        settings.enableUrlTemplating = enableUrlTemplating.isSelected
-        settings.pathMulti = pathMultiCombo.selectedItem?.toString() ?: "ALL"
-    }
-
-    override fun isModified(settings: Settings?): Boolean {
-        val s = settings ?: return false
-        return queryExpanded.isSelected != s.queryExpanded ||
-                formExpanded.isSelected != s.formExpanded ||
-                inferReturnMain.isSelected != s.inferReturnMain ||
-                enableUrlTemplating.isSelected != s.enableUrlTemplating ||
-                pathMultiCombo.selectedItem?.toString() != s.pathMulti
-    }
-}
-
-class ExtensionConfigPanel : SettingsPanel {
-    private val extensionList = CheckBoxList<String>()
-    private val preview = JBTextArea()
+// ── 扩展配置 ────────────────────────────────────────────────
+class ExtensionConfigPanel(project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
+    private val list = CheckBoxList<String>()
+    private val preview = JBTextArea().apply { isEditable = false }
+    private val allExts = ExtensionConfigRegistry.allExtensions()
 
     override val component: JComponent = JSplitPane(JSplitPane.HORIZONTAL_SPLIT).apply {
-        val left = JPanel(BorderLayout())
-        left.add(JScrollPane(extensionList), BorderLayout.CENTER)
-        val right = JPanel(BorderLayout())
-        preview.isEditable = false
-        right.add(JScrollPane(preview), BorderLayout.CENTER)
-        leftComponent = left
-        rightComponent = right
-        resizeWeight = 0.45
+        leftComponent = JScrollPane(list); rightComponent = JScrollPane(preview); resizeWeight = 0.45
     }
 
     init {
-        val allCodes = ExtensionConfigRegistry.allExtensions().map { it.code }
-        extensionList.setItems(allCodes) { it }
-        extensionList.setCheckBoxListListener { _, _ -> refreshPreview() }
-        extensionList.addListSelectionListener { refreshPreview() }
+        list.setItems(allExts.map { it.code }) { it }
+        list.setCheckBoxListListener { _, _ -> refreshPreview() }
+        list.addListSelectionListener { refreshPreview() }
     }
 
-    override fun resetFrom(settings: Settings?) {
-        val selected = ExtensionConfigRegistry.stringToCodes(settings?.extensionConfigs ?: "").toSet()
-        ExtensionConfigRegistry.allExtensions().forEachIndexed { index, extension ->
-            val isSelected =
-                selected.contains(extension.code) || (extension.defaultEnabled && !selected.contains("-${extension.code}"))
-            extensionList.setItemSelected(extension.code, isSelected)
+    override fun resetFrom(s: Settings?) {
+        val saved = ExtensionConfigRegistry.stringToCodes(s?.extensionConfigs ?: "").toSet()
+        allExts.forEach { ext ->
+            val sel = saved.contains(ext.code) || (ext.defaultEnabled && !saved.contains("-${ext.code}"))
+            list.setItemSelected(ext.code, sel)
         }
         refreshPreview()
     }
-
-    override fun applyTo(settings: Settings) {
-        settings.extensionConfigs = ExtensionConfigRegistry.codesToString(selectedCodes().toTypedArray())
+    override fun applyTo(s: Settings) { s.extensionConfigs = ExtensionConfigRegistry.codesToString(selectedCodes().toTypedArray()) }
+    override fun isModified(s: Settings?): Boolean {
+        val ss = s ?: return false
+        val cur = selectedCodes().toSet(); val saved = ExtensionConfigRegistry.stringToCodes(ss.extensionConfigs ?: "").toSet()
+        val defaults = allExts.filter { it.defaultEnabled }.map { it.code }.toSet()
+        return cur != (saved + defaults)
     }
-
-    override fun isModified(settings: Settings?): Boolean {
-        val s = settings ?: return false
-        val currentSelected = selectedCodes().toSet()
-        val savedSelected = ExtensionConfigRegistry.stringToCodes(s.extensionConfigs ?: "").toSet()
-        val defaultEnabled = ExtensionConfigRegistry.allExtensions()
-            .filter { it.defaultEnabled }
-            .map { it.code }
-            .toSet()
-        val effectiveSaved = savedSelected + defaultEnabled
-        return currentSelected != effectiveSaved
-    }
-
-    private fun selectedCodes(): List<String> {
-        return ExtensionConfigRegistry.allExtensions().mapNotNull { extension ->
-            if (extensionList.isItemSelected(extension.code)) extension.code else null
-        }
-    }
+    private fun selectedCodes(): List<String> = allExts.mapNotNull { if (list.isItemSelected(it.code)) it.code else null }
 
     private fun refreshPreview() {
-        val selectedIndex = extensionList.selectedIndex
-        if (selectedIndex >= 0) {
-            val allExtensions = ExtensionConfigRegistry.allExtensions()
-            if (selectedIndex < allExtensions.size) {
-                val extension = allExtensions[selectedIndex]
-                val sb = StringBuilder()
-                sb.appendLine("# Code: ${extension.code}")
-                sb.appendLine("# Description: ${extension.description}")
-                if (extension.onClass != null) {
-                    sb.appendLine("# Condition: on-class ${extension.onClass}")
-                }
-                sb.appendLine("# 默认：${if (extension.defaultEnabled) "已启用" else "已禁用"}")
-                sb.appendLine()
-                if (extension.content.isNotBlank()) {
-                    sb.append(extension.content)
-                } else {
-                    sb.append("# （无内容）")
-                }
-                preview.text = sb.toString()
-                return
-            }
+        val idx = list.selectedIndex; if (idx < 0 || idx >= allExts.size) { preview.text = "# 选择扩展以预览"; return }
+        val ext = allExts[idx]
+        preview.text = buildString {
+            appendLine("# ${ext.code}"); appendLine("# ${ext.description}")
+            if (ext.onClass != null) appendLine("# 条件：存在 ${ext.onClass}")
+            appendLine("# 当前：${if (list.isItemSelected(ext.code)) "已启用" else "已禁用"}  |  默认：${if (ext.defaultEnabled) "已启用" else "已禁用"}")
+            appendLine(); append(ext.content.ifBlank { "# （无内容）" })
         }
-        preview.text = "# 选择扩展以预览"
     }
 }
 
-class RemoteConfigPanel : SettingsPanel {
-    private val list = CheckBoxList<String>()
-    private val preview = JBTextArea()
-    private val add = JButton("添加")
-    private val remove = JButton("移除")
-    private val refresh = JButton("刷新")
-    private var remoteItems: MutableList<Pair<Boolean, String>> = mutableListOf()
+// ── 高级 ────────────────────────────────────────────────────
+class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
+    private val timeout = JBTextField("30")
+    private val unsafeSslCb = JBCheckBox("允许不安全的 SSL").apply { toolTipText = "允许连接到自签名证书的服务器" }
+    private val unsafeSsl = withHelp(unsafeSslCb, project, "不安全 SSL", "允许插件通过 HTTPS 连接到使用自签名证书的服务器。")
+    private val logLevel = ComboBox(VerbosityLevel.values())
+    private val charset = ComboBox(arrayOf("UTF-8", "GBK", "ISO-8859-1"))
+    private val outputDemo = JBCheckBox("在文档中输出示例值").apply { isSelected = true }
+    private val switchNotice = JBCheckBox("切换设置时显示通知").apply { isSelected = true }
 
-    override val component: JComponent = JPanel(BorderLayout()).apply {
-        val toolbar = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
-            add(add)
-            add(remove)
-            add(refresh)
-        }
-        add(toolbar, BorderLayout.NORTH)
-        val split = JSplitPane(JSplitPane.HORIZONTAL_SPLIT).apply {
-            leftComponent = JScrollPane(list)
-            preview.isEditable = false
-            rightComponent = JScrollPane(preview)
-            resizeWeight = 0.45
-        }
-        add(split, BorderLayout.CENTER)
-    }
+    private val pCacheLbl = JBLabel("0 B"); private val gCacheLbl = JBLabel("0 B")
+    private val clrP = JButton("清除"); private val clrG = JButton("清除")
+    private val repoModel = ListTableModel<RepositoryConfig>(
+        arrayOf(
+            object : ColumnInfo<RepositoryConfig, String>("类型") { override fun valueOf(i: RepositoryConfig?) = i?.displayName() },
+            object : ColumnInfo<RepositoryConfig, String>("路径") { override fun valueOf(i: RepositoryConfig?) = i?.path },
+            object : ColumnInfo<RepositoryConfig, Boolean>("启用") {
+                override fun valueOf(i: RepositoryConfig?) = i?.enabled ?: true; override fun getColumnClass() = java.lang.Boolean::class.java
+                override fun isCellEditable(i: RepositoryConfig?) = true; override fun setValue(i: RepositoryConfig?, v: Boolean) { i?.enabled = v }
+            }
+        ), mutableListOf()
+    )
+    private val repoTable = TableView(repoModel)
+    private val importBtn = JButton("导入设置"); private val exportBtn = JButton("导出设置")
+    private var curSettings: Settings? = null
 
+    override val component: JComponent = FormBuilder.createFormBuilder()
+        .addComponent(createSection("HTTP 请求", listOf(JPanel(BorderLayout()).apply { add(JLabel("超时（秒）："), BorderLayout.WEST); add(timeout, BorderLayout.CENTER) }, unsafeSsl)))
+        .addComponent(createSection("日志与输出", listOf(JPanel(BorderLayout()).apply { add(JLabel("日志级别："), BorderLayout.WEST); add(logLevel, BorderLayout.CENTER) }, JPanel(BorderLayout()).apply { add(JLabel("字符集："), BorderLayout.WEST); add(charset, BorderLayout.CENTER) }, outputDemo, switchNotice)))
+        .addComponent(createSection("缓存", listOf(JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply { add(JLabel("项目缓存：")); add(pCacheLbl); add(clrP) }, JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply { add(JLabel("全局缓存：")); add(gCacheLbl); add(clrG) })))
+        .addComponent(createSection("仓库", listOf(createRepoPanel())))
+        .addComponent(createSection("导入 / 导出", listOf(JPanel(FlowLayout(FlowLayout.LEFT)).apply { add(importBtn); add(exportBtn) })))
+        .addComponentFillVertically(JPanel(), 0)
+        .panel
+
+    private val prj: com.intellij.openapi.project.Project? = project
     init {
-        list.setCheckBoxListListener { index, value ->
-            if (index in remoteItems.indices) remoteItems[index] = value to remoteItems[index].second
-            refreshPreview()
-        }
-        list.addListSelectionListener { refreshPreview() }
-        add.addActionListener {
-            val url =
-                Messages.showInputDialog("请输入远程配置URL", "远程配置", Messages.getInformationIcon())
-            if (!url.isNullOrBlank()) {
-                remoteItems.add(true to url.trim())
-                refreshList()
-            }
-        }
-        remove.addActionListener {
-            val selected = list.selectedIndices.sortedDescending()
-            selected.forEach { index ->
-                if (index in remoteItems.indices) remoteItems.removeAt(index)
-            }
-            refreshList()
-        }
-        refresh.addActionListener { refreshPreview(force = true) }
+        clrP.addActionListener { prj?.let { ProjectCacheRepository.getInstance(it).clear() }; refreshSizes(); Messages.showInfoMessage("项目缓存已清除。", "清除缓存") }
+        clrG.addActionListener { AppCacheRepository.getInstance().clear(); refreshSizes(); Messages.showInfoMessage("全局缓存已清除。", "清除缓存") }
+        repoTable.setShowGrid(false); repoTable.intercellSpacing = Dimension(0, 0)
+        repoTable.columnModel.getColumn(0).preferredWidth = 120; repoTable.columnModel.getColumn(1).preferredWidth = 350; repoTable.columnModel.getColumn(2).preferredWidth = 60
+        importBtn.addActionListener { doImport() }; exportBtn.addActionListener { doExport() }
     }
 
-    override fun resetFrom(settings: Settings?) {
-        val raw = settings?.remoteConfig ?: emptyArray()
-        remoteItems = if (raw.isEmpty()) mutableListOf(true to DEFAULT_REMOTE_URL) else raw.map {
-            val clean = it.trim()
-            if (clean.startsWith("!")) false to clean.removePrefix("!").trim() else true to clean
-        }.filter { it.second.isNotBlank() }.toMutableList()
-        refreshList()
+    private fun createRepoPanel(): JPanel = JPanel(BorderLayout()).apply {
+        add(ToolbarDecorator.createDecorator(repoTable)
+            .setAddAction { val d = AddRepoDlg(); if (d.showAndGet()) repoModel.addRow(d.config) }
+            .setRemoveAction { val s = repoTable.selectedRow; if (s >= 0) repoModel.removeRow(s) }
+            .setEditAction { val s = repoTable.selectedRow; if (s >= 0) EditRepoDlg(repoModel.getItem(s)).show() }
+            .disableUpDownActions().createPanel(), BorderLayout.CENTER)
     }
 
-    override fun applyTo(settings: Settings) {
-        settings.remoteConfig = remoteItems.map { if (it.first) it.second else "!${it.second}" }.toTypedArray()
-    }
-
-    override fun isModified(settings: Settings?): Boolean {
-        val s = settings ?: return false
-        val current = remoteItems.map { if (it.first) it.second else "!${it.second}" }
-        return current != s.remoteConfig.toList()
-    }
-
-    private fun refreshList() {
-        list.setItems(remoteItems.map { it.second }) { it }
-        remoteItems.forEach { item -> list.setItemSelected(item.second, item.first) }
-        refreshPreview()
-    }
-
-    private fun refreshPreview(force: Boolean = false) {
-        val index = list.selectedIndex
-        if (index !in remoteItems.indices) {
-            preview.text = ""
-            return
-        }
-        val target = remoteItems[index].second
-        if (!force && target == preview.getClientProperty("url")) return
-        preview.putClientProperty("url", target)
-        preview.text = "加载中..."
+    private fun refreshSizes() {
+        pCacheLbl.text = "..."; gCacheLbl.text = "..."
         thread {
-            val content = runCatching { java.net.URI(target).toURL().readText() }.getOrElse { "加载失败：${it.message}" }
-            SwingUtilities.invokeLater {
-                if (list.selectedIndex == index) {
-                    preview.text = content
-                }
-            }
+            val ps = try { prj?.let { ProjectCacheRepository.getInstance(it).cacheSize() } ?: -1L } catch (_: Exception) { -1L }
+            val gs = try { AppCacheRepository.getInstance().cacheSize() } catch (_: Exception) { -1L }
+            SwingUtilities.invokeLater { pCacheLbl.text = if (ps < 0) "N/A" else fmt(ps); gCacheLbl.text = if (gs < 0) "N/A" else fmt(gs) }
         }
     }
+    private fun fmt(s: Long) = when { s < 1024 -> "$s B"; s < 1024 * 1024 -> String.format("%.1f KB", s / 1024.0); s < 1024 * 1024 * 1024 -> String.format("%.1f MB", s / (1024.0 * 1024.0)); else -> String.format("%.1f GB", s / (1024.0 * 1024.0 * 1024.0)) }
 
-    companion object {
-        private const val DEFAULT_REMOTE_URL =
-            "https://raw.githubusercontent.com/tangcent/easy-yapi/master/.default.remote.easy.api.config"
+    private fun doImport() { val s = curSettings ?: return; val c = JFileChooser().apply { dialogTitle = "导入设置"; fileSelectionMode = JFileChooser.FILES_ONLY }; if (c.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) runCatching { val i = GsonUtils.fromJson<Settings>(c.selectedFile!!.readText()); applyImp(s, i); resetFrom(s) }.onFailure { Messages.showErrorDialog("导入失败：${it.message}", "ApiMocktle") } }
+    private fun doExport() { val s = curSettings ?: return; val c = JFileChooser().apply { dialogTitle = "导出设置"; fileSelectionMode = JFileChooser.FILES_ONLY }; if (c.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) runCatching { c.selectedFile!!.writeText(GsonUtils.toJson(s)) }.onFailure { Messages.showErrorDialog("导出失败：${it.message}", "ApiMocktle") } }
+
+    override fun resetFrom(s: Settings?) {
+        curSettings = s; timeout.text = (s?.httpTimeOut ?: 30).toString(); unsafeSslCb.isSelected = s?.unsafeSsl ?: false
+        logLevel.selectedItem = VerbosityLevel.toLevel(s?.logLevel ?: 50); charset.selectedItem = s?.outputCharset ?: "UTF-8"
+        outputDemo.isSelected = s?.outputDemo ?: true; switchNotice.isSelected = s?.switchNotice ?: true; refreshSizes()
+        val ur = s?.remoteConfig?.mapNotNull { RepositoryConfig.parse(it) }; repoModel.items = if (!ur.isNullOrEmpty()) ur.toMutableList() else DefaultRepositories.detectFromEnvironment().toMutableList()
+    }
+    override fun applyTo(s: Settings) {
+        s.httpTimeOut = timeout.text.toIntOrNull() ?: 30; s.unsafeSsl = unsafeSslCb.isSelected
+        s.logLevel = (logLevel.selectedItem as? VerbosityLevel)?.level ?: 50; s.outputCharset = charset.selectedItem?.toString() ?: "UTF-8"
+        s.outputDemo = outputDemo.isSelected; s.switchNotice = switchNotice.isSelected
+    }
+    override fun isModified(s: Settings?): Boolean {
+        val ss = s ?: return false
+        return timeout.text != ss.httpTimeOut.toString() || unsafeSslCb.isSelected != ss.unsafeSsl ||
+                (logLevel.selectedItem as? VerbosityLevel)?.level != ss.logLevel || charset.selectedItem?.toString() != ss.outputCharset ||
+                outputDemo.isSelected != ss.outputDemo || switchNotice.isSelected != ss.switchNotice
+    }
+    private fun applyImp(s: Settings, i: Settings) {
+        s.feignEnable = i.feignEnable; s.queryExpanded = i.queryExpanded; s.formExpanded = i.formExpanded
+        s.yapiServer = i.yapiServer; s.yapiPersonalToken = i.yapiPersonalToken; s.enableUrlTemplating = i.enableUrlTemplating
+        s.yapiExportMode = i.yapiExportMode; s.yapiReqBodyJson5 = i.yapiReqBodyJson5; s.yapiResBodyJson5 = i.yapiResBodyJson5
+        s.httpTimeOut = i.httpTimeOut; s.unsafeSsl = i.unsafeSsl; s.extensionConfigs = i.extensionConfigs
+        s.logLevel = i.logLevel; s.outputDemo = i.outputDemo; s.outputCharset = i.outputCharset
     }
 }
 
-class BuiltInConfigPanel : SettingsPanel {
-    private val editor = JBTextArea()
-    override val component: JComponent = JPanel(BorderLayout()).apply {
-        add(JScrollPane(editor), BorderLayout.CENTER)
-    }
-
-    override fun resetFrom(settings: Settings?) {
-        editor.text = settings?.builtInConfig?.takeIf { it.isNotBlank() } ?: defaultBuiltInConfig()
-    }
-
-    override fun applyTo(settings: Settings) {
-        val content = editor.text
-        settings.builtInConfig = if (content == defaultBuiltInConfig()) "" else content
-    }
-
-    override fun isModified(settings: Settings?): Boolean {
-        val s = settings ?: return false
-        val current = editor.text
-        val stored = s.builtInConfig?.takeIf { it.isNotBlank() } ?: defaultBuiltInConfig()
-        return current != stored
-    }
-
-    private fun defaultBuiltInConfig(): String {
-        return javaClass.classLoader.getResourceAsStream("config/builtin.apimocktle.config")
-            ?.bufferedReader(Charsets.UTF_8)
-            ?.use { it.readText() }
-            ?: ""
-    }
+enum class VerbosityLevel(val level: Int, val displayName: String) {
+    SILENT(0, "静默"), ERROR(10, "错误"), WARN(20, "警告"), INFO(30, "信息"), DEBUG(40, "调试"), TRACE(50, "跟踪");
+    override fun toString() = displayName
+    companion object { fun toLevel(l: Int) = values().minByOrNull { kotlin.math.abs(it.level - l) } ?: TRACE }
 }
 
-class OtherSettingsPanel : SettingsPanel {
-    private val importButton = JButton("导入设置")
-    private val exportButton = JButton("导出设置")
-    private var currentSettings: Settings? = null
+private fun createSection(title: String, comps: List<JComponent>) = JPanel(BorderLayout()).apply {
+    border = BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title, TitledBorder.LEFT, TitledBorder.TOP)
+    JPanel(GridLayout(0, 1, 0, 2)).also { comps.forEach { c -> it.add(c) } }.let { add(it, BorderLayout.CENTER) }
+}
 
-    override val component: JComponent = JPanel(BorderLayout()).apply {
-        border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        val buttonPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        buttonPanel.add(importButton)
-        buttonPanel.add(exportButton)
-        add(buttonPanel, BorderLayout.NORTH)
-
-        val infoPanel = JPanel(BorderLayout()).apply {
-            border = BorderFactory.createTitledBorder("信息")
-            val infoText = JBTextArea().apply {
-                text = """
-                    |EasyYapi 插件设置
-                    |
-                    |以 JSON 文件格式导入/导出设置。
-                    |
-                    |版本：3.0.0.212.0
-                """.trimMargin()
-                isEditable = false
-                rows = 10
-            }
-            add(JScrollPane(infoText), BorderLayout.CENTER)
-        }
-        add(infoPanel, BorderLayout.CENTER)
-    }
-
+private class AddRepoDlg : DialogWrapper(null) {
+    private val type = JComboBox(arrayOf("Maven本地", "Gradle缓存", "自定义"))
+    private val path = JTextField(40)
+    private val browse = JButton("浏览...")
+    lateinit var config: RepositoryConfig
     init {
-        importButton.addActionListener {
-            val settings = currentSettings ?: return@addActionListener
-            val chooser = JFileChooser()
-            chooser.dialogTitle = "导入设置"
-            chooser.fileSelectionMode = JFileChooser.FILES_ONLY
-            if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                val file = chooser.selectedFile ?: return@addActionListener
-                runCatching {
-                    val imported = GsonUtils.fromJson<Settings>(file.readText())
-                    applyImported(settings, imported)
-                    resetFrom(settings)
-                }.onFailure {
-                    Messages.showErrorDialog("导入失败：${it.message}", "ApiMocktle 设置")
-                }
-            }
-        }
-        exportButton.addActionListener {
-            val settings = currentSettings ?: return@addActionListener
-            val chooser = JFileChooser()
-            chooser.dialogTitle = "导出设置"
-            chooser.fileSelectionMode = JFileChooser.FILES_ONLY
-            if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                val file = chooser.selectedFile ?: return@addActionListener
-                runCatching {
-                    file.writeText(GsonUtils.toJson(settings))
-                }.onFailure {
-                    Messages.showErrorDialog("导出失败：${it.message}", "ApiMocktle 设置")
-                }
-            }
-        }
+        title = "添加仓库"
+        browse.addActionListener { JFileChooser().apply { fileSelectionMode = JFileChooser.DIRECTORIES_ONLY }.apply { if (showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) path.text = selectedFile.absolutePath } }
+        type.addActionListener { updatePath() }; updatePath(); init()
     }
-
-    override fun resetFrom(settings: Settings?) {
-        currentSettings = settings
+    private fun updatePath() {
+        val c = type.selectedItem == "自定义"; path.isEnabled = c; browse.isEnabled = c
+        if (!c) path.text = when (type.selectedItem) { "Maven本地" -> DefaultRepositories.MAVEN_LOCAL.toString(); "Gradle缓存" -> DefaultRepositories.GRADLE_CACHE.toString(); else -> "" }
     }
-
-    override fun applyTo(settings: Settings) {
+    override fun createCenterPanel() = JPanel(GridLayout(0, 2, 4, 4)).apply {
+        add(JLabel("类型：")); add(type); add(JLabel("路径：")); add(JPanel(BorderLayout()).apply { add(path, BorderLayout.CENTER); add(browse, BorderLayout.EAST) })
+        preferredSize = Dimension(500, preferredSize.height)
     }
-
-    override fun isModified(settings: Settings?): Boolean = false
-
-    private fun applyImported(settings: Settings, imported: Settings) {
-        settings.feignEnable = imported.feignEnable
-        settings.jaxrsEnable = imported.jaxrsEnable
-        settings.actuatorEnable = imported.actuatorEnable
-        settings.queryExpanded = imported.queryExpanded
-        settings.formExpanded = imported.formExpanded
-        settings.yapiServer = imported.yapiServer
-        settings.yapiPersonalToken = imported.yapiPersonalToken
-        settings.enableUrlTemplating = imported.enableUrlTemplating
-        settings.switchNotice = imported.switchNotice
-        settings.yapiExportMode = imported.yapiExportMode
-        settings.yapiReqBodyJson5 = imported.yapiReqBodyJson5
-        settings.yapiResBodyJson5 = imported.yapiResBodyJson5
-        settings.httpTimeOut = imported.httpTimeOut
-        settings.unsafeSsl = imported.unsafeSsl
-        settings.httpClient = imported.httpClient
-        settings.extensionConfigs = imported.extensionConfigs
-        settings.logLevel = imported.logLevel
-        settings.outputDemo = imported.outputDemo
-        settings.outputCharset = imported.outputCharset
-        settings.builtInConfig = imported.builtInConfig
-        settings.remoteConfig = imported.remoteConfig
+    override fun doOKAction() {
+        if (path.text.trim().isEmpty()) return
+        config = RepositoryConfig(when (type.selectedItem) { "Maven本地" -> RepositoryType.MAVEN_LOCAL; "Gradle缓存" -> RepositoryType.GRADLE_CACHE; else -> RepositoryType.CUSTOM }, path.text.trim())
+        super.doOKAction()
     }
 }
 
-private fun createTitledPanel(title: String, components: List<JComponent>): JPanel {
-    return JPanel(BorderLayout()).apply {
-        border = BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(),
-            title,
-            TitledBorder.LEFT,
-            TitledBorder.TOP
-        )
-        val inner = JPanel(GridLayout(0, 1, 0, 2))
-        components.forEach { inner.add(it) }
-        add(inner, BorderLayout.CENTER)
+private class EditRepoDlg(val config: RepositoryConfig) : DialogWrapper(null) {
+    private val path = JTextField(40)
+    init {
+        title = "编辑仓库：${config.displayName()}"; path.text = config.path; path.isEnabled = config.type == RepositoryType.CUSTOM
+        val b = JButton("浏览...").apply { isEnabled = config.type == RepositoryType.CUSTOM }
+        b.addActionListener { JFileChooser().apply { fileSelectionMode = JFileChooser.DIRECTORIES_ONLY; selectedFile = File(config.path) }.apply { if (showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) path.text = selectedFile.absolutePath } }
+        init()
     }
+    override fun createCenterPanel() = JPanel(GridLayout(0, 2, 4, 4)).apply { add(JLabel("类型：")); add(JLabel(config.displayName())); add(JLabel("路径：")); add(path); preferredSize = Dimension(500, preferredSize.height) }
+    override fun doOKAction() { if (config.type == RepositoryType.CUSTOM) { if (path.text.trim().isEmpty()) return; config.path = path.text.trim() }; super.doOKAction() }
 }

@@ -36,7 +36,7 @@ import com.apimocktle.util.append
  *
  * ## Framework Applicability
  *
- * ### All Frameworks (SpringMVC, JAX-RS, Feign, Actuator)
+ * ### All Frameworks (SpringMVC, Feign)
  * - [resolveApiName] — API endpoint name
  * - [resolveClassDoc] — class-level description
  * - [resolveMethodDoc] — method-level description
@@ -48,7 +48,7 @@ import com.apimocktle.util.append
  *   [resolveParamDefaultValue], [resolveParamDemo], [resolveParamMock],
  *   [isParamRequired], [isParamIgnored] — parameter metadata
  *
- * ### HTTP Frameworks (SpringMVC, JAX-RS, Feign, Actuator)
+ * ### HTTP Frameworks (SpringMVC, Feign)
  * - [resolveAdditionalHeaders] — add extra request headers
  * - [resolveAdditionalParams] — add extra request parameters
  * - [resolveAdditionalResponseHeaders] — add extra response headers
@@ -56,13 +56,8 @@ import com.apimocktle.util.append
  * - [resolvePathMulti] — strategy for selecting paths when multiple exist
  *
  * ### Framework-Specific Notes
- * - **JAX-RS**: [resolveDefaultHttpMethod] is used as fallback when no HTTP method
- *   annotation is found. [resolvePathMulti] is not applicable since `@Path` only
- *   supports a single value.
  * - **Feign**: [resolvePathMulti] applies to Spring-style `@RequestMapping` with
  *   multiple paths. Native Feign uses `@RequestLine` which is always single-path.
- * - **Actuator**: [resolveDefaultHttpMethod] is not applicable since operation annotations
- *   (@ReadOperation, @WriteOperation, @DeleteOperation) always specify the method.
  *
  * ## Usage
  * ```kotlin
@@ -82,7 +77,7 @@ class ApiMetadataResolver(
     /**
      * Resolves the API endpoint name.
      *
-     * **Applicable to**: All frameworks (SpringMVC, JAX-RS, Feign, gRPC, Actuator)
+     * **Applicable to**: All frameworks (SpringMVC, Feign)
      *
      * Resolution order: `api.name` rule → doc comment first line → `method.doc` rule → method name
      */
@@ -108,7 +103,7 @@ class ApiMetadataResolver(
     /**
      * Resolves the class-level description.
      *
-     * **Applicable to**: All frameworks (SpringMVC, JAX-RS, Feign, gRPC, Actuator)
+     * **Applicable to**: All frameworks (SpringMVC, Feign)
      */
     suspend fun resolveClassDoc(psiClass: PsiClass): String {
         val docComment = docHelper.getAttrOfDocComment(psiClass)
@@ -120,7 +115,7 @@ class ApiMetadataResolver(
     /**
      * Resolves the method-level description.
      *
-     * **Applicable to**: All frameworks (SpringMVC, JAX-RS, Feign, gRPC, Actuator)
+     * **Applicable to**: All frameworks (SpringMVC, Feign)
      */
     suspend fun resolveMethodDoc(method: PsiMethod): String {
         val docComment = docHelper.getAttrOfDocComment(method)
@@ -131,7 +126,7 @@ class ApiMetadataResolver(
     /**
      * Resolves the folder/group name for an API endpoint.
      *
-     * **Applicable to**: All frameworks (SpringMVC, JAX-RS, Feign, gRPC, Actuator)
+     * **Applicable to**: All frameworks (SpringMVC, Feign)
      */
     suspend fun resolveFolderName(method: PsiMethod?, psiClass: PsiClass? = null): String? {
         // Try folder.name rule on the method first
@@ -228,7 +223,7 @@ class ApiMetadataResolver(
     /**
      * Overrides the return type via the `method.return` rule.
      *
-     * **Applicable to**: All frameworks (SpringMVC, JAX-RS, Feign, gRPC, Actuator)
+     * **Applicable to**: All frameworks (SpringMVC, Feign)
      *
      * Allows specifying a custom return type class instead of the actual method return type.
      */
@@ -239,7 +234,7 @@ class ApiMetadataResolver(
     /**
      * Specifies which field in the response type should receive the `@return` doc comment.
      *
-     * **Applicable to**: All frameworks (SpringMVC, JAX-RS, Feign, gRPC, Actuator)
+     * **Applicable to**: All frameworks (SpringMVC, Feign)
      *
      * For example, for `Result<T>` wrapper types, this rule can specify that the
      * `@return` comment should be attached to the `data` field.
@@ -251,10 +246,9 @@ class ApiMetadataResolver(
     /**
      * Resolves the default HTTP method when not explicitly set by annotations.
      *
-     * **Applicable to**: SpringMVC, JAX-RS (as fallback when no annotation found)
+     * **Applicable to**: SpringMVC
      *
-     * **Not applicable to**: Feign (requires explicit method annotations),
-     * gRPC (uses its own protocol), Actuator (operation annotations always specify method)
+     * **Not applicable to**: Feign (requires explicit method annotations)
      */
     suspend fun resolveDefaultHttpMethod(method: PsiMethod): String? {
         return engine.evaluate(RuleKeys.METHOD_DEFAULT_HTTP, method)
@@ -263,9 +257,7 @@ class ApiMetadataResolver(
     /**
      * Resolves additional request headers to add to all endpoints.
      *
-     * **Applicable to**: HTTP frameworks (SpringMVC, JAX-RS, Feign, Actuator)
-     *
-     * **Not applicable to**: gRPC (uses metadata, not HTTP headers)
+     * **Applicable to**: HTTP frameworks (SpringMVC, Feign)
      */
     suspend fun resolveAdditionalHeaders(method: PsiMethod): List<ApiHeader> {
         val raw = engine.evaluate(RuleKeys.METHOD_ADDITIONAL_HEADER, method) ?: return emptyList()
@@ -275,9 +267,7 @@ class ApiMetadataResolver(
     /**
      * Resolves additional request parameters to add to all endpoints.
      *
-     * **Applicable to**: HTTP frameworks (SpringMVC, JAX-RS, Feign, Actuator)
-     *
-     * **Not applicable to**: gRPC (fixed request message schema)
+     * **Applicable to**: HTTP frameworks (SpringMVC, Feign)
      */
     suspend fun resolveAdditionalParams(method: PsiMethod): List<ApiParameter> {
         val raw = engine.evaluate(RuleKeys.METHOD_ADDITIONAL_PARAM, method) ?: return emptyList()
@@ -287,9 +277,7 @@ class ApiMetadataResolver(
     /**
      * Resolves additional response headers to add to all endpoints.
      *
-     * **Applicable to**: HTTP frameworks (SpringMVC, JAX-RS, Feign, Actuator)
-     *
-     * **Not applicable to**: gRPC (uses trailing metadata)
+     * **Applicable to**: HTTP frameworks (SpringMVC, Feign)
      */
     suspend fun resolveAdditionalResponseHeaders(method: PsiMethod): List<ApiHeader> {
         val raw = engine.evaluate(RuleKeys.METHOD_ADDITIONAL_RESPONSE_HEADER, method) ?: return emptyList()
@@ -345,9 +333,6 @@ class ApiMetadataResolver(
      * Resolves the path selection strategy when a method has multiple path mappings.
      *
      * **Applicable to**: SpringMVC, Feign (Spring-style @RequestMapping with multiple paths)
-     *
-     * **Not applicable to**: JAX-RS (@Path only supports single value),
-     * gRPC (single path per method), Actuator (single path per operation)
      */
     suspend fun resolvePathMulti(method: PsiMethod): PathSelector {
         val raw = engine.evaluate(RuleKeys.PATH_MULTI, method)

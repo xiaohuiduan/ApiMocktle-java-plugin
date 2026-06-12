@@ -148,7 +148,6 @@ object ApiFixtures {
             httpTimeOut = 30000
             unsafeSsl = false
             feignEnable = true
-            jaxrsEnable = false
         }
     }
 }

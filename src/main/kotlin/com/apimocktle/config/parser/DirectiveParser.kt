@@ -91,8 +91,6 @@ class DirectiveParser(
             "yapiServer" -> s.yapiServer
             "yapiToken" -> s.yapiPersonalToken
             "feignEnable" -> s.feignEnable.toString()
-            "jaxrsEnable" -> s.jaxrsEnable.toString()
-            "actuatorEnable" -> s.actuatorEnable.toString()
             else -> null
         }
     }

@@ -253,33 +253,4 @@ class CurlFormatterTest {
         assertTrue(result.contains("-X DELETE"))
     }
 
-    @Test
-    fun testFormatGrpcBasic() {
-        // gRPC module has been removed — test deleted
-    }
-
-    @Test
-    fun testFormatGrpcWithBody() {
-        // gRPC module has been removed — test deleted
-    }
-
-    @Test
-    fun testFormatGrpcStripsHttpPrefix() {
-        // gRPC module has been removed — test deleted
-    }
-
-    @Test
-    fun testFormatGrpcDefaultHost() {
-        // gRPC module has been removed — test deleted
-    }
-
-    @Test
-    fun testFormatGrpcNoBody() {
-        // gRPC module has been removed — test deleted
-    }
-
-    @Test
-    fun testFormatAllWithMixedEndpoints() {
-        // gRPC module has been removed — test deleted
-    }
 }

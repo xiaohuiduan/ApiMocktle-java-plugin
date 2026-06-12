@@ -8,25 +8,22 @@ class HttpClientTypeTest {
     @Test
     fun testValues() {
         val values = HttpClientType.values()
-        assertEquals(2, values.size)
+        assertEquals(1, values.size)
     }
 
     @Test
     fun testValue() {
         assertEquals("Apache", HttpClientType.APACHE.value)
-        assertEquals("默认", HttpClientType.DEFAULT.value)
     }
 
     @Test
     fun testName() {
         assertEquals("APACHE", HttpClientType.APACHE.name)
-        assertEquals("DEFAULT", HttpClientType.DEFAULT.name)
     }
 
     @Test
     fun testValueOf() {
         assertEquals(HttpClientType.APACHE, HttpClientType.valueOf("APACHE"))
-        assertEquals(HttpClientType.DEFAULT, HttpClientType.valueOf("DEFAULT"))
     }
 
     @Test(expected = IllegalArgumentException::class)

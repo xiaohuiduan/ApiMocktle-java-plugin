@@ -187,7 +187,8 @@ sealed class ResolvedType {
          * the super type's type arguments using this class's context.
          */
         fun superClasses(): Sequence<ClassType> = sequence {
-            for (superType in psiClass.superTypes) {
+            val types = readSync { psiClass.superTypes }
+            for (superType in types) {
                 val superClass = superType.resolve() ?: continue
                 if (superClass.qualifiedName == "java.lang.Object") continue
                 val args = superType.parameters.map {

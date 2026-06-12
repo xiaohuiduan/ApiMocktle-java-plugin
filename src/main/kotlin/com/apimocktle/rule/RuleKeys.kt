@@ -82,28 +82,10 @@ object RuleKeys {
     val METHOD_ADDITIONAL_PARAM = RuleKey.string("method.additional.param", StringRuleMode.MERGE)
     val METHOD_ADDITIONAL_RESPONSE_HEADER = RuleKey.string("method.additional.response.header", StringRuleMode.MERGE)
 
-    // ── HTTP call events ──────────────────────────────────────────
-    val HTTP_CALL_BEFORE = RuleKey.event("http.call.before")
-    val HTTP_CALL_AFTER = RuleKey.event("http.call.after")
-
     // ── Class recognizer rules ────────────────────────────────────
     val CLASS_IS_CTRL = RuleKey.boolean("class.is.spring.ctrl", aliases = listOf("class.is.ctrl"))
     val CLASS_IS_FEIGN_CTRL = RuleKey.boolean("class.is.feign.ctrl")
-    val CLASS_IS_JAXRS_CTRL = RuleKey.boolean("class.is.jaxrs.ctrl")
     val CLASS_IS_QUARKUS_CTRL = RuleKey.boolean("class.is.quarkus.ctrl")
-
-    // ── Postman rules ─────────────────────────────────────────────
-    val POSTMAN_PREREQUEST = RuleKey.string("postman.prerequest", StringRuleMode.MERGE)
-    val POSTMAN_CLASS_PREREQUEST =
-        RuleKey.string("postman.class.prerequest", StringRuleMode.MERGE, aliases = listOf("class.postman.prerequest"))
-    val POSTMAN_COLLECTION_PREREQUEST =
-        RuleKey.event("postman.collection.prerequest", aliases = listOf("collection.postman.prerequest"))
-    val POSTMAN_TEST = RuleKey.string("postman.test", StringRuleMode.MERGE)
-    val POSTMAN_CLASS_TEST =
-        RuleKey.string("postman.class.test", StringRuleMode.MERGE, aliases = listOf("class.postman.test"))
-    val POSTMAN_COLLECTION_TEST = RuleKey.event("postman.collection.test", aliases = listOf("collection.postman.test"))
-    val POSTMAN_HOST = RuleKey.string("postman.host")
-    val POSTMAN_FORMAT_AFTER = RuleKey.event("postman.format.after", EventRuleMode.THROW_IN_ERROR)
 
     // ── YAPI rules ────────────────────────────────────────────────
     val YAPI_PROJECT = RuleKey.string("yapi.project", aliases = listOf("project", "module"))

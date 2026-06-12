@@ -13,8 +13,6 @@ import com.apimocktle.settings.state.ProjectSettingsSupport
  */
 data class Settings(
     override var feignEnable: Boolean = false,
-    override var jaxrsEnable: Boolean = true,
-    override var actuatorEnable: Boolean = false,
     override var extensionConfigs: String = defaultExtensionCodes(),
     override var queryExpanded: Boolean = true,
     override var formExpanded: Boolean = true,
@@ -37,8 +35,6 @@ data class Settings(
     override var remoteConfig: Array<String> = emptyArray(),
     override var autoScanEnabled: Boolean = true,
     override var concurrentScanEnabled: Boolean = false,
-    override var projectEnvironments: String = "",
-    override var globalEnvironments: String = "",
     override var autoInjectAgent: Boolean = true
 ) : ProjectSettingsSupport, ApplicationSettingsSupport {
 
@@ -55,8 +51,6 @@ data class Settings(
         other as Settings
 
         if (feignEnable != other.feignEnable) return false
-        if (jaxrsEnable != other.jaxrsEnable) return false
-        if (actuatorEnable != other.actuatorEnable) return false
         if (queryExpanded != other.queryExpanded) return false
         if (formExpanded != other.formExpanded) return false
         if (pathMulti != other.pathMulti) return false
@@ -79,8 +73,6 @@ data class Settings(
         if (!remoteConfig.contentEquals(other.remoteConfig)) return false
         if (autoScanEnabled != other.autoScanEnabled) return false
         if (concurrentScanEnabled != other.concurrentScanEnabled) return false
-        if (projectEnvironments != other.projectEnvironments) return false
-        if (globalEnvironments != other.globalEnvironments) return false
         if (autoInjectAgent != other.autoInjectAgent) return false
 
         return true
@@ -88,8 +80,6 @@ data class Settings(
 
     override fun hashCode(): Int {
         var result = feignEnable.hashCode()
-        result = 31 * result + jaxrsEnable.hashCode()
-        result = 31 * result + actuatorEnable.hashCode()
         result = 31 * result + queryExpanded.hashCode()
         result = 31 * result + formExpanded.hashCode()
         result = 31 * result + pathMulti.hashCode()
@@ -112,8 +102,6 @@ data class Settings(
         result = 31 * result + remoteConfig.contentHashCode()
         result = 31 * result + autoScanEnabled.hashCode()
         result = 31 * result + concurrentScanEnabled.hashCode()
-        result = 31 * result + projectEnvironments.hashCode()
-        result = 31 * result + globalEnvironments.hashCode()
         result = 31 * result + autoInjectAgent.hashCode()
         return result
     }

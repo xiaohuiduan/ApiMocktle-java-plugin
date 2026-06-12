@@ -53,24 +53,6 @@ class ApiMethodLineMarkerProviderTest : ApiMocktleLightCodeInsightFixtureTestCas
             )
         )
         assertTrue("Should detect Spring annotations in project", hasSpringAnnotations)
-
-        val hasJaxrsAnnotations = availabilityService.hasAnyClassInProject(
-            setOf(
-                "javax.ws.rs.GET",
-                "javax.ws.rs.Path"
-            )
-        )
-        assertFalse("Should not detect JAX-RS annotations in project", hasJaxrsAnnotations)
-    }
-
-    fun testGrpcFrameworkCheck() = runTest {
-        val availabilityService = ProjectClassAvailabilityService.getInstance(project)
-
-        val hasGrpc = availabilityService.hasAnyClassInProject(
-            setOf("net.devh.boot.grpc.server.service.GrpcService")
-        ) || availabilityService.hasClassInProject("io.grpc.BindableService")
-
-        assertFalse("Should not detect gRPC framework in project", hasGrpc)
     }
 
     fun testOnlyChecksAvailableAnnotations() = runTest {
@@ -82,13 +64,7 @@ class ApiMethodLineMarkerProviderTest : ApiMocktleLightCodeInsightFixtureTestCas
             "org.springframework.web.bind.annotation.PostMapping",
             "org.springframework.web.bind.annotation.PutMapping",
             "org.springframework.web.bind.annotation.DeleteMapping",
-            "org.springframework.web.bind.annotation.PatchMapping",
-            "javax.ws.rs.GET",
-            "javax.ws.rs.POST",
-            "javax.ws.rs.PUT",
-            "javax.ws.rs.DELETE",
-            "javax.ws.rs.PATCH",
-            "javax.ws.rs.Path"
+            "org.springframework.web.bind.annotation.PatchMapping"
         )
 
         val availableAnnotations = allApiAnnotations.filter {

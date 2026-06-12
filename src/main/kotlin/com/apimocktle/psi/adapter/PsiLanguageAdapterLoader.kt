@@ -12,7 +12,7 @@ import com.intellij.psi.PsiElement
  * Each adapter is registered with an [AdapterEntry.onClass] guard string.
  * Before instantiation, [isClassAvailable] checks whether the class is
  * available in the current runtime via `Class.forName()`. This prevents
- * `NoClassDefFoundError` when a language plugin (e.g., Kotlin, Scala, Groovy)
+ * `NoClassDefFoundError` when a language plugin (e.g., Kotlin)
  * is not installed in the IDE.
  *
  * Adapters with `onClass = null` (like [JavaPsiAdapter]) are always loaded.
@@ -46,14 +46,12 @@ object PsiLanguageAdapterLoader {
      * Registry of all supported language adapters.
      *
      * Order matters: adapters are checked in registration order by [findAdapter].
-     * More specific adapters (Kotlin, Scala, Groovy) should come after
+     * More specific adapters (Kotlin) should come after
      * the general Java adapter, as [findAdapter] returns the first match.
      */
     private val registry = listOf(
         AdapterEntry(onClass = null, factory = { JavaPsiAdapter() }),
-        AdapterEntry(onClass = "org.jetbrains.kotlin.idea.KotlinLanguage", factory = { KotlinPsiAdapter() }),
-        AdapterEntry(onClass = "org.jetbrains.plugins.scala.lang.ScalaLanguage", factory = { ScalaPsiAdapter() }),
-        AdapterEntry(onClass = "org.jetbrains.plugins.groovy.GroovyLanguage", factory = { GroovyPsiAdapter() })
+        AdapterEntry(onClass = "org.jetbrains.kotlin.idea.KotlinLanguage", factory = { KotlinPsiAdapter() })
     )
 
     /**

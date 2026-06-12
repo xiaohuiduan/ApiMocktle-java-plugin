@@ -1,7 +1,6 @@
 package com.apimocktle.gap
 
 import com.apimocktle.exporter.feign.FeignClassExporter
-import com.apimocktle.exporter.jaxrs.JaxRsClassExporter
 import com.apimocktle.exporter.springmvc.SpringMvcClassExporter
 import com.apimocktle.testFramework.ApiMocktleLightCodeInsightFixtureTestCase
 import com.apimocktle.testFramework.TestConfigReader
@@ -19,10 +18,5 @@ class FeatureParityTest : ApiMocktleLightCodeInsightFixtureTestCase() {
     fun testFeignExporterExists() = runTest {
         val exporter = FeignClassExporter(project)
         assertNotNull("FeignClassExporter should exist", exporter)
-    }
-
-    fun testJaxRsExporterExists() = runTest {
-        val exporter = JaxRsClassExporter(project)
-        assertNotNull("JaxRsClassExporter should exist", exporter)
     }
 }

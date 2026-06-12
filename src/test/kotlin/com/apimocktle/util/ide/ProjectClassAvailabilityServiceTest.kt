@@ -86,13 +86,5 @@ class ProjectClassAvailabilityServiceTest : ApiMocktleLightCodeInsightFixtureTes
         
         val hasSpring = availabilityService.hasAnyClassInProject(springAnnotations)
         assertTrue("Should find Spring annotations", hasSpring)
-        
-        val jaxrsAnnotations = setOf(
-            "javax.ws.rs.Path",
-            "javax.ws.rs.GET"
-        )
-        
-        val hasJaxrs = availabilityService.hasAnyClassInProject(jaxrsAnnotations)
-        assertFalse("Should not find JAX-RS annotations", hasJaxrs)
     }
 }

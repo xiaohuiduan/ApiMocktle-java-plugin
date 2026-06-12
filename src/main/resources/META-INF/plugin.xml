@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.apimocktle.plugin</id>
     <name>ApiMocktle</name>
-    <version>1.0.0</version>
+    <version>3.0.0</version>
     <vendor>ApiMocktle</vendor>
 
     <description><![CDATA[统一插件，支持从源码提取 API 并同步到 YAPI。]]></description>
@@ -11,18 +11,14 @@
     <depends>com.intellij.modules.platform</depends>
 
     <depends optional="true" config-file="apimocktle-kotlin.xml">org.jetbrains.kotlin</depends>
-    <depends optional="true" config-file="apimocktle-scala.xml">org.intellij.scala</depends>
-    <depends optional="true" config-file="apimocktle-groovy.xml">org.intellij.groovy</depends>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <supportsKotlinPluginMode supportsK2="true"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.apimocktle.core.ApiMocktleApplicationService"/>
         <applicationService serviceImplementation="com.apimocktle.settings.state.ApplicationSettingsState"/>
         <applicationService serviceImplementation="com.apimocktle.cache.AppCacheRepository"/>
-        <projectService serviceImplementation="com.apimocktle.core.ApiMocktleProjectService"/>
         <projectService serviceImplementation="com.apimocktle.core.event.EventBus"/>
         <projectService serviceImplementation="com.apimocktle.util.storage.SessionStorage"/>
         <projectService serviceImplementation="com.apimocktle.rule.engine.RuleEngine"/>
@@ -51,37 +47,21 @@
                              id="apimocktle.settings.ApiMocktleConfigurable"
                              instance="com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable"/>
         <projectConfigurable groupId="apimocktle.settings.ApiMocktleConfigurable"
-                             displayName="远程"
-                             id="apimocktle.settings.ApiMocktleConfigurable.Remote"
-                             instance="com.apimocktle.settings.ui.ApiMocktleRemoteConfigurable"/>
-        <projectConfigurable groupId="apimocktle.settings.ApiMocktleConfigurable"
-                             displayName="内置配置"
-                             id="apimocktle.settings.ApiMocktleConfigurable.BuiltInConfig"
-                             instance="com.apimocktle.settings.ui.ApiMocktleBuiltInConfigurable"/>
-        <projectConfigurable groupId="apimocktle.settings.ApiMocktleConfigurable"
-                             displayName="其他"
-                             id="apimocktle.settings.ApiMocktleConfigurable.Other"
-                             instance="com.apimocktle.settings.ui.ApiMocktleOtherConfigurable"/>
+                             displayName="高级"
+                             id="apimocktle.settings.ApiMocktleConfigurable.Advanced"
+                             instance="com.apimocktle.settings.ui.ApiMocktleAdvancedConfigurable"/>
         <toolWindow
                 id="API Dashboard"
-                icon="AllIcons.Toolwindows.ToolWindowRun"
+                icon="/icons/apiDashboard.svg"
                 anchor="bottom"
                 factoryClass="com.apimocktle.dashboard.ApiDashboardToolWindowFactory"/>
         <notificationGroup id="ApiMocktle Notifications" displayType="BALLOON"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.apimocktle.ide.linemarker.ApiMethodLineMarkerProvider"/>
-        <searchEverywhereContributor implementation="com.apimocktle.ide.search.ApiSearchEverywhereContributorFactory"/>
         <runConfigurationExtension implementation="com.apimocktle.agent.MockAgentRunConfigurationExtension"/>
     </extensions>
 
     <actions>
         <group id="ApiMocktleActions">
-            <action id="com.apimocktle.action.ApiCallAction"
-                    class="com.apimocktle.ide.action.ApiCallAction" text="调用"
-                    description="调用API">
-                <keyboard-shortcut first-keystroke="alt shift C" keymap="$default"/>
-                <keyboard-shortcut first-keystroke="control C" keymap="Mac OS X" replace-all="true"/>
-                <keyboard-shortcut first-keystroke="control C" keymap="Mac OS X 10.5+" replace-all="true"/>
-            </action>
             <action id="com.apimocktle.action.YapiExportAction"
                     class="com.apimocktle.ide.action.ExportToYapiAction" text="导出到ApiMocktle"
                     description="导出到ApiMocktle">
@@ -100,35 +80,22 @@
                     class="com.apimocktle.ide.action.FieldsToJson5Action" text="转JSON5"
                     description="字段转JSON5">
             </action>
-            <action id="com.apimocktle.action.FieldsToPropertiesAction"
-                    class="com.apimocktle.ide.action.FieldsToPropertiesAction" text="转Properties"
-                    description="字段转Properties">
-            </action>
         </group>
-
-        <action id="com.apimocktle.action.ScriptExecutorAction"
-                class="com.apimocktle.ide.action.OpenScriptExecutorAction" text="脚本执行器"
-                description="打开脚本执行器">
-            <add-to-group group-id="CodeMenu" anchor="last"/>
-        </action>
 
         <group id="ApiMocktleGenerateMenu" text="ApiMocktle" description="ApiMocktle生成菜单" popup="true">
             <add-to-group group-id="GenerateGroup" anchor="last"/>
-            <reference ref="com.apimocktle.action.ApiCallAction"/>
             <reference ref="com.apimocktle.action.YapiExportAction"/>
             <reference ref="ApiMocktleFieldsGroup"/>
         </group>
 
         <group id="ApiMocktleEditorLangPopupMenu" text="ApiMocktle" description="ApiMocktle编辑器菜单" popup="true">
             <add-to-group group-id="EditorLangPopupMenu" anchor="last"/>
-            <reference ref="com.apimocktle.action.ApiCallAction"/>
             <reference ref="com.apimocktle.action.YapiExportAction"/>
             <reference ref="ApiMocktleFieldsGroup"/>
         </group>
 
         <group id="ApiMocktleProjectViewPopupMenu" text="ApiMocktle" description="ApiMocktle项目视图菜单" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-            <reference ref="com.apimocktle.action.ApiCallAction"/>
             <reference ref="com.apimocktle.action.YapiExportAction"/>
         </group>
 

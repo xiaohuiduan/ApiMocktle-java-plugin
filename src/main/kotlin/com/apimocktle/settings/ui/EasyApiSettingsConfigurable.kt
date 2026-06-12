@@ -3,6 +3,7 @@ package com.apimocktle.settings.ui
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.ProjectManager
 import com.apimocktle.settings.SettingBinder
+import com.apimocktle.settings.ui.*
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -16,31 +17,15 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
         SettingBinder.getInstance(project)
     }
 
-    private val generalPanel = GeneralSettingsPanel(project)
-    private val yapiPanel = YapiSettingsPanel(project)
-    private val httpPanel = HttpSettingsPanel()
-    private val intelligentPanel = IntelligentSettingsPanel()
-    private val extensionPanel = ExtensionConfigPanel()
-    private val remotePanel = RemoteConfigPanel()
-    private val builtInPanel = BuiltInConfigPanel()
-    private val otherPanel = OtherSettingsPanel()
-    private val environmentPanel = EnvironmentSettingsPanel(project)
+    private val apiScanPanel: SettingsPanel = ApiScanPanel(project)
+    private val yapiExportPanel: SettingsPanel = YapiExportPanel(project)
+    private val mockAgentPanel: SettingsPanel = MockAgentPanel(project)
+    private val extensionPanel: SettingsPanel = ExtensionConfigPanel(project)
+    private val advancedPanel: SettingsPanel = AdvancedSettingsPanel(project)
 
     companion object {
         private var initialTab: String? = null
-
-        fun selectTab(tabName: String) {
-            initialTab = tabName
-        }
-
-        const val TAB_GENERAL = "通用"
-        const val TAB_HTTP = "HTTP"
-        const val TAB_INTELLIGENT = "智能"
-        const val TAB_EXTENSIONS = "扩展"
-        const val TAB_REMOTE = "远程"
-        const val TAB_BUILT_IN = "内置"
-        const val TAB_OTHER = "其他"
-        const val TAB_ENVIRONMENT = "环境"
+        fun selectTab(tabName: String) { initialTab = tabName }
     }
 
     override fun getDisplayName(): String = "ApiMocktle"
@@ -49,15 +34,11 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
         if (panel == null) {
             panel = JPanel(BorderLayout())
             tabs = JTabbedPane().also { t ->
-                t.addTab(TAB_GENERAL, wrapNorth(generalPanel.component))
-                t.addTab("YAPI", wrapNorth(yapiPanel.component))
-                t.addTab(TAB_HTTP, wrapNorth(httpPanel.component))
-                t.addTab(TAB_INTELLIGENT, wrapNorth(intelligentPanel.component))
-                t.addTab(TAB_EXTENSIONS, extensionPanel.component)
-                t.addTab(TAB_REMOTE, remotePanel.component)
-                t.addTab(TAB_BUILT_IN, builtInPanel.component)
-                t.addTab(TAB_OTHER, otherPanel.component)
-                t.addTab(TAB_ENVIRONMENT, environmentPanel.component)
+                t.addTab("API 扫描", apiScanPanel.component)
+                t.addTab("YAPI 导出", yapiExportPanel.component)
+                t.addTab("Mock Agent", mockAgentPanel.component)
+                t.addTab("扩展配置", extensionPanel.component)
+                t.addTab("高级", advancedPanel.component)
             }
             panel!!.add(tabs, BorderLayout.CENTER)
         }
@@ -79,50 +60,30 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
         }
     }
 
-    private fun wrapNorth(component: JComponent): JComponent {
-        component.maximumSize = java.awt.Dimension(600, component.maximumSize.height)
-        val row = javax.swing.Box.createHorizontalBox().apply {
-            add(component)
-            add(javax.swing.Box.createHorizontalGlue())
-        }
-        return JPanel(BorderLayout()).apply {
-            add(row, BorderLayout.NORTH)
-        }
-    }
-
     override fun isModified(): Boolean {
         val settings = settingBinder.read()
         return listOf(
-            generalPanel, yapiPanel, httpPanel,
-            intelligentPanel, extensionPanel, remotePanel, builtInPanel, otherPanel, environmentPanel
+            apiScanPanel, yapiExportPanel, mockAgentPanel, extensionPanel, advancedPanel
         ).any { it.isModified(settings) }
     }
 
     override fun apply() {
         val settings = settingBinder.read()
-        generalPanel.applyTo(settings)
-        yapiPanel.applyTo(settings)
-        httpPanel.applyTo(settings)
-        intelligentPanel.applyTo(settings)
+        apiScanPanel.applyTo(settings)
+        yapiExportPanel.applyTo(settings)
+        mockAgentPanel.applyTo(settings)
         extensionPanel.applyTo(settings)
-        remotePanel.applyTo(settings)
-        builtInPanel.applyTo(settings)
-        otherPanel.applyTo(settings)
-        environmentPanel.applyTo(settings)
+        advancedPanel.applyTo(settings)
         settingBinder.save(settings)
     }
 
     override fun reset() {
         val settings = settingBinder.read()
-        generalPanel.resetFrom(settings)
-        yapiPanel.resetFrom(settings)
-        httpPanel.resetFrom(settings)
-        intelligentPanel.resetFrom(settings)
+        apiScanPanel.resetFrom(settings)
+        yapiExportPanel.resetFrom(settings)
+        mockAgentPanel.resetFrom(settings)
         extensionPanel.resetFrom(settings)
-        remotePanel.resetFrom(settings)
-        builtInPanel.resetFrom(settings)
-        otherPanel.resetFrom(settings)
-        environmentPanel.resetFrom(settings)
+        advancedPanel.resetFrom(settings)
     }
 
     override fun disposeUIResources() {
@@ -137,7 +98,6 @@ abstract class BaseApiMocktleChildConfigurable(
 ) : Configurable {
     private var panelContainer: JPanel? = null
     private val panel: SettingsPanel by lazy { panelFactory() }
-
     protected var project: com.intellij.openapi.project.Project? = null
 
     protected val settingBinder: SettingBinder? by lazy {
@@ -146,7 +106,6 @@ abstract class BaseApiMocktleChildConfigurable(
     }
 
     override fun getDisplayName(): String = displayName
-
     override fun createComponent(): JComponent {
         if (panelContainer == null) {
             panelContainer = JPanel(BorderLayout())
@@ -155,32 +114,14 @@ abstract class BaseApiMocktleChildConfigurable(
         reset()
         return panelContainer!!
     }
-
     override fun isModified(): Boolean {
-        val settings = settingBinder?.read() ?: return false
-        return panel.isModified(settings)
+        val settings = settingBinder?.read() ?: return false; return panel.isModified(settings)
     }
-
     override fun apply() {
-        val binder = settingBinder ?: return
-        val settings = binder.read()
-        panel.applyTo(settings)
-        binder.save(settings)
+        val binder = settingBinder ?: return; val settings = binder.read(); panel.applyTo(settings); binder.save(settings)
     }
-
-    override fun reset() {
-        panel.resetFrom(settingBinder?.read())
-    }
-
-    override fun disposeUIResources() {
-        panelContainer = null
-    }
+    override fun reset() { panel.resetFrom(settingBinder?.read()) }
+    override fun disposeUIResources() { panelContainer = null }
 }
 
-class ApiMocktleExtensionConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("扩展", { ExtensionConfigPanel() }) { init { this.project = project } }
-
-class ApiMocktleRemoteConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("远程", { RemoteConfigPanel() }) { init { this.project = project } }
-
-class ApiMocktleBuiltInConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("内置配置", { BuiltInConfigPanel() }) { init { this.project = project } }
-
-class ApiMocktleOtherConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("其他", { OtherSettingsPanel() }) { init { this.project = project } }
+class ApiMocktleAdvancedConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("高级", { AdvancedSettingsPanel(project) }) { init { this.project = project } }

@@ -1,17 +1,13 @@
 package com.apimocktle.settings
 
 /**
- * HTTP client implementation types.
+ * HTTP client implementation type.
  *
- * Determines which HTTP client library is used for API calls.
- *
- * @param value The display name for the client type
+ * Currently only Apache HttpClient is supported.
  */
 enum class HttpClientType(
     val value: String
 ) {
     /** Apache HttpClient - feature-rich, widely used */
-    APACHE("Apache"),
-    /** IntelliJ's built-in HTTP client (OkHttp-based) */
-    DEFAULT("默认")
+    APACHE("Apache")
 }

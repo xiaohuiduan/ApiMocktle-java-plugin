@@ -141,27 +141,7 @@ class ApiTreeCellRendererTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         assertNotNull(component)
     }
 
-    fun testGrpcUnaryEndpointRendering() {
-        // gRPC module has been removed — test deleted
-    }
-
-    fun testGrpcServerStreamingEndpointRendering() {
-        // gRPC module has been removed — test deleted
-    }
-
-    fun testGrpcClientStreamingEndpointRendering() {
-        // gRPC module has been removed — test deleted
-    }
-
-    fun testGrpcBidirectionalEndpointRendering() {
-        // gRPC module has been removed — test deleted
-    }
-
-    fun testGrpcEndpointWithNameAndPath() {
-        // gRPC module has been removed — test deleted
-    }
-
-    fun testHttpEndpointStillShowsMethodName() {
+fun testHttpEndpointStillShowsMethodName() {
         val endpoint = ApiEndpoint(
             name = "Get User",
             metadata = httpMetadata(

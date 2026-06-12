@@ -13,7 +13,6 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
      * 项目级设置数据类。
      */
     data class State(
-        override var projectEnvironments: String = "",
         override var yapiPersonalToken: String? = null,
         var builtInConfig: Boolean = true,
         var remoteConfig: String? = null,

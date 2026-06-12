@@ -7,16 +7,13 @@ import com.apimocktle.core.event.EventBus
 import com.apimocktle.core.event.EventKeys
 import com.apimocktle.http.HttpClientProvider.Companion.getInstance
 import com.apimocktle.logging.IdeaLog
-import com.apimocktle.rule.engine.RuleEngine
-import com.apimocktle.settings.HttpClientType
 import com.apimocktle.settings.SettingBinder
 
 /**
- * Creates [HttpClient] instances based on the user's configured HTTP client type.
- * Supports switching between Apache HttpClient and IntelliJ HttpRequests (OkHttp slot).
+ * Creates [HttpClient] instances using Apache HttpClient.
  *
  * This is the single entry point for obtaining an [HttpClient].
- * Every client returned is wrapped with [HttpClientScriptInterceptor].
+ * Every client returned is wrapped with [LoggingHttpClient].
  *
  * This class is action-scoped — prefer [getInstance] to reuse the instance
  */
@@ -33,19 +30,16 @@ class HttpClientProvider(private val project: Project) {
     }
 
     fun getClient(
-        httpClient: String? = null,
         httpTimeOut: Int? = null,
         unsafeSsl: Boolean? = null
     ): HttpClient {
         val settings = SettingBinder.getInstance(project).read()
-        val resolvedHttpClient = httpClient ?: settings.httpClient ?: HttpClientType.APACHE.value
         val resolvedHttpTimeOutSec = httpTimeOut ?: settings.httpTimeOut ?: 30
         val resolvedHttpTimeOutMs = resolvedHttpTimeOutSec * 1000
         val resolvedUnsafeSsl = unsafeSsl ?: settings.unsafeSsl ?: false
 
-        val ruleEngine = RuleEngine.getInstance(project)
-        val raw = getRawClient(resolvedHttpClient, resolvedHttpTimeOutMs, resolvedUnsafeSsl)
-        return HttpClientScriptInterceptor(raw.logging(), ruleEngine)
+        val raw = getRawClient(resolvedHttpTimeOutMs, resolvedUnsafeSsl)
+        return raw.logging()
     }
 
     fun dispose() {
@@ -55,22 +49,15 @@ class HttpClientProvider(private val project: Project) {
         }
     }
 
-    private fun getRawClient(httpClient: String, httpTimeOut: Int, unsafeSsl: Boolean): HttpClient {
-        val key = "$httpClient|$httpTimeOut|$unsafeSsl"
+    private fun getRawClient(httpTimeOut: Int, unsafeSsl: Boolean): HttpClient {
+        val key = "$httpTimeOut|$unsafeSsl"
         cached?.let { (k, p) -> if (k == key) return p }
         synchronized(this) {
             cached?.let { (k, p) -> if (k == key) return p }
             cached?.second?.close()
-            val client = createClient(httpClient, httpTimeOut, unsafeSsl)
+            val client = ApacheHttpClient(httpTimeOut, unsafeSsl)
             cached = key to client
             return client
-        }
-    }
-
-    private fun createClient(httpClient: String, httpTimeOut: Int, unsafeSsl: Boolean): HttpClient {
-        return when (httpClient) {
-            HttpClientType.DEFAULT.value -> IntelliJHttpClient(httpTimeOut)
-            else -> ApacheHttpClient(httpTimeOut, unsafeSsl)
         }
     }
 

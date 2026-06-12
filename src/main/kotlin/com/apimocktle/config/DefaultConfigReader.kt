@@ -3,7 +3,6 @@ package com.apimocktle.config
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.apimocktle.config.parser.ConfigTextParser
-import com.apimocktle.config.resource.CachedResourceResolver
 import com.apimocktle.config.source.*
 import com.apimocktle.extension.ExtensionConfigRegistry
 import com.apimocktle.logging.IdeaConsoleProvider
@@ -18,8 +17,7 @@ import com.apimocktle.util.storage.LocalStorage
  * 1. **RuntimeConfigSource** - Dynamic runtime configuration, typically module-specific
  * 2. **BuiltInConfigSource** - Built-in configuration defined in plugin settings
  * 3. **ExtensionConfigSource** - Extension configurations (Swagger, Jackson, etc.)
- * 4. **RemoteConfigSource** - Configuration fetched from remote URLs
- * 5. **LocalFileConfigSource** - Configuration from local `.easy-api.config` files
+ * 4. **LocalFileConfigSource** - Configuration from local `.easy-api.config` files
  *
  * ## Automatic Reloading
  *
@@ -46,7 +44,6 @@ class DefaultConfigReader(
     private val localStorage = LocalStorage.getInstance(project)
 
     private val console by lazy { IdeaConsoleProvider.getInstance(project).getConsole() }
-    private val cachedResourceResolver by lazy { CachedResourceResolver(localStorage, console) }
 
     @Volatile
     private var delegate: LayeredConfigReader = buildDelegate()
@@ -78,11 +75,6 @@ class DefaultConfigReader(
                     project,
                     ExtensionConfigRegistry.stringToCodes(settings.extensionConfigs),
                     configTextParser
-                ),
-                RemoteConfigSource(
-                    parseUrls(settings.remoteConfig.joinToString("\n")),
-                    configTextParser,
-                    cachedResourceResolver
                 ),
                 LocalFileConfigSource(project.basePath ?: "", configTextParser)
             )

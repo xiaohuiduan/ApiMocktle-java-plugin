@@ -3,12 +3,7 @@ package com.apimocktle.http
 /**
  * HTTP client interface for making HTTP requests.
  *
- * Multiple implementations are available:
- * - [ApacheHttpClient] - Uses Apache HttpClient
- * - [UrlConnectionHttpClient] - Uses Java URLConnection
- * - [IntelliJHttpClient] - Uses IntelliJ's built-in HTTP client
- *
- * The implementation is selected via settings (httpClient property).
+ * Uses [ApacheHttpClient] as the implementation.
  *
  * ## Usage
  * ```kotlin
@@ -19,7 +14,7 @@ package com.apimocktle.http
  * ))
  * ```
  *
- * @see HttpClientProvider for client selection
+ * @see HttpClientProvider for client creation
  * @see HttpRequest for request model
  * @see HttpResponse for response model
  */

@@ -2,9 +2,6 @@ package com.apimocktle.exporter.lifecycle
 
 import com.apimocktle.exporter.ClassExporter
 import com.apimocktle.exporter.feign.FeignClassExporter
-import com.apimocktle.exporter.jaxrs.JaxRsClassExporter
-import com.apimocktle.exporter.model.httpMetadata
-import com.apimocktle.exporter.springmvc.ActuatorEndpointExporter
 import com.apimocktle.exporter.springmvc.SpringMvcClassExporter
 import com.apimocktle.psi.helper.DocHelper
 import com.apimocktle.psi.helper.UnifiedDocHelper
@@ -14,17 +11,13 @@ import com.apimocktle.testFramework.TestConfigReader
 class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
 
     private lateinit var springExporter: SpringMvcClassExporter
-    private lateinit var jaxRsExporter: JaxRsClassExporter
     private lateinit var feignExporter: FeignClassExporter
-    private lateinit var actuatorExporter: ActuatorEndpointExporter
 
     override fun setUp() {
         super.setUp()
         loadCommonTestFiles()
         springExporter = SpringMvcClassExporter(project)
-        jaxRsExporter = JaxRsClassExporter(project)
         feignExporter = FeignClassExporter(project)
-        actuatorExporter = ActuatorEndpointExporter(project)
     }
 
     private fun loadCommonTestFiles() {
@@ -47,43 +40,12 @@ class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         loadFile("api/BaseController.java")
         loadFile("api/UserCtrl.java")
 
-        loadFile("jaxrs/GET.java")
-        loadFile("jaxrs/POST.java")
-        loadFile("jaxrs/PUT.java")
-        loadFile("jaxrs/DELETE.java")
-        loadFile("jaxrs/PATCH.java")
-        loadFile("jaxrs/OPTIONS.java")
-        loadFile("jaxrs/HEAD.java")
-        loadFile("jaxrs/Path.java")
-        loadFile("jaxrs/PathParam.java")
-        loadFile("jaxrs/QueryParam.java")
-        loadFile("jaxrs/FormParam.java")
-        loadFile("jaxrs/HeaderParam.java")
-        loadFile("jaxrs/CookieParam.java")
-        loadFile("jaxrs/BeanParam.java")
-        loadFile("jaxrs/DefaultValue.java")
-        loadFile("jaxrs/Consumes.java")
-        loadFile("jaxrs/Produces.java")
-        loadFile("jaxrs/HttpMethod.java")
-        loadFile("api/jaxrs/UserDTO.java")
-        loadFile("api/jaxrs/UserResource.java")
-
         loadFile("feign/RequestLine.java")
         loadFile("feign/Headers.java")
         loadFile("feign/Body.java")
         loadFile("feign/Param.java")
         loadFile("spring/FeignClient.java")
         loadFile("api/feign/UserClient.java")
-
-        loadFile("spring/Endpoint.java")
-        loadFile("spring/ReadOperation.java")
-        loadFile("spring/WriteOperation.java")
-        loadFile("spring/DeleteOperation.java")
-        loadFile("spring/Selector.java")
-        loadFile("spring/WebEndpoint.java")
-        loadFile("spring/ControllerEndpoint.java")
-        loadFile("spring/RestControllerEndpoint.java")
-        loadFile("api/actuator/StandardEndpoint.java")
     }
 
     override fun createConfigReader() = TestConfigReader.fromConfigText(
@@ -119,27 +81,6 @@ class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         }
     }
 
-    // ── JAX-RS lifecycle events ──────────────────────────────────
-
-    fun testJaxRsClassParseEvents() = runTest {
-        val psiClass = findClass("com.itangcent.jaxrs.UserResource")
-        assertNotNull(psiClass)
-
-        val endpoints = jaxRsExporter.export(psiClass!!)
-        assertTrue("Should export endpoints", endpoints.isNotEmpty())
-    }
-
-    fun testJaxRsExportAfterEvent() = runTest {
-        val psiClass = findClass("com.itangcent.jaxrs.UserResource")
-        assertNotNull(psiClass)
-
-        val endpoints = jaxRsExporter.export(psiClass!!)
-        assertTrue("Should export endpoints", endpoints.isNotEmpty())
-        for (endpoint in endpoints) {
-            assertNotNull("Endpoint should have source method", endpoint.sourceMethod)
-        }
-    }
-
     // ── Feign lifecycle events ───────────────────────────────────
 
     fun testFeignClassParseEvents() = runTest {
@@ -155,37 +96,6 @@ class ApiLifecycleEventsTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         assertNotNull(psiClass)
 
         val endpoints = feignExporter.export(psiClass!!)
-        assertTrue("Should export endpoints", endpoints.isNotEmpty())
-        for (endpoint in endpoints) {
-            assertNotNull("Endpoint should have source method", endpoint.sourceMethod)
-        }
-    }
-
-    // ── gRPC lifecycle events (removed — gRPC module deleted) ────
-
-    fun testGrpcClassParseEvents() {
-        // gRPC module has been removed — test deleted
-    }
-
-    fun testGrpcExportAfterEvent() {
-        // gRPC module has been removed — test deleted
-    }
-
-    // ── Actuator lifecycle events ────────────────────────────────
-
-    fun testActuatorClassParseEvents() = runTest {
-        val psiClass = findClass("com.itangcent.springboot.demo.controller.StandardEndpoint")
-        assertNotNull(psiClass)
-
-        val endpoints = actuatorExporter.export(psiClass!!)
-        assertTrue("Should export endpoints", endpoints.isNotEmpty())
-    }
-
-    fun testActuatorExportAfterEvent() = runTest {
-        val psiClass = findClass("com.itangcent.springboot.demo.controller.StandardEndpoint")
-        assertNotNull(psiClass)
-
-        val endpoints = actuatorExporter.export(psiClass!!)
         assertTrue("Should export endpoints", endpoints.isNotEmpty())
         for (endpoint in endpoints) {
             assertNotNull("Endpoint should have source method", endpoint.sourceMethod)

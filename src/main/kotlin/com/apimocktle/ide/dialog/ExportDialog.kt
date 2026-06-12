@@ -245,7 +245,6 @@ private class MethodCellRenderer : DefaultTableCellRenderer() {
         "PATCH" -> Color(0x50e3c2)
         "HEAD" -> Color(0x9012fe)
         "OPTIONS" -> Color(0x0d5aa7)
-        "gRPC" -> Color(0x8B5CF6)
         else -> Color(0x999999)
     }
 }

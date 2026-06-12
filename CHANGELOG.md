@@ -5,6 +5,39 @@ All notable changes to the ApiMocktle plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-06-13
+
+### 精简（移除）
+- 移除 JAX-RS 支持（6 文件 + 测试）
+- 移除 Spring Actuator 端点支持（3 文件 + 测试）
+- 移除 Groovy/Scala PSI 适配器（2 文件 + 空壳 XML）
+- 移除 IntelliJHttpClient（仅保留 Apache HttpClient）
+- 移除 Dashboard API 调试功能（请求执行、环境变量、编辑缓存、请求历史、Cookie 持久化、脚本拦截器）
+- 移除 PmScript 脚本执行器全套（~15 文件）
+- 移除脚本执行器（ScriptExecutorDialog）
+- 移除 API Search Everywhere
+- 移除远程配置（RemoteConfigSource）
+- 移除 PropertiesFormatter（死代码）
+- 移除 POSTMAN_* RuleKeys
+- 移除空壳服务（ApiMocktleApplicationService、ApiMocktleProjectService）
+
+### 优化
+- 设置面板重组：新标签页结构（API 扫描 / YAPI 导出 / Mock Agent / 扩展配置 / 高级）
+- 每个设置项增加 ? 说明弹窗
+- 删除内置配置、远程配置标签页（功能已移除）
+- EndpointDetailsPanel 从可编辑改为只读详情展示
+- Jackson → Gson 统一（MockAgentManager 迁移）
+
+### 修复
+- 修复 ResolvedTypes.superClasses() 中 PSI read action 线程模型违规
+
+### 依赖变更
+- 移除 Jackson 依赖（jackson-databind、jackson-annotations、jackson-core）
+- 移除 Scala 插件依赖（org.intellij.scala:2023.3.19）
+- 移除 Groovy 可选插件依赖（org.intellij.groovy）
+
+---
+
 ## [3.1.1] - 2026-04-28
 
 ### Added

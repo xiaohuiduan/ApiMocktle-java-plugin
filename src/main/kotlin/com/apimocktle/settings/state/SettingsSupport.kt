@@ -4,11 +4,9 @@ package com.apimocktle.settings.state
  * 项目级设置属性接口。
  */
 interface ProjectSettingsSupport {
-    var projectEnvironments: String
     var yapiPersonalToken: String?
 
     fun copyTo(newSetting: ProjectSettingsSupport) {
-        newSetting.projectEnvironments = this.projectEnvironments
         this.yapiPersonalToken?.let { newSetting.yapiPersonalToken = it }
     }
 }
@@ -18,8 +16,6 @@ interface ProjectSettingsSupport {
  */
 interface ApplicationSettingsSupport {
     var feignEnable: Boolean
-    var jaxrsEnable: Boolean
-    var actuatorEnable: Boolean
     var extensionConfigs: String
     var queryExpanded: Boolean
     var formExpanded: Boolean
@@ -45,14 +41,11 @@ interface ApplicationSettingsSupport {
     var autoScanEnabled: Boolean
     /** 启用并发 API 扫描 */
     var concurrentScanEnabled: Boolean
-    var globalEnvironments: String
     /** 自动注入 Mock Agent 到 Application 运行配置 */
     var autoInjectAgent: Boolean
 
     fun copyTo(newSetting: ApplicationSettingsSupport) {
         newSetting.feignEnable = this.feignEnable
-        newSetting.jaxrsEnable = this.jaxrsEnable
-        newSetting.actuatorEnable = this.actuatorEnable
         newSetting.extensionConfigs = this.extensionConfigs
         newSetting.queryExpanded = this.queryExpanded
         newSetting.formExpanded = this.formExpanded
@@ -75,7 +68,6 @@ interface ApplicationSettingsSupport {
         newSetting.remoteConfig = this.remoteConfig
         newSetting.autoScanEnabled = this.autoScanEnabled
         newSetting.concurrentScanEnabled = this.concurrentScanEnabled
-        newSetting.globalEnvironments = this.globalEnvironments
         newSetting.autoInjectAgent = this.autoInjectAgent
     }
 }

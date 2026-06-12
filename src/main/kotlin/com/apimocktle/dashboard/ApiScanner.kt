@@ -24,11 +24,7 @@ import com.apimocktle.exporter.ClassExporter
 import com.apimocktle.exporter.core.CompositeApiClassRecognizer
 import com.apimocktle.exporter.feign.FeignClassExporter
 import com.apimocktle.exporter.feign.FeignClientRecognizer
-import com.apimocktle.exporter.jaxrs.JaxRsClassExporter
-import com.apimocktle.exporter.jaxrs.JaxRsResourceRecognizer
 import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.springmvc.ActuatorEndpointExporter
-import com.apimocktle.exporter.springmvc.SpringActuatorConstants
 import com.apimocktle.exporter.springmvc.SpringControllerRecognizer
 import com.apimocktle.exporter.springmvc.SpringMvcClassExporter
 import com.apimocktle.ide.DumbModeHelper
@@ -44,9 +40,7 @@ import kotlin.time.Duration.Companion.milliseconds
  *
  * This service coordinates the discovery and extraction of API endpoints from:
  * - Spring MVC controllers (@RestController, @Controller)
- * - JAX-RS resources (@Path, @GET, @POST, etc.)
  * - Feign clients (@FeignClient)
- * - Spring Actuator endpoints
  *
  * The scanner uses IntelliJ's indexed search for efficient annotation-based discovery,
  * supporting both standard annotations and custom meta-annotations.
@@ -459,18 +453,6 @@ class ApiScanner(private val project: Project) {
                 availabilityService.hasAnyClassInProject(FeignClientRecognizer.FEIGN_ANNOTATIONS)
             ) {
                 add(FeignClassExporter(project))
-            }
-
-            if (settings.jaxrsEnable &&
-                availabilityService.hasAnyClassInProject(JaxRsResourceRecognizer.PATH_ANNOTATIONS)
-            ) {
-                add(JaxRsClassExporter(project))
-            }
-
-            if (settings.actuatorEnable &&
-                availabilityService.hasAnyClassInProject(SpringActuatorConstants.ENDPOINT_ANNOTATIONS)
-            ) {
-                add(ActuatorEndpointExporter(project))
             }
         }
     }

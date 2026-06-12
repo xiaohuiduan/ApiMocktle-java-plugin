@@ -1,8 +1,7 @@
 package com.apimocktle.agent
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -28,7 +27,7 @@ class MockAgentManager(private val project: Project) {
         private val log = Logger.getInstance(MockAgentManager::class.java)
     }
 
-    private val mapper: ObjectMapper = jacksonObjectMapper()
+    private val gson: Gson = Gson()
     var agentPort: Int = DEFAULT_PORT
         private set
 
@@ -37,7 +36,7 @@ class MockAgentManager(private val project: Project) {
      */
     fun pushRules(rules: List<Map<String, Any?>>): Boolean {
         return try {
-            val json = mapper.writeValueAsString(rules)
+            val json = gson.toJson(rules)
             httpPut("/mock/rules", json)
             true
         } catch (e: Exception) {
@@ -65,7 +64,8 @@ class MockAgentManager(private val project: Project) {
     fun getCallLogs(): List<Map<String, Any?>> {
         return try {
             val response = httpGet("/mock/logs")
-            mapper.readValue(response)
+            val type = object : TypeToken<List<Map<String, Any?>>>() {}.type
+            gson.fromJson(response, type)
         } catch (e: Exception) {
             log.error("[MockAgent] Failed to get logs: ${e.message}")
             emptyList()
@@ -78,7 +78,8 @@ class MockAgentManager(private val project: Project) {
     fun discover(): Map<String, Any?> {
         return try {
             val response = httpGet("/discover")
-            mapper.readValue(response)
+            val type = object : TypeToken<Map<String, Any?>>() {}.type
+            gson.fromJson(response, type)
         } catch (e: Exception) {
             log.error("[MockAgent] Failed to discover: ${e.message}")
             emptyMap()

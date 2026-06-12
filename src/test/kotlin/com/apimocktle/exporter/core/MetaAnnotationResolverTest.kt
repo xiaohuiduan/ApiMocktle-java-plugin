@@ -86,8 +86,7 @@ class MetaAnnotationResolverTest : ApiMocktleLightCodeInsightFixtureTestCase() {
             psiClass!!,
             setOf(
                 "org.springframework.stereotype.Controller",
-                "org.springframework.web.bind.annotation.RestController",
-                "javax.ws.rs.Path"
+                "org.springframework.web.bind.annotation.RestController"
             )
         )
         assertTrue(
