@@ -13,12 +13,14 @@ import java.util.concurrent.Executors
  * Agent HTTP Server — lightweight HTTP API using com.sun.net.httpserver.
  *
  * Endpoints:
- *   PUT  /mock/rules  - push mock rules
- *   DELETE /mock/rules - clear all rules
- *   GET  /mock/logs    - get and drain call logs
- *   GET  /logs         - get agent runtime logs
- *   GET  /discover     - discover interceptable classes
- *   GET  /status       - agent connection status
+ *   PUT  /mock/rules     - push mock rules (rejected when muted)
+ *   DELETE /mock/rules    - clear all rules
+ *   GET  /mock/logs       - get and drain call logs
+ *   GET  /logs            - get agent runtime logs
+ *   GET  /discover        - discover interceptable classes
+ *   GET  /status          - agent connection status (includes muted flag)
+ *   POST /agent/mute      - mute: clear rules + reject new rules
+ *   POST /agent/unmute    - unmute: accept rules again
  */
 object AgentHttpServer {
 
@@ -39,17 +41,28 @@ object AgentHttpServer {
 
         val httpServer = HttpServer.create(InetSocketAddress(port), 0)
 
+        // ==================== Mock Rules ====================
+
         httpServer.createContext("/mock/rules", object : HttpHandler {
             override fun handle(exchange: HttpExchange) {
                 when (exchange.requestMethod) {
                     "PUT" -> {
+                        if (MockRuleRegistry.isMuted()) {
+                            AgentLogCollector.warn("Rejected rule push: agent is muted")
+                            sendJson(exchange, 403, mapOf("ok" to false, "error" to "Agent is muted, rules rejected"))
+                            return
+                        }
                         try {
                             val body = readBody(exchange)
                             val newRules: List<MockRule> = mapper.readValue(
                                 body,
                                 mapper.typeFactory.constructCollectionType(List::class.java, MockRule::class.java)
                             )
-                            MockRuleRegistry.update(newRules)
+                            val accepted = MockRuleRegistry.update(newRules)
+                            if (!accepted) {
+                                sendJson(exchange, 403, mapOf("ok" to false, "error" to "Agent is muted, rules rejected"))
+                                return
+                            }
                             retransformClass(instrumentation, "org.springframework.aop.framework.CglibAopProxy\$DynamicAdvisedInterceptor")
                             retransformClass(instrumentation, "feign.ReflectiveFeign\$FeignInvocationHandler")
                             retransformClass(instrumentation, "org.apache.ibatis.binding.MapperProxy")
@@ -71,6 +84,8 @@ object AgentHttpServer {
             }
         })
 
+        // ==================== Mock Call Logs ====================
+
         httpServer.createContext("/mock/logs", object : HttpHandler {
             override fun handle(exchange: HttpExchange) {
                 if (exchange.requestMethod != "GET") {
@@ -85,6 +100,8 @@ object AgentHttpServer {
                 }
             }
         })
+
+        // ==================== Discover ====================
 
         httpServer.createContext("/discover", object : HttpHandler {
             override fun handle(exchange: HttpExchange) {
@@ -101,11 +118,20 @@ object AgentHttpServer {
             }
         })
 
+        // ==================== Status ====================
+
         httpServer.createContext("/status", object : HttpHandler {
             override fun handle(exchange: HttpExchange) {
-                sendJson(exchange, 200, AgentStatus(connected = true, version = "1.0.0", pid = ProcessHandle.current().pid()))
+                sendJson(exchange, 200, mapOf(
+                    "connected" to true,
+                    "version" to "1.0.0",
+                    "pid" to ProcessHandle.current().pid(),
+                    "muted" to MockRuleRegistry.isMuted()
+                ))
             }
         })
+
+        // ==================== Agent Runtime Logs ====================
 
         httpServer.createContext("/logs", object : HttpHandler {
             override fun handle(exchange: HttpExchange) {
@@ -125,6 +151,30 @@ object AgentHttpServer {
                 } catch (e: Exception) {
                     sendJson(exchange, 500, mapOf("error" to (e.message ?: "unknown")))
                 }
+            }
+        })
+
+        // ==================== Agent Mute / Unmute ====================
+
+        httpServer.createContext("/agent/mute", object : HttpHandler {
+            override fun handle(exchange: HttpExchange) {
+                if (exchange.requestMethod != "POST") {
+                    sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
+                    return
+                }
+                MockRuleRegistry.mute()
+                sendJson(exchange, 200, mapOf("ok" to true, "muted" to true))
+            }
+        })
+
+        httpServer.createContext("/agent/unmute", object : HttpHandler {
+            override fun handle(exchange: HttpExchange) {
+                if (exchange.requestMethod != "POST") {
+                    sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
+                    return
+                }
+                MockRuleRegistry.unmute()
+                sendJson(exchange, 200, mapOf("ok" to true, "muted" to false))
             }
         })
 

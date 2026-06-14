@@ -85,13 +85,15 @@ class MockAgentManager(private val project: Project) {
 
     /**
      * 设置 Agent 的激活状态。
-     * 取消激活时会清除该 Agent 上的 mock 规则。
+     * - 取消激活：调用 agent 的 /agent/mute（清空规则 + 拒绝新规则）
+     * - 激活：调用 agent 的 /agent/unmute（恢复接受规则）
      */
     fun setActive(runConfigId: String, active: Boolean) {
         val info = agents[runConfigId] ?: return
-        if (!active) {
-            // 取消激活时清除规则
-            tryClearRules(info.port)
+        if (active) {
+            sendUnmute(info.port)
+        } else {
+            sendMute(info.port)
         }
         agents[runConfigId] = info.copy(active = active)
         log.info("[MockAgent] Agent ${info.name} active=$active")
@@ -250,9 +252,17 @@ class MockAgentManager(private val project: Project) {
 
     // ==================== 内部工具 ====================
 
-    private fun tryClearRules(port: Int) {
+    private fun sendMute(port: Int) {
         try {
-            httpDelete(port, "/mock/rules")
+            httpPost(port, "/agent/mute", "")
+        } catch (_: Exception) {
+            // 静默失败，agent 可能已断开
+        }
+    }
+
+    private fun sendUnmute(port: Int) {
+        try {
+            httpPost(port, "/agent/unmute", "")
         } catch (_: Exception) {
             // 静默失败，agent 可能已断开
         }
@@ -300,6 +310,22 @@ class MockAgentManager(private val project: Project) {
         conn.connectTimeout = CONNECT_TIMEOUT_MS
         conn.readTimeout = READ_TIMEOUT_MS
         conn.requestMethod = "DELETE"
+        val response = conn.inputStream.bufferedReader().readText()
+        conn.disconnect()
+        return response
+    }
+
+    private fun httpPost(port: Int, path: String, body: String): String {
+        val url = URL("http://localhost:$port$path")
+        val conn = url.openConnection() as HttpURLConnection
+        conn.connectTimeout = CONNECT_TIMEOUT_MS
+        conn.readTimeout = READ_TIMEOUT_MS
+        conn.requestMethod = "POST"
+        conn.doOutput = true
+        conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+        if (body.isNotEmpty()) {
+            conn.outputStream.write(body.toByteArray(Charsets.UTF_8))
+        }
         val response = conn.inputStream.bufferedReader().readText()
         conn.disconnect()
         return response
