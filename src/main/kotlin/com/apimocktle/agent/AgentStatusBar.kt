@@ -13,6 +13,8 @@ import javax.swing.border.EmptyBorder
 /**
  * Dashboard 中的 Agent 状态指示器，显示连接状态和端口信息。
  * 每 5 秒自动刷新一次状态。
+ *
+ * 多 Agent 模式下显示已连接数量和端口列表。
  */
 class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
 
@@ -84,14 +86,22 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
     private fun refresh() {
         try {
             val manager = project.getService(MockAgentManager::class.java)
-            val connected = manager.isConnected()
-            lastConnected = connected
+            manager.probeAllStatus()
 
-            statusLabel.text = if (connected) "Mock Agent 已连接" else "Mock Agent 未连接"
-            statusLabel.foreground = if (connected) Color(0x2da44e) else Color(0x999999)
+            val agents = manager.getAgents()
+            val connectedCount = agents.count { it.connected }
+            lastConnected = connectedCount > 0
 
-            portLabel.text = manager.agentPort.toString()
-            portLabel.foreground = if (connected) UIManager.getColor("Label.foreground") else Color(0x999999)
+            if (agents.isEmpty()) {
+                statusLabel.text = "Mock Agent 未配置"
+                statusLabel.foreground = Color(0x999999)
+                portLabel.text = "--"
+            } else {
+                statusLabel.text = "Mock Agent: $connectedCount/${agents.size} 已连接"
+                statusLabel.foreground = if (lastConnected) Color(0x2da44e) else Color(0x999999)
+                portLabel.text = agents.joinToString(", ") { "${it.name}:${it.port}" }
+                portLabel.foreground = if (lastConnected) UIManager.getColor("Label.foreground") else Color(0x999999)
+            }
 
             val settings = SettingBinder.getInstance(project).tryRead()
             val autoMode = settings?.autoInjectAgent ?: true

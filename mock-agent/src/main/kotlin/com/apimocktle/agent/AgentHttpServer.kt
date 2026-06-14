@@ -16,6 +16,7 @@ import java.util.concurrent.Executors
  *   PUT  /mock/rules  - push mock rules
  *   DELETE /mock/rules - clear all rules
  *   GET  /mock/logs    - get and drain call logs
+ *   GET  /logs         - get agent runtime logs
  *   GET  /discover     - discover interceptable classes
  *   GET  /status       - agent connection status
  */
@@ -52,14 +53,17 @@ object AgentHttpServer {
                             retransformClass(instrumentation, "org.springframework.aop.framework.CglibAopProxy\$DynamicAdvisedInterceptor")
                             retransformClass(instrumentation, "feign.ReflectiveFeign\$FeignInvocationHandler")
                             retransformClass(instrumentation, "org.apache.ibatis.binding.MapperProxy")
+                            AgentLogCollector.info("Pushed ${newRules.size} mock rules")
                             sendJson(exchange, 200, mapOf("ok" to true, "count" to newRules.size))
                         } catch (e: Exception) {
+                            AgentLogCollector.error("Failed to push rules", e)
                             sendJson(exchange, 400, mapOf("ok" to false, "error" to (e.message ?: "unknown")))
                         }
                     }
                     "DELETE" -> {
                         MockRuleRegistry.clear()
                         CallLogCollector.clear()
+                        AgentLogCollector.info("Cleared all mock rules")
                         sendJson(exchange, 200, mapOf("ok" to true))
                     }
                     else -> sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
@@ -100,6 +104,27 @@ object AgentHttpServer {
         httpServer.createContext("/status", object : HttpHandler {
             override fun handle(exchange: HttpExchange) {
                 sendJson(exchange, 200, AgentStatus(connected = true, version = "1.0.0", pid = ProcessHandle.current().pid()))
+            }
+        })
+
+        httpServer.createContext("/logs", object : HttpHandler {
+            override fun handle(exchange: HttpExchange) {
+                if (exchange.requestMethod != "GET") {
+                    sendJson(exchange, 405, mapOf("error" to "Method not allowed"))
+                    return
+                }
+                try {
+                    val n = exchange.requestURI.query?.let { query ->
+                        query.split("&")
+                            .find { it.startsWith("n=") }
+                            ?.substringAfter("=")
+                            ?.toIntOrNull()
+                    }
+                    val logs = if (n != null) AgentLogCollector.getRecent(n) else AgentLogCollector.getAll()
+                    sendJson(exchange, 200, logs)
+                } catch (e: Exception) {
+                    sendJson(exchange, 500, mapOf("error" to (e.message ?: "unknown")))
+                }
             }
         })
 

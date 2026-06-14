@@ -4,29 +4,33 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.apimocktle.agent.AgentAddressesPanel
 
 /**
  * Factory for creating the API Dashboard tool window in IntelliJ IDEA.
- * 
- * This factory is registered in plugin.xml and creates the tool window content
- * when the user opens the API Dashboard. It connects the panel to the project-level
- * service for state management.
+ *
+ * 包含两个 tab：
+ * - API Endpoints：展示所有 API 端点
+ * - Agent Addresses：展示所有已注册 Agent 的地址和状态
  */
 class ApiDashboardToolWindowFactory : ToolWindowFactory {
-    /**
-     * Creates the content for the API Dashboard tool window.
-     * Initializes the panel and registers it with the project service.
-     * 
-     * @param project The current IntelliJ project
-     * @param toolWindow The tool window to populate
-     */
-    override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val panel = ApiDashboardPanel(project)
-        val service = ApiDashboardService.getInstance(project)
-        service.setDashboardPanel(panel)
 
-        val content = toolWindow.contentManager.factory.createContent(panel, "", false)
-        content.setDisposer(Disposable { panel.dispose() })
-        toolWindow.contentManager.addContent(content)
+    override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        val contentFactory = toolWindow.contentManager.factory
+
+        // Tab 1: API Endpoints
+        val apiPanel = ApiDashboardPanel(project)
+        val service = ApiDashboardService.getInstance(project)
+        service.setDashboardPanel(apiPanel)
+        val apiContent = contentFactory.createContent(apiPanel, "API Endpoints", false)
+        apiContent.setDisposer(Disposable { apiPanel.dispose() })
+
+        // Tab 2: Agent Addresses
+        val agentPanel = AgentAddressesPanel(project)
+        val agentContent = contentFactory.createContent(agentPanel, "Agent Addresses", false)
+        agentContent.setDisposer(Disposable { agentPanel.dispose() })
+
+        toolWindow.contentManager.addContent(apiContent)
+        toolWindow.contentManager.addContent(agentContent)
     }
 }

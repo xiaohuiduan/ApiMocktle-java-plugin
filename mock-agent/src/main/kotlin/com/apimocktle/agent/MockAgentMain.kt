@@ -30,6 +30,8 @@ class MockAgentMain {
         private fun start(args: String?, instrumentation: java.lang.instrument.Instrumentation) {
             val port = parsePort(args)
             try {
+                AgentLogCollector.info("Agent starting on port $port, PID=${ProcessHandle.current().pid()}")
+
                 // Install advice on all three interception points:
                 // 1. CGLIB:  DynamicAdvisedInterceptor.intercept()       → GenericAdvice
                 // 2. Feign:  ReflectiveFeign$FeignInvocationHandler      → JdkProxyAdvice
@@ -39,11 +41,14 @@ class MockAgentMain {
                 // Thread.currentThread().getContextClassLoader()) to access Agent classes,
                 // avoiding classloader visibility issues with Spring Boot's LaunchedClassLoader.
                 com.apimocktle.agent.interceptor.CustomInterceptor.ensureGlobalInstalled(instrumentation)
+                AgentLogCollector.info("Custom interceptor installed")
 
                 AgentHttpServer.start(port, instrumentation)
                 writePortFile(port)
+                AgentLogCollector.info("HTTP server started on port $port")
                 println("[MockAgent] Started on port $port, PID=${ProcessHandle.current().pid()}")
             } catch (e: Exception) {
+                AgentLogCollector.error("Failed to start", e)
                 System.err.println("[MockAgent] Failed to start: ${e.message}")
                 e.printStackTrace()
             }

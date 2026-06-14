@@ -41,6 +41,7 @@
         <projectService serviceImplementation="com.apimocktle.cache.VcsBranchChangeListener"/>
 
         <postStartupActivity implementation="com.apimocktle.ide.ApiIndexStartupActivity"/>
+        <postStartupActivity implementation="com.apimocktle.agent.AgentProcessListener"/>
 
         <projectConfigurable groupId="null"
                              displayName="ApiMocktle"
