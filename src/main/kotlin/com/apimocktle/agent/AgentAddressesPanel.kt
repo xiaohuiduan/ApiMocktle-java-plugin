@@ -14,13 +14,19 @@ import javax.swing.border.EmptyBorder
 /**
  * Agent Addresses 面板，展示所有已注册 Agent 的地址和状态。
  *
- * 每个 Agent 显示：
- * - 状态圆点（🟢 已连接 / 🔴 未连接）
- * - 服务名
- * - 地址（host:port）
- * - 操作按钮：激活/取消激活、复制地址、查看日志
+ * 状态指示：
+ * - 🟢 绿灯：已连接 + 已激活 → 就绪，可接收 Mock 规则
+ * - 🟡 黄灯：已连接 + 已暂停 → 已暂停，不接收 Mock 规则
+ * - 🔴 红灯：未连接
  */
 class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout()) {
+
+    companion object {
+        private val COLOR_GREEN = Color(0x2da44e)
+        private val COLOR_YELLOW = Color(0xD4A017)
+        private val COLOR_RED = Color(0xCF6A4C)
+        private val COLOR_GRAY = Color(0x999999)
+    }
 
     private val agentsContainer = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -28,7 +34,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
     }
 
     private val emptyLabel = JLabel("暂无已配置的 Agent", SwingConstants.CENTER).apply {
-        foreground = Color(0x999999)
+        foreground = COLOR_GRAY
     }
 
     private val scheduler = Executors.newSingleThreadScheduledExecutor { r ->
@@ -92,32 +98,64 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
                 EmptyBorder(6, 8, 6, 8)
             )
             background = UIUtil.getListBackground()
-            maximumSize = Dimension(Int.MAX_VALUE, 40)
+            maximumSize = Dimension(Int.MAX_VALUE, 56)
         }
 
-        // 左侧：状态点 + 服务名 + 地址
-        val statusDot = createStatusDot(agent.connected)
+        // 状态：绿灯=就绪，黄灯=已暂停，红灯=未连接
+        val dotColor = when {
+            !agent.connected -> COLOR_RED
+            !agent.active -> COLOR_YELLOW
+            else -> COLOR_GREEN
+        }
+        val statusText = when {
+            !agent.connected -> "未连接"
+            !agent.active -> "已暂停，不接收 Mock 规则"
+            else -> "就绪，可接收 Mock 规则"
+        }
+        val statusTextColor = when {
+            !agent.connected -> COLOR_RED
+            !agent.active -> COLOR_YELLOW
+            else -> COLOR_GREEN
+        }
+
+        val statusDot = createStatusDot(dotColor)
         val nameLabel = JLabel(agent.name).apply {
             font = font.deriveFont(Font.BOLD)
         }
         val addressLabel = JLabel("→ ${agent.address}").apply {
-            foreground = Color(0x666666)
+            foreground = COLOR_GRAY
+        }
+        val statusLabel = JLabel(statusText).apply {
+            foreground = statusTextColor
+            font = font.deriveFont(Font.PLAIN, font.size2D - 1f)
         }
 
-        val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
+        // 左侧：状态点 + 名称 + 地址 + 状态文字
+        val infoPanel = JPanel().apply {
+            isOpaque = false
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        }
+
+        val topLine = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
             isOpaque = false
             add(statusDot)
             add(nameLabel)
             add(addressLabel)
         }
+        val bottomLine = JPanel(FlowLayout(FlowLayout.LEFT, 16, 0)).apply {
+            isOpaque = false
+            add(statusLabel)
+        }
+
+        infoPanel.add(topLine)
+        infoPanel.add(bottomLine)
 
         // 右侧：操作按钮
         val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 4, 0)).apply {
             isOpaque = false
         }
 
-        // 激活/取消激活按钮
-        val activeButton = JButton(if (agent.active) "取消激活" else "激活").apply {
+        val activeButton = JButton(if (agent.active) "暂停" else "激活").apply {
             font = font.deriveFont(Font.PLAIN, 11f)
             addActionListener {
                 manager.setActive(agent.runConfigId ?: agent.name, !agent.active)
@@ -125,7 +163,6 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             }
         }
 
-        // 复制地址按钮
         val copyButton = JButton("复制地址").apply {
             font = font.deriveFont(Font.PLAIN, 11f)
             addActionListener {
@@ -134,7 +171,6 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             }
         }
 
-        // 查看日志按钮
         val logButton = JButton("查看日志").apply {
             font = font.deriveFont(Font.PLAIN, 11f)
             isEnabled = agent.connected
@@ -147,13 +183,13 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         buttonPanel.add(copyButton)
         buttonPanel.add(logButton)
 
-        row.add(leftPanel, BorderLayout.WEST)
+        row.add(infoPanel, BorderLayout.WEST)
         row.add(buttonPanel, BorderLayout.EAST)
 
         return row
     }
 
-    private fun createStatusDot(connected: Boolean): JLabel {
+    private fun createStatusDot(color: Color): JLabel {
         return object : JLabel() {
             init {
                 preferredSize = JBUI.size(10, 10)
@@ -163,7 +199,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             override fun paintComponent(g: Graphics) {
                 val g2 = g as Graphics2D
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-                g2.color = if (connected) Color(0x2da44e) else Color(0xCF6A4C)
+                g2.color = color
                 g2.fillOval(1, 1, 8, 8)
             }
         }
@@ -210,9 +246,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         dialog.setLocationRelativeTo(this)
         dialog.defaultCloseOperation = JDialog.DISPOSE_ON_CLOSE
 
-        // 初始加载日志
         refreshBtn.doClick()
-
         dialog.isVisible = true
     }
 

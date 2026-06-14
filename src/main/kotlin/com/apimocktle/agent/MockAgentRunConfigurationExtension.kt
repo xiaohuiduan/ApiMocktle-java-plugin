@@ -227,11 +227,20 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
         private val portField = JTextField().apply {
             columns = 10
         }
+        private val hintLabel = JLabel("留空则自动分配空闲端口").apply {
+            foreground = com.intellij.util.ui.UIUtil.getContextHelpForeground()
+            font = font.deriveFont(font.size2D - 1f)
+        }
         private val panel: JPanel
 
         init {
+            val portPanel = JPanel(BorderLayout()).apply {
+                add(portField, BorderLayout.NORTH)
+                add(hintLabel, BorderLayout.SOUTH)
+            }
+
             val formPanel = FormBuilder.createFormBuilder()
-                .addLabeledComponent("Port:", portField)
+                .addLabeledComponent("Port:", portPanel)
                 .addComponentFillVertically(JPanel(), 0)
                 .panel
 
@@ -243,6 +252,7 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
 
             enabledCheckBox.addActionListener {
                 portField.isEnabled = enabledCheckBox.isSelected
+                hintLabel.isEnabled = enabledCheckBox.isSelected
             }
         }
 
