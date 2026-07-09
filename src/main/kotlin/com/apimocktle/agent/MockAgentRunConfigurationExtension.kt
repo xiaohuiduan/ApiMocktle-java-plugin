@@ -13,6 +13,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.JBUI
+import com.apimocktle.settings.SettingBinder
+import com.apimocktle.settings.SettingsChangeListener
 import org.jdom.Element
 import java.awt.BorderLayout
 import java.io.File
@@ -129,7 +131,7 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
 
     override fun <P : RunConfigurationBase<*>> createEditor(configuration: P): SettingsEditor<P>? {
         @Suppress("UNCHECKED_CAST")
-        return AgentSettingsEditor() as SettingsEditor<P>
+        return AgentSettingsEditor(configuration.project) as SettingsEditor<P>
     }
 
     override fun getEditorTitle(): String = "ApiMocktle Agent"
@@ -144,6 +146,15 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
         val project = configuration.project
         val runConfigId = configuration.name
 
+        // 最高优先级：插件全局设置 "自动注入 Mock Agent"
+        // 关闭时一律不注入，覆盖 Run Configuration 级别的任何勾选。
+        val globalAutoInject = SettingBinder.getInstance(project).tryRead()?.autoInjectAgent ?: true
+        if (!globalAutoInject) {
+            log.info("[MockAgent] Skipped injection: global autoInjectAgent is disabled")
+            return
+        }
+
+        // 次级优先级：Run Configuration 自身的 "Enable ApiMocktle Agent" 勾选
         // 从 UserData 读取配置（readExternal 已加载）
         val enabled = configuration.getUserData(AGENT_ENABLED_KEY) ?: true
         if (!enabled) return
@@ -218,8 +229,11 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
     /**
      * Run Configuration 编辑器中的 Agent 配置面板。
      * 配置存储在 RunConfiguration 的 UserData 中，通过 writeExternal 持久化到 XML。
+     *
+     * 当插件全局设置 "自动注入 Mock Agent" 关闭时，本面板内的所有控件均无效，
+     * 因为全局开关优先级最高。此时会禁用并灰化控件，并显示提示。
      */
-    private class AgentSettingsEditor : SettingsEditor<RunConfigurationBase<*>>() {
+    private class AgentSettingsEditor(private val project: Project) : SettingsEditor<RunConfigurationBase<*>>() {
 
         private val enabledCheckBox = JCheckBox("Enable ApiMocktle Agent").apply {
             isSelected = true
@@ -230,6 +244,12 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
         private val hintLabel = JLabel("留空则自动分配空闲端口").apply {
             foreground = com.intellij.util.ui.UIUtil.getContextHelpForeground()
             font = font.deriveFont(font.size2D - 1f)
+        }
+        private val globalOffLabel = JLabel(
+            "<html><font color='#999999'>插件全局设置已关闭「自动注入 Mock Agent」，此处的勾选无效。</font></html>"
+        ).apply {
+            font = font.deriveFont(font.size2D - 1f)
+            isVisible = false
         }
         private val panel: JPanel
 
@@ -246,7 +266,8 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
 
             panel = JPanel(BorderLayout()).apply {
                 add(enabledCheckBox, BorderLayout.NORTH)
-                add(formPanel, BorderLayout.CENTER)
+                add(globalOffLabel, BorderLayout.CENTER)
+                add(formPanel, BorderLayout.SOUTH)
                 border = JBUI.Borders.empty(8)
             }
 
@@ -254,6 +275,22 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
                 portField.isEnabled = enabledCheckBox.isSelected
                 hintLabel.isEnabled = enabledCheckBox.isSelected
             }
+
+            // 监听全局设置变更，实时刷新面板有效性
+            project.messageBus.connect(this)
+                .subscribe(SettingsChangeListener.TOPIC, object : SettingsChangeListener {
+                    override fun settingsChanged() = refreshGlobalState()
+                })
+        }
+
+        /** 根据全局设置刷新控件有效性与提示 */
+        private fun refreshGlobalState() {
+            val globalAutoInject = SettingBinder.getInstance(project).tryRead()?.autoInjectAgent ?: true
+            val disabledByGlobal = !globalAutoInject
+            globalOffLabel.isVisible = disabledByGlobal
+            enabledCheckBox.isEnabled = !disabledByGlobal
+            portField.isEnabled = !disabledByGlobal && enabledCheckBox.isSelected
+            hintLabel.isEnabled = !disabledByGlobal && enabledCheckBox.isSelected
         }
 
         override fun resetEditorFrom(config: RunConfigurationBase<*>) {
@@ -262,7 +299,7 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
 
             enabledCheckBox.isSelected = enabled
             portField.text = if (port > 0) port.toString() else ""
-            portField.isEnabled = enabled
+            refreshGlobalState()
         }
 
         override fun applyEditorTo(config: RunConfigurationBase<*>) {
