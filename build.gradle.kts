@@ -24,7 +24,8 @@ dependencies {
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Plugin.Java)
     }
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
+    // 协程库由 IntelliJ 平台提供，勿打包进插件（否则会覆盖平台新版协程导致测试/运行时死锁）
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
 
     // 2026.2 本地 IDE：gradle-plugin 主 jar 未包含在 bundledPlugin 描述符中，手动加入编译依赖
     compileOnly(files(
@@ -37,7 +38,7 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.34.0")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:5.8.0")
+    testImplementation("org.mockito:mockito-core:5.23.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation("com.google.guava:guava:33.0.0-jre")
     testImplementation("com.google.guava:failureaccess:1.0.2")
@@ -57,6 +58,8 @@ java {
 tasks.withType<Test>().configureEach {
     useJUnit()
     maxParallelForks = 1
+    maxHeapSize = "2g"
+    systemProperty("java.awt.headless", "true")
     testLogging {
         events("started", "passed", "failed", "skipped")
         showExceptions = true

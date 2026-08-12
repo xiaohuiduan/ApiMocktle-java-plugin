@@ -151,8 +151,10 @@ fun testHttpEndpointStillShowsMethodName() {
         )
         val component = renderer.getTreeCellRendererComponent(
             tree, endpoint, false, false, true, 0, false
-        ) as javax.swing.JLabel
-        assertTrue(component.text.startsWith("GET"))
-        assertEquals(java.awt.Color(0x61affe), component.foreground)
+        )
+        assertTrue(component is javax.swing.JPanel)
+        val labels = (component as javax.swing.JPanel).components.filterIsInstance<javax.swing.JLabel>()
+        assertTrue("should contain GET badge", labels.any { it.text == "GET" })
+        assertTrue("badge should be GET blue", labels.any { it.background == java.awt.Color(0x61affe) })
     }
 }
