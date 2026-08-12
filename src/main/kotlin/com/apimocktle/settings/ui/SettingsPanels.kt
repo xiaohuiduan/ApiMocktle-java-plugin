@@ -81,13 +81,45 @@ class ApiScanPanel(project: com.intellij.openapi.project.Project? = null) : Sett
     private val infer = withHelp(inferCb, project, "推断响应体主类型", "Result<T> → T，自动提取实际数据类型。")
     private val urlTpl = withHelp(urlTplCb, project, "URL 模板", "路径变量用 {id} 语法显示。")
 
-    private val pathMulti = ComboBox(PathSelector.values().map { it.name }.toTypedArray())
+    private val pathMulti = ComboBox<PathSelector>(PathSelector.values()).apply {
+        renderer = object : ListCellRenderer<PathSelector> {
+            private val label = JLabel()
+            override fun getListCellRendererComponent(
+                list: JList<out PathSelector>?,
+                value: PathSelector?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component {
+                label.text = value?.displayName ?: ""
+                label.isOpaque = true
+                if (isSelected) {
+                    label.background = list?.selectionBackground
+                    label.foreground = list?.selectionForeground
+                } else {
+                    label.background = list?.background
+                    label.foreground = list?.foreground
+                }
+                return label
+            }
+        }
+    }
+    private val pathMultiRow = withHelp(
+        JPanel(BorderLayout(4, 0)).apply {
+            add(JLabel("路径多选策略："), BorderLayout.WEST)
+            add(pathMulti, BorderLayout.CENTER)
+        },
+        project,
+        "路径多选策略",
+        "一个接口映射了多个路径（如 @PostMapping({\"/a\", \"/b\"})）时，选择导出哪些路径。" +
+            "全部路径：导出所有路径；仅第一条/最后一条：按声明顺序取；仅最短/仅最长：按路径长度取。"
+    )
 
     override val component: JComponent = FormBuilder.createFormBuilder()
         .addComponent(createSection("框架支持", listOf(feign)))
         .addComponent(createSection("扫描行为", listOf(autoScan, concurrent)))
         .addComponent(createSection("文档格式", listOf(queryExp, formExp, infer, urlTpl)))
-        .addLabeledComponent("路径多选策略：", pathMulti)
+        .addComponent(createSection("路径多选", listOf(pathMultiRow)))
         .addComponentFillVertically(JPanel(), 0)
         .panel
 
@@ -95,7 +127,7 @@ class ApiScanPanel(project: com.intellij.openapi.project.Project? = null) : Sett
         feignCb.isSelected = s?.feignEnable ?: false; autoCb.isSelected = s?.autoScanEnabled ?: true
         concurrentCb.isSelected = s?.concurrentScanEnabled ?: false; queryExpCb.isSelected = s?.queryExpanded ?: true
         formExpCb.isSelected = s?.formExpanded ?: true; inferCb.isSelected = s?.inferReturnMain ?: true
-        urlTplCb.isSelected = s?.enableUrlTemplating ?: true; pathMulti.selectedItem = s?.pathMulti ?: "ALL"
+        urlTplCb.isSelected = s?.enableUrlTemplating ?: true; pathMulti.selectedItem = s?.pathMulti?.let { runCatching { PathSelector.valueOf(it) }.getOrNull() } ?: PathSelector.ALL
     }
     override fun applyTo(s: Settings) {
         s.feignEnable = feignCb.isSelected; s.autoScanEnabled = autoCb.isSelected; s.concurrentScanEnabled = concurrentCb.isSelected
@@ -117,7 +149,29 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
     private val tokenBtn = JButton("检测令牌")
     private val tokenResult = JBLabel()
     private val urlTpl = JBCheckBox("URL 模板").apply { isSelected = true }
-    private val modeCombo = ComboBox(YapiExportMode.entries.toTypedArray())
+    private val modeCombo = ComboBox<YapiExportMode>(YapiExportMode.entries.toTypedArray()).apply {
+        renderer = object : ListCellRenderer<YapiExportMode> {
+            private val label = JLabel()
+            override fun getListCellRendererComponent(
+                list: JList<out YapiExportMode>?,
+                value: YapiExportMode?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component {
+                label.text = value?.desc ?: ""
+                label.isOpaque = true
+                if (isSelected) {
+                    label.background = list?.selectionBackground
+                    label.foreground = list?.selectionForeground
+                } else {
+                    label.background = list?.background
+                    label.foreground = list?.foreground
+                }
+                return label
+            }
+        }
+    }
     private val reqJson5 = JBCheckBox("请求体 JSON5")
     private val resJson5 = JBCheckBox("响应体 JSON5")
 
@@ -169,7 +223,7 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
     override fun isModified(s: Settings?): Boolean {
         val ss = s ?: return false
         return server.text != (ss.yapiServer ?: "") || token.text != (ss.yapiPersonalToken ?: "") || urlTpl.isSelected != ss.enableUrlTemplating ||
-                modeCombo.selectedItem?.toString() != ss.yapiExportMode || reqJson5.isSelected != ss.yapiReqBodyJson5 || resJson5.isSelected != ss.yapiResBodyJson5
+                (modeCombo.selectedItem as? YapiExportMode)?.name != ss.yapiExportMode || reqJson5.isSelected != ss.yapiReqBodyJson5 || resJson5.isSelected != ss.yapiResBodyJson5
     }
 }
 
@@ -193,12 +247,34 @@ class ExtensionConfigPanel(project: com.intellij.openapi.project.Project? = null
     private val preview = JBTextArea().apply { isEditable = false }
     private val allExts = ExtensionConfigRegistry.allExtensions()
 
+    private val resetBtn = JButton("恢复默认").apply {
+        toolTipText = "按各扩展的默认启用状态重新勾选"
+        addActionListener {
+            allExts.forEach { ext -> list.setItemSelected(ext.code, ext.defaultEnabled) }
+            refreshPreview()
+        }
+    }
+
     override val component: JComponent = JSplitPane(JSplitPane.HORIZONTAL_SPLIT).apply {
-        leftComponent = JScrollPane(list); rightComponent = JScrollPane(preview); resizeWeight = 0.45
+        leftComponent = JPanel(BorderLayout()).apply {
+            add(JPanel(FlowLayout(FlowLayout.LEFT, 4, 2)).apply { add(resetBtn) }, BorderLayout.NORTH)
+            add(JScrollPane(list), BorderLayout.CENTER)
+        }
+        rightComponent = JScrollPane(preview)
+        resizeWeight = 0.45
     }
 
     init {
-        list.setItems(allExts.map { it.code }) { it }
+        list.setItems(allExts.map { it.code }) { code ->
+            allExts.find { it.code == code }?.let { ext ->
+                buildString {
+                    append(ext.code)
+                    append("  —  ")
+                    append(ext.description)
+                    if (ext.defaultEnabled) append("（默认启用）")
+                }
+            } ?: code
+        }
         list.setCheckBoxListListener { _, _ -> refreshPreview() }
         list.addListSelectionListener { refreshPreview() }
     }
@@ -234,7 +310,13 @@ class ExtensionConfigPanel(project: com.intellij.openapi.project.Project? = null
 
 // ── 高级 ────────────────────────────────────────────────────
 class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
-    private val timeout = JBTextField("30")
+    private val timeout = JBTextField("30").apply {
+        document.addDocumentListener(object : javax.swing.event.DocumentListener {
+            override fun insertUpdate(e: javax.swing.event.DocumentEvent?) = validateTimeout()
+            override fun removeUpdate(e: javax.swing.event.DocumentEvent?) = validateTimeout()
+            override fun changedUpdate(e: javax.swing.event.DocumentEvent?) = validateTimeout()
+        })
+    }
     private val unsafeSslCb = JBCheckBox("允许不安全的 SSL").apply { toolTipText = "允许连接到自签名证书的服务器" }
     private val unsafeSsl = withHelp(unsafeSslCb, project, "不安全 SSL", "允许插件通过 HTTPS 连接到使用自签名证书的服务器。")
     private val logLevel = ComboBox(VerbosityLevel.values())
@@ -257,6 +339,18 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
     private val repoTable = TableView(repoModel)
     private val importBtn = JButton("导入设置"); private val exportBtn = JButton("导出设置")
     private var curSettings: Settings? = null
+
+    private fun validateTimeout() {
+        val text = timeout.text.trim()
+        val ok = text.toIntOrNull()?.let { it in 1..600 } == true
+        if (!ok) {
+            timeout.toolTipText = "超时必须是 1-600 的整数（秒）"
+            timeout.background = java.awt.Color(255, 230, 230)
+        } else {
+            timeout.toolTipText = null
+            timeout.background = null
+        }
+    }
 
     override val component: JComponent = FormBuilder.createFormBuilder()
         .addComponent(createSection("HTTP 请求", listOf(JPanel(BorderLayout()).apply { add(JLabel("超时（秒）："), BorderLayout.WEST); add(timeout, BorderLayout.CENTER) }, unsafeSsl)))
@@ -294,8 +388,35 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
     }
     private fun fmt(s: Long) = when { s < 1024 -> "$s B"; s < 1024 * 1024 -> String.format("%.1f KB", s / 1024.0); s < 1024 * 1024 * 1024 -> String.format("%.1f MB", s / (1024.0 * 1024.0)); else -> String.format("%.1f GB", s / (1024.0 * 1024.0 * 1024.0)) }
 
-    private fun doImport() { val s = curSettings ?: return; val c = JFileChooser().apply { dialogTitle = "导入设置"; fileSelectionMode = JFileChooser.FILES_ONLY }; if (c.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) runCatching { val i = GsonUtils.fromJson<Settings>(c.selectedFile!!.readText()); applyImp(s, i); resetFrom(s) }.onFailure { Messages.showErrorDialog("导入失败：${it.message}", "ApiMocktle") } }
-    private fun doExport() { val s = curSettings ?: return; val c = JFileChooser().apply { dialogTitle = "导出设置"; fileSelectionMode = JFileChooser.FILES_ONLY }; if (c.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) runCatching { c.selectedFile!!.writeText(GsonUtils.toJson(s)) }.onFailure { Messages.showErrorDialog("导出失败：${it.message}", "ApiMocktle") } }
+    private fun doImport() {
+        val s = curSettings ?: return
+        val c = JFileChooser().apply {
+            dialogTitle = "导入设置"
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            fileFilter = javax.swing.filechooser.FileNameExtensionFilter("JSON 设置文件 (*.json)", "json")
+        }
+        if (c.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            runCatching {
+                val i = GsonUtils.fromJson<Settings>(c.selectedFile!!.readText())
+                applyImp(s, i)
+                resetFrom(s)
+            }.onFailure { Messages.showErrorDialog("导入失败：${it.message}", "ApiMocktle") }
+        }
+    }
+    private fun doExport() {
+        val s = curSettings ?: return
+        val c = JFileChooser().apply {
+            dialogTitle = "导出设置"
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            fileFilter = javax.swing.filechooser.FileNameExtensionFilter("JSON 设置文件 (*.json)", "json")
+        }
+        if (c.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            var f = c.selectedFile
+            if (!f.name.lowercase().endsWith(".json")) f = java.io.File(f.parentFile, "${f.name}.json")
+            if (f.exists() && Messages.showYesNoDialog("文件已存在，是否覆盖？", "导出设置", "是", "否", null) != Messages.YES) return
+            runCatching { f.writeText(GsonUtils.toJson(s)) }.onFailure { Messages.showErrorDialog("导出失败：${it.message}", "ApiMocktle") }
+        }
+    }
 
     override fun resetFrom(s: Settings?) {
         curSettings = s; timeout.text = (s?.httpTimeOut ?: 30).toString(); unsafeSslCb.isSelected = s?.unsafeSsl ?: false
@@ -304,7 +425,7 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
         val ur = s?.remoteConfig?.mapNotNull { RepositoryConfig.parse(it) }; repoModel.items = if (!ur.isNullOrEmpty()) ur.toMutableList() else DefaultRepositories.detectFromEnvironment().toMutableList()
     }
     override fun applyTo(s: Settings) {
-        s.httpTimeOut = timeout.text.toIntOrNull() ?: 30; s.unsafeSsl = unsafeSslCb.isSelected
+        s.httpTimeOut = timeout.text.trim().toIntOrNull()?.takeIf { it in 1..600 } ?: 30; s.unsafeSsl = unsafeSslCb.isSelected
         s.logLevel = (logLevel.selectedItem as? VerbosityLevel)?.level ?: 50; s.outputCharset = charset.selectedItem?.toString() ?: "UTF-8"
         s.outputDemo = outputDemo.isSelected; s.switchNotice = switchNotice.isSelected
     }

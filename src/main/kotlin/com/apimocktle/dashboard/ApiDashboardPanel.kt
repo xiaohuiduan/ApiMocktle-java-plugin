@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import com.intellij.ui.JBSplitter
+import com.intellij.ui.SearchTextField
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
@@ -33,10 +34,10 @@ import com.apimocktle.logging.IdeaLog
 import com.apimocktle.psi.type.areMethodsRelated
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
@@ -70,7 +71,14 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
     private val apiTree: Tree = Tree(treeModel)
 
     /** Search input field for filtering endpoints */
-    private val searchField = JTextField()
+    private val searchField = SearchTextField().apply {
+        textEditor.putClientProperty("JTextField.placeholder", "搜索 API 名称/路径/描述")
+        preferredSize = Dimension(200, preferredSize.height)
+        maximumSize = Dimension(300, preferredSize.height)
+    }
+
+    /** Endpoint count / scan status label in toolbar */
+    private val statusLabel = JLabel("")
 
     /** Panel for displaying details of the selected endpoint */
     private val endpointDetailsPanel: EndpointDetailsPanel
@@ -150,17 +158,16 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
 
         toolBar.addSeparator()
         toolBar.add(Box.createRigidArea(Dimension(5, 0)))
-        toolBar.add(JLabel("搜索："))
-        searchField.preferredSize = Dimension(200, searchField.preferredSize.height)
-        searchField.maximumSize = Dimension(300, searchField.preferredSize.height)
         toolBar.add(searchField)
+        toolBar.add(Box.createHorizontalGlue())
+        toolBar.add(statusLabel)
 
         searchDebounceTimer = Timer(300) { filterTree() }
         searchDebounceTimer?.isRepeats = false
-        searchField.addKeyListener(object : KeyAdapter() {
-            override fun keyReleased(e: KeyEvent) {
-                searchDebounceTimer?.start()
-            }
+        searchField.textEditor.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent?) { searchDebounceTimer?.start() }
+            override fun removeUpdate(e: DocumentEvent?) { searchDebounceTimer?.start() }
+            override fun changedUpdate(e: DocumentEvent?) { searchDebounceTimer?.start() }
         })
 
         return toolBar
@@ -521,14 +528,16 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      */
     private fun updateTree(endpoints: List<ApiEndpoint>) {
         if (endpoints.isEmpty()) {
-            val root = DefaultMutableTreeNode("未找到API端点")
-            root.add(DefaultMutableTreeNode("提示："))
-            root.add(DefaultMutableTreeNode("  - 确保类上有 @RestController 或 @Controller 注解"))
-            root.add(DefaultMutableTreeNode("  - 确保方法上有 @RequestMapping 或类似注解"))
-            root.add(DefaultMutableTreeNode("  - 点击刷新按钮重新扫描"))
-            treeModel.setRoot(root)
+            apiTree.emptyText.clear()
+            apiTree.emptyText.appendLine("未找到API端点")
+            apiTree.emptyText.appendLine("  - 确保类上有 @RestController 或 @Controller 注解")
+            apiTree.emptyText.appendLine("  - 确保方法上有 @RequestMapping 或类似注解")
+            apiTree.emptyText.appendLine("  - 点击刷新按钮重新扫描")
+            treeModel.setRoot(DefaultMutableTreeNode(project.name))
+            statusLabel.text = "0 个端点"
             return
         }
+        apiTree.emptyText.clear()
 
         val groupedByModule: Map<String, List<ApiEndpoint>> = endpoints
             .filter { !it.folder.isNullOrBlank() }
@@ -561,6 +570,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
         }
 
         treeModel.setRoot(root)
+        statusLabel.text = "${endpoints.size} 个端点"
 
         for (i in 0 until minOf(3, treeModel.getChildCount(root))) {
             val child = root.getChildAt(i) as? DefaultMutableTreeNode
@@ -641,8 +651,10 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
         }
 
         if (filtered.isEmpty()) {
-            val root = DefaultMutableTreeNode("未找到 '$searchText' 的结果")
-            treeModel.setRoot(root)
+            apiTree.emptyText.clear()
+            apiTree.emptyText.appendLine("未找到 '$searchText' 的结果")
+            treeModel.setRoot(DefaultMutableTreeNode(project.name))
+            statusLabel.text = "0 个结果"
         } else {
             updateTree(filtered)
         }
@@ -654,7 +666,8 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      */
     private fun setupApis() {
         backgroundAsync {
-            updateTree(apiIndex.endpoints())
+            cachedEndpoints = apiIndex.endpoints()
+            updateTree(cachedEndpoints)
             apiIndex.subscribe { endpoints ->
                 LOG.debug("缓存已更新，刷新树显示 ${endpoints.size} 个端点")
                 cachedEndpoints = endpoints
@@ -676,6 +689,8 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
             apiIndex.invalidate()
             swing {
                 LOG.debug("设置树为'扫描中...'状态")
+                statusLabel.text = "扫描中..."
+                apiTree.emptyText.clear()
                 treeModel.setRoot(DefaultMutableTreeNode("扫描中..."))
             }
             LOG.debug("请求重新扫描...")

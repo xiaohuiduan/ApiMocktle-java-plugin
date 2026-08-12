@@ -22,12 +22,12 @@ class ApiDashboardToolWindowFactory : ToolWindowFactory {
         val apiPanel = ApiDashboardPanel(project)
         val service = ApiDashboardService.getInstance(project)
         service.setDashboardPanel(apiPanel)
-        val apiContent = contentFactory.createContent(apiPanel, "API Endpoints", false)
+        val apiContent = contentFactory.createContent(apiPanel, "API 端点", false)
         apiContent.setDisposer(Disposable { apiPanel.dispose() })
 
         // Tab 2: Agent Addresses
         val agentPanel = AgentAddressesPanel(project)
-        val agentContent = contentFactory.createContent(agentPanel, "Agent Addresses", false)
+        val agentContent = contentFactory.createContent(agentPanel, "Agent 地址", false)
         agentContent.setDisposer(Disposable { agentPanel.dispose() })
 
         toolWindow.contentManager.addContent(apiContent)

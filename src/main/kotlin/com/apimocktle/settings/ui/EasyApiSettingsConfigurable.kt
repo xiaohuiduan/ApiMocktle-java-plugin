@@ -1,7 +1,6 @@
 package com.apimocktle.settings.ui
 
 import com.intellij.openapi.options.Configurable
-import com.intellij.openapi.project.ProjectManager
 import com.apimocktle.settings.SettingBinder
 import com.apimocktle.settings.ui.*
 import java.awt.BorderLayout
@@ -92,36 +91,3 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
     }
 }
 
-abstract class BaseApiMocktleChildConfigurable(
-    private val displayName: String,
-    private val panelFactory: () -> SettingsPanel
-) : Configurable {
-    private var panelContainer: JPanel? = null
-    private val panel: SettingsPanel by lazy { panelFactory() }
-    protected var project: com.intellij.openapi.project.Project? = null
-
-    protected val settingBinder: SettingBinder? by lazy {
-        project?.let { SettingBinder.getInstance(it) }
-            ?: ProjectManager.getInstance().openProjects.firstOrNull()?.let { SettingBinder.getInstance(it) }
-    }
-
-    override fun getDisplayName(): String = displayName
-    override fun createComponent(): JComponent {
-        if (panelContainer == null) {
-            panelContainer = JPanel(BorderLayout())
-            panelContainer!!.add(panel.component, BorderLayout.CENTER)
-        }
-        reset()
-        return panelContainer!!
-    }
-    override fun isModified(): Boolean {
-        val settings = settingBinder?.read() ?: return false; return panel.isModified(settings)
-    }
-    override fun apply() {
-        val binder = settingBinder ?: return; val settings = binder.read(); panel.applyTo(settings); binder.save(settings)
-    }
-    override fun reset() { panel.resetFrom(settingBinder?.read()) }
-    override fun disposeUIResources() { panelContainer = null }
-}
-
-class ApiMocktleAdvancedConfigurable(project: com.intellij.openapi.project.Project) : BaseApiMocktleChildConfigurable("高级", { AdvancedSettingsPanel(project) }) { init { this.project = project } }

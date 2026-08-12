@@ -12,6 +12,7 @@ import com.apimocktle.exporter.ExportOrchestrator
 import com.apimocktle.exporter.model.ExportFormat
 import com.apimocktle.exporter.model.ExportResult
 import com.apimocktle.exporter.model.OutputConfig
+import com.apimocktle.ide.support.NotificationUtils
 import com.apimocktle.ide.support.SelectedHelper
 import com.apimocktle.ide.support.SelectionScope
 import com.apimocktle.ide.support.runWithProgress
@@ -131,11 +132,7 @@ abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
             append("成功导出 ${result.count} 个端点到 ${result.target}")
             result.metadata?.formatDisplay()?.let { append(" $it") }
         }
-        com.intellij.openapi.ui.Messages.showInfoMessage(
-            project,
-            message,
-            "导出API"
-        )
+        NotificationUtils.notifyInfo(project, "导出API", message)
     }
 
     protected open fun showExportError(project: Project, message: String) {

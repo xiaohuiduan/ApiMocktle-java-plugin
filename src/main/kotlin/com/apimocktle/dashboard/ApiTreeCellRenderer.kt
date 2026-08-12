@@ -3,36 +3,42 @@ package com.apimocktle.dashboard
 import com.apimocktle.exporter.model.ApiEndpoint
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
+import com.intellij.util.ui.UIUtil
 import java.awt.Color
 import java.awt.Component
+import java.awt.FlowLayout
+import java.awt.Font
+import javax.swing.BorderFactory
 import javax.swing.JLabel
+import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 
 /**
  * Custom tree cell renderer for API endpoint nodes in the dashboard tree.
- * 
- * This renderer provides:
- * - Color-coded HTTP method labels (GET=blue, POST=green, etc.)
- * - Formatted display text showing method, name, and path
- * - Visual distinction between different HTTP methods
+ *
+ * - Endpoint nodes: colored HTTP method badge + endpoint name + gray path
+ * - Folder/class nodes: default IntelliJ tree rendering
+ *
+ * Badge keeps high contrast on both light/dark themes and selected rows.
  */
 class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
 
-    /**
-     * Customizes the appearance of tree cells based on their content.
-     * For API endpoint nodes, displays the HTTP method with appropriate coloring.
-     * 
-     * @param tree The tree component
-     * @param value The node value (DefaultMutableTreeNode or ApiEndpoint)
-     * @param sel Whether the cell is selected
-     * @param expanded Whether the node is expanded
-     * @param leaf Whether the node is a leaf
-     * @param row The row index
-     * @param hasFocus Whether the cell has focus
-     * @return The configured renderer component
-     */
+    private val badge = JLabel().apply {
+        isOpaque = true
+        font = font.deriveFont(Font.BOLD, font.size2D - 1f)
+        border = BorderFactory.createEmptyBorder(1, 4, 1, 4)
+    }
+    private val nameLabel = JLabel()
+    private val pathLabel = JLabel()
+    private val cellPanel = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
+        isOpaque = true
+        add(badge)
+        add(nameLabel)
+        add(pathLabel)
+    }
+
     override fun getTreeCellRendererComponent(
         tree: JTree?,
         value: Any?,
@@ -42,60 +48,44 @@ class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
         row: Int,
         hasFocus: Boolean
     ): Component {
-        val component = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
-        
         val endpoint = when (value) {
             is DefaultMutableTreeNode -> value.userObject as? ApiEndpoint
             is ApiEndpoint -> value
             else -> null
         }
-        
-        if (component is JLabel && endpoint != null) {
-            component.text = buildApiText(endpoint)
-            component.foreground = getMethodColor(endpoint)
-        }
-        
-        return component
-    }
 
-    /**
-     * Builds the display text for an API endpoint.
-     * Format: "METHOD name [path]" or "METHOD path" if no name.
-     *
-     * @param endpoint The API endpoint to format
-     * @return Formatted display string
-     */
-    private fun buildApiText(endpoint: ApiEndpoint): String {
-        val path = when (val meta = endpoint.metadata) {
-            is HttpMetadata -> meta.path
-            else -> ""
-        }
-        return buildString {
-            when (val meta = endpoint.metadata) {
-                is HttpMetadata -> append(meta.method.name)
-                else -> append(endpoint.metadata.protocol)
+        if (endpoint != null && tree != null) {
+            val path = when (val meta = endpoint.metadata) {
+                is HttpMetadata -> meta.path
+                else -> ""
             }
-            append(" ")
-            append(endpoint.name ?: path)
-            if (endpoint.name != null && endpoint.name != path) {
-                append(" [").append(path).append("]")
+            val methodName = when (val meta = endpoint.metadata) {
+                is HttpMetadata -> meta.method.name
+                else -> endpoint.metadata.protocol
             }
+
+            badge.text = methodName
+            badge.background = getMethodColor(endpoint)
+            badge.foreground = Color.WHITE
+
+            nameLabel.text = endpoint.name ?: path
+            nameLabel.foreground = if (sel) UIUtil.getTreeSelectionForeground() else tree.foreground
+            pathLabel.text = if (endpoint.name != null && endpoint.name != path) "  $path" else ""
+            pathLabel.foreground = if (sel) UIUtil.getTreeSelectionForeground() else UIUtil.getContextHelpForeground()
+
+            cellPanel.background = if (sel) UIUtil.getTreeSelectionBackground() else tree.background
+            cellPanel.border = null
+            return cellPanel
         }
+
+        return super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
     }
 
     /**
      * Returns the color for an API endpoint based on its HTTP method.
-     * HTTP endpoints use method-specific colors following common API documentation conventions:
-     * - GET: Blue (#61affe)
-     * - POST: Green (#49cc90)
-     * - PUT: Orange (#fca130)
-     * - DELETE: Red (#f93e3e)
-     * - PATCH: Cyan (#50e3c2)
-     * - HEAD: Purple (#9012fe)
-     * - OPTIONS: Dark blue (#0d5aa7)
-     *
-     * @param endpoint The API endpoint
-     * @return The associated color
+     * Follows common API documentation conventions:
+     * - GET: Blue, POST: Green, PUT: Orange, DELETE: Red
+     * - PATCH: Cyan, HEAD: Purple, OPTIONS: Dark blue
      */
     private fun getMethodColor(endpoint: ApiEndpoint): Color {
         return when (val meta = endpoint.metadata) {
@@ -107,9 +97,9 @@ class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
                 HttpMethod.PATCH -> Color(0x50e3c2)
                 HttpMethod.HEAD -> Color(0x9012fe)
                 HttpMethod.OPTIONS -> Color(0x0d5aa7)
-                HttpMethod.NO_METHOD -> Color(0x999999)
+                HttpMethod.NO_METHOD -> Color(0x888888)
             }
-            else -> Color(0x999999)
+            else -> Color(0x888888)
         }
     }
 }

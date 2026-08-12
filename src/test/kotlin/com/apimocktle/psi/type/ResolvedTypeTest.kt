@@ -446,8 +446,7 @@ class ResolvedTypeTest : ApiMocktleLightCodeInsightFixtureTestCase() {
         val firstModel = firstField!!.model
         assertTrue(
             "first should be string (A=Y=String), got: $firstModel",
-            (firstModel is ResolvedType.ClassType && (firstModel as? ResolvedType.ClassType)?.psiClass?.name == "String") ||
-                    (firstModel is ObjectModel.Single && firstModel.type == JsonType.STRING)
+            firstModel is ObjectModel.Single && firstModel.type == JsonType.STRING
         )
 
         // second: B = X = Integer

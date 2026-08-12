@@ -13,6 +13,8 @@ import com.apimocktle.exporter.model.path
 import java.awt.*
 import java.awt.event.ItemEvent
 import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.TableCellRenderer
@@ -36,6 +38,11 @@ class ExportDialog(
     private val endpointTable = JBTable(endpointTableModel)
     private val selectAllBtn = JButton("全选")
     private val deselectAllBtn = JButton("取消全选")
+    private val searchField = JTextField().apply {
+        putClientProperty("JTextField.placeholder", "搜索路径/名称/方法")
+        preferredSize = Dimension(180, preferredSize.height)
+    }
+    private val countLabel = JLabel("")
 
     var selectedFormat: ExportFormat = ExportFormat.YAPI
         private set
@@ -46,11 +53,28 @@ class ExportDialog(
     init {
         title = "导出API端点（$endpointCount 个端点）"
 
+        endpointTableModel.onDataChanged = { updateCount() }
+
         selectAllBtn.addActionListener { endpointTableModel.selectAll() }
         deselectAllBtn.addActionListener { endpointTableModel.deselectAll() }
+        searchField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent?) = onSearchChanged()
+            override fun removeUpdate(e: DocumentEvent?) = onSearchChanged()
+            override fun changedUpdate(e: DocumentEvent?) = onSearchChanged()
+        })
 
         init()
         setupEndpointTable()
+        updateCount()
+    }
+
+    private fun onSearchChanged() {
+        endpointTableModel.setFilter(searchField.text.trim())
+    }
+
+    private fun updateCount() {
+        val selected = endpointTableModel.rows.count { it.selected }
+        countLabel.text = "已选 $selected / ${endpointTableModel.rows.size}"
     }
 
     private fun setupEndpointTable() {
@@ -88,8 +112,12 @@ class ExportDialog(
     }
 
     private fun createEndpointPanel(): JPanel {
-        val headerPanel = JPanel(BorderLayout()).apply {
-            add(JLabel("API端点："), BorderLayout.WEST)
+        val headerPanel = JPanel(BorderLayout(8, 0)).apply {
+            add(JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
+                add(JLabel("API端点："))
+                add(countLabel)
+            }, BorderLayout.WEST)
+            add(searchField, BorderLayout.CENTER)
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.X_AXIS)
                 add(selectAllBtn)
@@ -167,22 +195,43 @@ private class EndpointTableModel(
     )
 
     val rows = endpoints.map { Row(it, true) }
+    private var visibleRows: List<Row> = rows
+    private var filter: String = ""
 
-    override fun getRowCount(): Int = rows.size
+    /** Called after any change that affects selection count. */
+    var onDataChanged: (() -> Unit)? = null
+
+    fun setFilter(text: String) {
+        filter = text.lowercase()
+        visibleRows = if (filter.isEmpty()) {
+            rows
+        } else {
+            rows.filter { row ->
+                val endpoint = row.endpoint
+                endpoint.path.lowercase().contains(filter) ||
+                        (endpoint.name?.lowercase()?.contains(filter) == true) ||
+                        (endpoint.httpMetadata?.method?.name?.lowercase()?.contains(filter) == true)
+            }
+        }
+        fireTableDataChanged()
+    }
+
+    override fun getRowCount(): Int = visibleRows.size
     override fun getColumnCount(): Int = 4
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = when (columnIndex) {
-        COL_SELECT -> rows[rowIndex].selected
-        COL_METHOD -> rows[rowIndex].endpoint.httpMetadata?.method?.name
-            ?: rows[rowIndex].endpoint.metadata.protocol
-        COL_PATH -> rows[rowIndex].endpoint.path
-        COL_NAME -> rows[rowIndex].endpoint.name ?: ""
+        COL_SELECT -> visibleRows[rowIndex].selected
+        COL_METHOD -> visibleRows[rowIndex].endpoint.httpMetadata?.method?.name
+            ?: visibleRows[rowIndex].endpoint.metadata.protocol
+        COL_PATH -> visibleRows[rowIndex].endpoint.path
+        COL_NAME -> visibleRows[rowIndex].endpoint.name ?: ""
         else -> null
     }
 
     override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
         if (columnIndex == COL_SELECT) {
-            rows[rowIndex].selected = aValue as Boolean
+            visibleRows[rowIndex].selected = aValue as Boolean
+            onDataChanged?.invoke()
         }
     }
 
@@ -203,13 +252,15 @@ private class EndpointTableModel(
     }
 
     fun selectAll() {
-        rows.forEach { it.selected = true }
+        visibleRows.forEach { it.selected = true }
         fireTableDataChanged()
+        onDataChanged?.invoke()
     }
 
     fun deselectAll() {
-        rows.forEach { it.selected = false }
+        visibleRows.forEach { it.selected = false }
         fireTableDataChanged()
+        onDataChanged?.invoke()
     }
 
     fun getSelectedEndpoints(): List<EndpointSelection> {

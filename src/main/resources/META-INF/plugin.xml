@@ -7,7 +7,7 @@
     <description><![CDATA[统一插件，支持从源码提取 API 并同步到 YAPI。]]></description>
     <category>Web</category>
 
-    <idea-version since-build="233.0"/>
+    <idea-version since-build="262.0"/>
     <depends>com.intellij.modules.platform</depends>
 
     <depends optional="true" config-file="apimocktle-kotlin.xml">org.jetbrains.kotlin</depends>
@@ -47,10 +47,6 @@
                              displayName="ApiMocktle"
                              id="apimocktle.settings.ApiMocktleConfigurable"
                              instance="com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable"/>
-        <projectConfigurable groupId="apimocktle.settings.ApiMocktleConfigurable"
-                             displayName="高级"
-                             id="apimocktle.settings.ApiMocktleConfigurable.Advanced"
-                             instance="com.apimocktle.settings.ui.ApiMocktleAdvancedConfigurable"/>
         <toolWindow
                 id="API Dashboard"
                 icon="/icons/apiDashboard.svg"
@@ -64,11 +60,8 @@
     <actions>
         <group id="ApiMocktleActions">
             <action id="com.apimocktle.action.YapiExportAction"
-                    class="com.apimocktle.ide.action.ExportToYapiAction" text="导出到ApiMocktle"
-                    description="导出到ApiMocktle">
-                <keyboard-shortcut first-keystroke="alt shift E" keymap="$default"/>
-                <keyboard-shortcut first-keystroke="control E" keymap="Mac OS X" replace-all="true"/>
-                <keyboard-shortcut first-keystroke="control E" keymap="Mac OS X 10.5+" replace-all="true"/>
+                    class="com.apimocktle.ide.action.ExportToYapiAction" text="导出到 YAPI"
+                    description="将 API 文档同步到 YAPI">
             </action>
         </group>
 

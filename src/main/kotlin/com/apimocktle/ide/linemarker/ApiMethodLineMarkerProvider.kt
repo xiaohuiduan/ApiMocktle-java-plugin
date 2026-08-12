@@ -56,7 +56,7 @@ class ApiMethodLineMarkerProvider : LineMarkerProvider {
         return LineMarkerInfo(
             element,
             element.textRange,
-            AllIcons.Actions.Execute,
+            AllIcons.Toolwindows.Documentation,
             { "在API仪表盘中打开" },
             ApiMethodNavigationHandler,
             GutterIconRenderer.Alignment.LEFT,

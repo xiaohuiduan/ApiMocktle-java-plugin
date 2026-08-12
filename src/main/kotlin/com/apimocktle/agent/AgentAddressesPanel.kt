@@ -33,7 +33,10 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         isOpaque = false
     }
 
-    private val emptyLabel = JLabel("暂无已配置的 Agent", SwingConstants.CENTER).apply {
+    private val emptyLabel = JLabel(
+        "<html><center><b>暂无已配置的 Agent</b><br>启动带 Mock Agent 的运行配置后会自动注册到这里<br>可在 设置 → Mock Agent 开启/关闭自动注入</center></html>",
+        SwingConstants.CENTER
+    ).apply {
         foreground = COLOR_GRAY
     }
 
@@ -62,7 +65,11 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
     private fun startAutoRefresh() {
         refreshTask = scheduler.scheduleWithFixedDelay({
             try {
-                SwingUtilities.invokeLater { refresh() }
+                val tw = com.intellij.openapi.wm.ToolWindowManager.getInstance(project)
+                    .getToolWindow("API Dashboard")
+                if (tw?.isVisible == true) {
+                    SwingUtilities.invokeLater { refresh() }
+                }
             } catch (_: Exception) {}
         }, 3, 3, TimeUnit.SECONDS)
     }
@@ -168,6 +175,12 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             addActionListener {
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                 clipboard.setContents(StringSelection(agent.address), null)
+                text = "已复制"
+                isEnabled = false
+                Timer(1200) {
+                    text = "复制地址"
+                    isEnabled = true
+                }.apply { isRepeats = false; start() }
             }
         }
 

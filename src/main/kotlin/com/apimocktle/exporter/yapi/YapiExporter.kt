@@ -221,8 +221,8 @@ class YapiExporter(private val project: Project) : ApiExporter {
         swing {
             val notification = com.intellij.notification.Notification(
                 "ApiMocktle Notifications",
-                "导出到ApiMocktle",
-                "已导出 ${result.count} 个端点到ApiMocktle",
+                "导出到 YAPI",
+                "已导出 ${result.count} 个端点到 YAPI",
                 com.intellij.notification.NotificationType.INFORMATION
             )
             for ((cartName, cartUrl) in metadata.cartLinks) {

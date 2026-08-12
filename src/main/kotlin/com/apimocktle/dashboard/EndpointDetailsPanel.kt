@@ -1,5 +1,8 @@
 package com.apimocktle.dashboard
 
+import com.intellij.icons.AllIcons
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.ui.EditorTextField
@@ -18,6 +21,9 @@ import com.apimocktle.logging.IdeaLog
 import com.apimocktle.psi.model.ObjectModelJsonConverter
 import java.awt.BorderLayout
 import java.awt.Color
+import java.awt.Dimension
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
@@ -88,6 +94,16 @@ class EndpointDetailsPanel(
     private val tabPane = JTabbedPane()
     private val responseTabPane = JTabbedPane()
 
+    private val copyPathBtn = createCopyButton("复制路径") {
+        pathLabel.text.takeIf { it.isNotBlank() }?.let { copyToClipboard(it) }
+    }
+    private val copyRequestBtn = createCopyButton("复制请求体") {
+        bodyArea.text.takeIf { it.isNotBlank() }?.let { copyToClipboard(it) }
+    }
+    private val copyResponseBtn = createCopyButton("复制响应体") {
+        responseBodyArea.text.takeIf { it.isNotBlank() }?.let { copyToClipboard(it) }
+    }
+
     private var currentEndpoint: ApiEndpoint? = null
 
     init {
@@ -96,6 +112,11 @@ class EndpointDetailsPanel(
             border = JBUI.Borders.empty(6, 8, 2, 8)
             add(nameLabel)
             add(Box.createHorizontalGlue())
+            add(copyPathBtn)
+            add(Box.createHorizontalStrut(2))
+            add(copyRequestBtn)
+            add(Box.createHorizontalStrut(2))
+            add(copyResponseBtn)
         }
 
         val requestLinePanel = JPanel().apply {
@@ -114,7 +135,7 @@ class EndpointDetailsPanel(
 
         // Build response tabs
         responseTabPane.addTab("响应体", JBScrollPane(responseBodyArea))
-        responseTabPane.preferredSize = java.awt.Dimension(0, 200)
+        responseTabPane.preferredSize = Dimension(0, 200)
 
         val responseTitlePanel = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.emptyTop(8)
@@ -125,15 +146,15 @@ class EndpointDetailsPanel(
 
         val requestWrapper = JPanel(BorderLayout()).apply {
             add(tabPane, BorderLayout.CENTER)
-            preferredSize = java.awt.Dimension(0, 150)
-            minimumSize = java.awt.Dimension(0, 80)
+            preferredSize = Dimension(0, 150)
+            minimumSize = Dimension(0, 80)
         }
 
         val responseContainer = JPanel(BorderLayout()).apply {
             add(responseTitlePanel, BorderLayout.NORTH)
             add(responseTabPane, BorderLayout.CENTER)
-            preferredSize = java.awt.Dimension(0, 200)
-            minimumSize = java.awt.Dimension(0, 120)
+            preferredSize = Dimension(0, 200)
+            minimumSize = Dimension(0, 120)
         }
 
         val contentPanel = JPanel().apply {
@@ -150,6 +171,25 @@ class EndpointDetailsPanel(
 
         add(headerPanel, BorderLayout.NORTH)
         add(scrollPane, BorderLayout.CENTER)
+    }
+
+    private fun createCopyButton(tip: String, action: () -> Unit): JButton =
+        JButton(AllIcons.Actions.Copy).apply {
+            toolTipText = tip
+            isContentAreaFilled = false
+            isBorderPainted = false
+            isFocusable = false
+            preferredSize = Dimension(18, 18)
+            maximumSize = Dimension(18, 18)
+            addActionListener { action() }
+        }
+
+    private fun copyToClipboard(text: String) {
+        Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(text), null)
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("ApiMocktle Notifications")
+            .createNotification("已复制到剪贴板", NotificationType.INFORMATION)
+            .notify(project)
     }
 
     fun showEndpoint(endpoint: ApiEndpoint) {
@@ -211,7 +251,8 @@ class EndpointDetailsPanel(
             meta.body?.let { ObjectModelJsonConverter.toJson(it) } ?: ""
         } else ""
 
-        // Rebuild tabs
+        // Rebuild tabs, preserving the previously selected tab
+        val previousTab = if (tabPane.tabCount > 0) tabPane.getTitleAt(tabPane.selectedIndex) else null
         tabPane.removeAll()
         if (parameters.any { it.binding == ParameterBinding.Path }) {
             tabPane.addTab("路径", JBScrollPane(pathParamsTable))
@@ -227,6 +268,14 @@ class EndpointDetailsPanel(
         } else if (bodyArea.text.isNotBlank()) {
             tabPane.addTab("请求体", JBScrollPane(bodyArea))
         }
+        if (previousTab != null) {
+            for (i in 0 until tabPane.tabCount) {
+                if (tabPane.getTitleAt(i) == previousTab) {
+                    tabPane.selectedIndex = i
+                    break
+                }
+            }
+        }
     }
 
     private fun showResponseDemo() {
@@ -237,9 +286,16 @@ class EndpointDetailsPanel(
         } ?: return
 
         val demoJson = ObjectModelJsonConverter.toJson(responseBody)
-        if (demoJson.isBlank() || demoJson == "{}") return
-
-        responseBodyArea.text = EndpointDetailsPanelLogic.formatJson(demoJson)
+        responseTabPane.removeAll()
+        if (demoJson.isBlank() || demoJson == "{}") {
+            responseBodyArea.text = ""
+            responseTabPane.addTab("响应体", JBScrollPane(JBLabel("（无响应示例）").apply {
+                horizontalAlignment = SwingConstants.CENTER
+            }))
+        } else {
+            responseBodyArea.text = EndpointDetailsPanelLogic.formatJson(demoJson)
+            responseTabPane.addTab("响应体", JBScrollPane(responseBodyArea))
+        }
     }
 
     fun clear() {

@@ -78,7 +78,11 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
     private fun startAutoRefresh() {
         refreshTask = scheduler.scheduleWithFixedDelay({
             try {
-                SwingUtilities.invokeLater { refresh() }
+                val tw = com.intellij.openapi.wm.ToolWindowManager.getInstance(project)
+                    .getToolWindow("API Dashboard")
+                if (tw?.isVisible == true) {
+                    SwingUtilities.invokeLater { refresh() }
+                }
             } catch (_: Exception) {}
         }, 5, 5, TimeUnit.SECONDS)
     }

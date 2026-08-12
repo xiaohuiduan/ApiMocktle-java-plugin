@@ -6,30 +6,30 @@ package com.apimocktle.exporter.model
  *
  * Configured via the `path.multi` rule.
  */
-enum class PathSelector {
+enum class PathSelector(val displayName: String) {
     /** Export all paths */
-    ALL {
+    ALL("全部路径") {
         override fun <T> select(items: List<T>, pathOf: (T) -> String): List<T> = items
     },
 
     /** Export only the first path */
-    FIRST {
+    FIRST("仅第一条路径") {
         override fun <T> select(items: List<T>, pathOf: (T) -> String): List<T> = items.take(1)
     },
 
     /** Export only the last path */
-    LAST {
+    LAST("仅最后一条路径") {
         override fun <T> select(items: List<T>, pathOf: (T) -> String): List<T> = items.takeLast(1)
     },
 
     /** Export only the shortest path */
-    SHORTEST {
+    SHORTEST("仅最短路径") {
         override fun <T> select(items: List<T>, pathOf: (T) -> String): List<T> =
             items.sortedBy { pathOf(it).length }.take(1)
     },
 
     /** Export only the longest path */
-    LONGEST {
+    LONGEST("仅最长路径") {
         override fun <T> select(items: List<T>, pathOf: (T) -> String): List<T> =
             items.sortedByDescending { pathOf(it).length }.take(1)
     };

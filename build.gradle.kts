@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.1.0"
-    id("org.jetbrains.intellij.platform") version "2.11.0"
+    kotlin("jvm") version "2.4.10"
+    id("org.jetbrains.intellij.platform") version "2.18.1"
     jacoco
 }
 
@@ -16,14 +16,22 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("2023.3")
-        bundledPlugins("com.intellij.java", "org.jetbrains.idea.maven", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "org.intellij.groovy", "org.intellij.intelliLang")
+        local("C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1")
+                bundledPlugins("com.intellij.java", "org.jetbrains.idea.maven", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "org.intellij.groovy")
+        bundledModule("org.intellij.intelliLang")
         pluginVerifier()
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Plugin.Java)
     }
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
+
+    // 2026.2 本地 IDE：gradle-plugin 主 jar 未包含在 bundledPlugin 描述符中，手动加入编译依赖
+    compileOnly(files(
+        "C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1/plugins/gradle-plugin/lib/intellij.gradle.jar",
+        "C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1/plugins/gradle-plugin/lib/gradle-tooling-extension-api.jar",
+        "C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1/plugins/gradle-plugin/lib/gradle-api-9.6.0.jar"
+    ))
 
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.xerial:sqlite-jdbc:3.34.0")
@@ -36,15 +44,14 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(17)
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25)
     }
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.toVersion(25)
+    targetCompatibility = JavaVersion.toVersion(25)
 }
 
 tasks.withType<Test>().configureEach {
@@ -80,7 +87,7 @@ intellijPlatform {
                 .replace("<br/>- ", "<br/>• ")
         }
         ideaVersion {
-            sinceBuild = "233"
+            sinceBuild = "262"
             untilBuild = provider { null }
         }
     }

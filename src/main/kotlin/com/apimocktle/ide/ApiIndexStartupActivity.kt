@@ -34,8 +34,6 @@ class ApiIndexStartupActivity : ProjectActivity {
             ApiFileChangeListener.getInstance(project).start()
             VcsBranchChangeListener.getInstance(project).start()
 
-            delay(10.seconds)
-
             val settings = SettingBinder.getInstance(project).read()
             val autoScan = settings.autoScanEnabled
 
