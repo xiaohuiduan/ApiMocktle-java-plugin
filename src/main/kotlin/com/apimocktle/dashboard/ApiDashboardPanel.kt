@@ -667,7 +667,9 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
     private fun setupApis() {
         backgroundAsync {
             cachedEndpoints = apiIndex.endpoints()
-            updateTree(cachedEndpoints)
+            swing {
+                updateTree(cachedEndpoints)
+            }
             apiIndex.subscribe { endpoints ->
                 LOG.debug("缓存已更新，刷新树显示 ${endpoints.size} 个端点")
                 cachedEndpoints = endpoints
