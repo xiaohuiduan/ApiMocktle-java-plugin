@@ -1,8 +1,22 @@
+import java.util.Properties
+
 plugins {
     kotlin("jvm") version "2.4.10"
     id("org.jetbrains.intellij.platform") version "2.18.1"
     jacoco
 }
+
+// 本地模式配置：读取不提交的 local.properties（useLocalIde / ideaLocalPath）。
+// 存在则使用本机安装的 IDEA 作为平台依赖（离线打包）；否则走下载模式（CI / 其他机器）。
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) {
+        f.inputStream().use { load(it) }
+    }
+}
+val useLocalIde = (localProps.getProperty("useLocalIde") ?: "false").toBoolean()
+val ideaLocalPath = localProps.getProperty("ideaLocalPath")
+    ?: "C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1"
 
 group = "com.apimocktle"
 version = "3.0.1"
@@ -16,7 +30,7 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        local("C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1")
+        if (useLocalIde) local(ideaLocalPath) else intellijIdeaCommunity("2026.2")
                 bundledPlugins("com.intellij.java", "org.jetbrains.idea.maven", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "org.intellij.groovy")
         bundledModule("org.intellij.intelliLang")
         pluginVerifier()
@@ -27,12 +41,14 @@ dependencies {
     // 协程库由 IntelliJ 平台提供，勿打包进插件（否则会覆盖平台新版协程导致测试/运行时死锁）
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
 
-    // 2026.2 本地 IDE：gradle-plugin 主 jar 未包含在 bundledPlugin 描述符中，手动加入编译依赖
-    compileOnly(files(
-        "C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1/plugins/gradle-plugin/lib/intellij.gradle.jar",
-        "C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1/plugins/gradle-plugin/lib/gradle-tooling-extension-api.jar",
-        "C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1/plugins/gradle-plugin/lib/gradle-api-9.6.0.jar"
-    ))
+    // 2026.2 本地 IDE：gradle-plugin 主 jar 未包含在 bundledPlugin 描述符中，local 模式下手动加入编译依赖
+    if (useLocalIde) {
+        compileOnly(files(
+            "$ideaLocalPath/plugins/gradle-plugin/lib/intellij.gradle.jar",
+            "$ideaLocalPath/plugins/gradle-plugin/lib/gradle-tooling-extension-api.jar",
+            "$ideaLocalPath/plugins/gradle-plugin/lib/gradle-api-9.6.0.jar"
+        ))
+    }
 
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.xerial:sqlite-jdbc:3.34.0")

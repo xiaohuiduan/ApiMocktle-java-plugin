@@ -21,3 +21,4 @@ bin/
 *.iml
 out/
 local.properties
+build-local.bat
