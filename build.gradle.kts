@@ -41,14 +41,6 @@ dependencies {
     // 协程库由 IntelliJ 平台提供，勿打包进插件（否则会覆盖平台新版协程导致测试/运行时死锁）
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
 
-    // 2026.2 本地 IDE：gradle-plugin 主 jar 未包含在 bundledPlugin 描述符中，local 模式下手动加入编译依赖
-    if (useLocalIde) {
-        compileOnly(files(
-            "$ideaLocalPath/plugins/gradle-plugin/lib/intellij.gradle.jar",
-            "$ideaLocalPath/plugins/gradle-plugin/lib/gradle-tooling-extension-api.jar",
-            "$ideaLocalPath/plugins/gradle-plugin/lib/gradle-api-9.6.0.jar"
-        ))
-    }
 
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.xerial:sqlite-jdbc:3.34.0")

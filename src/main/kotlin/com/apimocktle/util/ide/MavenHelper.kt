@@ -1,9 +1,9 @@
 package com.apimocktle.util.ide
 
 import com.intellij.openapi.module.ModuleUtilCore
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import org.jetbrains.idea.maven.project.MavenProjectsManager
-import org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache
 
 /**
  * Utility object for extracting Maven/Gradle project information.
@@ -45,8 +45,21 @@ object MavenHelper {
     private fun getMavenIdByGradle(psiClass: PsiClass): MavenIdData? {
         val project = psiClass.project
         val projectPath = project.basePath ?: return null
-        val externalProject = ExternalProjectDataCache.getInstance(project).getRootExternalProject(projectPath) ?: return null
-        return MavenIdData(groupId = externalProject.group, artifactId = externalProject.name, version = externalProject.version)
+        // 通过反射访问 ExternalProjectDataCache：其 jar 未包含在 bundledPlugin 描述符中，
+        // 编译期依赖会导致 local/下载模式都拿不到类，运行时若存在则正常解析，否则返回 null。
+        val cacheClass = Class.forName("org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache")
+        val cache = cacheClass.getMethod("getInstance", Project::class.java).invoke(null, project)
+            ?: return null
+        val externalProject = cacheClass.getMethod("getRootExternalProject", String::class.java)
+            .invoke(cache, projectPath) ?: return null
+        val group = externalProject.javaClass.getMethod("getGroup").invoke(externalProject) as? String
+        val name = externalProject.javaClass.getMethod("getName").invoke(externalProject) as? String
+        val version = externalProject.javaClass.getMethod("getVersion").invoke(externalProject) as? String
+        return MavenIdData(
+            groupId = group ?: return null,
+            artifactId = name ?: return null,
+            version = version ?: return null
+        )
     }
 }
 
