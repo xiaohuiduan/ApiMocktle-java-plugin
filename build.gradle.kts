@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        if (useLocalIde) local(ideaLocalPath) else intellijIdeaCommunity("2026.2")
+        if (useLocalIde) local(ideaLocalPath) else intellijIdea("2026.2")
                 bundledPlugins("com.intellij.java", "org.jetbrains.idea.maven", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "org.intellij.groovy")
         bundledModule("org.intellij.intelliLang")
         pluginVerifier()
