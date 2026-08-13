@@ -38,7 +38,7 @@ class DefaultYapiSettingsHelper(private val project: Project) : YapiSettingsHelp
     }
 
     companion object {
-        private const val DEFAULT_YAPI_SERVER_URL = "http://localhost:49128"
+        const val DEFAULT_YAPI_SERVER_URL = "http://localhost:49128"
     }
 
     override suspend fun resolvePersonalToken(): String? {
@@ -48,8 +48,8 @@ class DefaultYapiSettingsHelper(private val project: Project) : YapiSettingsHelp
         val token = swing {
             Messages.showInputDialog(
                 project,
-                "请输入YAPI个人令牌：",
-                "YAPI个人令牌",
+                "请输入 ApiMocktle 个人令牌：",
+                "ApiMocktle 个人令牌",
                 Messages.getInformationIcon(),
                 null,
                 null

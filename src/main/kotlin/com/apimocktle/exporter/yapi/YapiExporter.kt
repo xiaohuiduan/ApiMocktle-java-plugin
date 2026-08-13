@@ -46,10 +46,11 @@ class YapiExporter(private val project: Project) : ApiExporter {
             return ExportResult.Error(initResult.exceptionOrNull()?.message ?: "导出失败")
         }
         if (!initResult.getOrThrow()) {
-            return ExportResult.Error("YAPI个人令牌未配置")
+            return ExportResult.Error("ApiMocktle 个人令牌未配置")
         }
 
         val serverUrl = clientProvider.serverUrl
+        val usingDefaultServer = serverUrl == DefaultYapiSettingsHelper.DEFAULT_YAPI_SERVER_URL
         val settings = settingBinder.read()
         val engine = RuleEngine.getInstance(project)
         engine.evaluate(RuleKeys.YAPI_EXPORT_BEFORE)
@@ -61,7 +62,7 @@ class YapiExporter(private val project: Project) : ApiExporter {
             ?: return ExportResult.Error(projectsResult.errorMessage() ?: "获取项目列表失败")
 
         if (projects.isEmpty()) {
-            return ExportResult.Error("没有可访问的YAPI项目")
+            return ExportResult.Error("没有可访问的 ApiMocktle 项目")
         }
 
         // Show project selection dialog
@@ -146,12 +147,14 @@ class YapiExporter(private val project: Project) : ApiExporter {
             processedCount++
         }
 
-        val metadata = if (exportedCarts.isNotEmpty()) YapiExportMetadata(exportedCarts) else null
+        val metadata = if (exportedCarts.isNotEmpty()) {
+            YapiExportMetadata(exportedCarts, usingDefaultServer, errors)
+        } else null
 
         return when {
             failCount == 0 && successCount > 0 -> ExportResult.Success(
                 count = successCount,
-                target = "$serverUrl (YAPI)",
+                target = "$serverUrl (ApiMocktle)",
                 metadata = metadata
             )
             successCount == 0 && failCount > 0 -> ExportResult.Error(
@@ -159,7 +162,7 @@ class YapiExporter(private val project: Project) : ApiExporter {
             )
             successCount > 0 -> ExportResult.Success(
                 count = successCount,
-                target = "$serverUrl (YAPI) - $failCount 个失败",
+                target = "$serverUrl (ApiMocktle) - $failCount 个失败",
                 metadata = metadata
             )
             else -> ExportResult.Error("没有可导出的端点")
@@ -199,9 +202,9 @@ class YapiExporter(private val project: Project) : ApiExporter {
                 toolTipText = "输入项目名进行搜索"
             }
             val dialog = object : DialogWrapper(project) {
-                init { title = "选择YAPI项目"; init() }
+                init { title = "选择 ApiMocktle 项目"; init() }
                 override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 8)).apply {
-                    add(JLabel("请选择要同步的YAPI项目："), BorderLayout.NORTH)
+                    add(JLabel("请选择要同步的 ApiMocktle 项目："), BorderLayout.NORTH)
                     add(comboBox, BorderLayout.CENTER)
                 }
             }
@@ -219,11 +222,27 @@ class YapiExporter(private val project: Project) : ApiExporter {
     ): Boolean {
         val metadata = result.metadata as? YapiExportMetadata ?: return false
         swing {
+            val content = buildString {
+                append("已导出 ${result.count} 个端点到 ApiMocktle")
+                if (metadata.usedDefaultServer) {
+                    append("\n未配置服务器地址，已使用默认地址 ${DefaultYapiSettingsHelper.DEFAULT_YAPI_SERVER_URL}，可在 设置 → 导出到 ApiMocktle 中修改")
+                }
+                if (metadata.failures.isNotEmpty()) {
+                    append("，${metadata.failures.size} 个失败：\n")
+                    append(metadata.failures.take(5).joinToString("\n"))
+                    if (metadata.failures.size > 5) append("\n…")
+                }
+            }
+            val type = if (metadata.failures.isEmpty()) {
+                com.intellij.notification.NotificationType.INFORMATION
+            } else {
+                com.intellij.notification.NotificationType.WARNING
+            }
             val notification = com.intellij.notification.Notification(
                 "ApiMocktle Notifications",
-                "导出到 YAPI",
-                "已导出 ${result.count} 个端点到 YAPI",
-                com.intellij.notification.NotificationType.INFORMATION
+                "导出到 ApiMocktle",
+                content,
+                type
             )
             for ((cartName, cartUrl) in metadata.cartLinks) {
                 notification.addAction(object : com.intellij.notification.NotificationAction(cartName) {
@@ -242,7 +261,9 @@ class YapiExporter(private val project: Project) : ApiExporter {
 }
 
 class YapiExportMetadata(
-    val cartLinks: Map<String, String>
+    val cartLinks: Map<String, String>,
+    val usedDefaultServer: Boolean = false,
+    val failures: List<String> = emptyList()
 ) : ExportMetadata {
     override fun formatDisplay(): String {
         return cartLinks.entries.joinToString("\n") { (name, url) -> "$name: $url" }

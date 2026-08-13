@@ -148,7 +148,7 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
 
         // 最高优先级：插件全局设置 "自动注入 Mock Agent"
         // 关闭时一律不注入，覆盖 Run Configuration 级别的任何勾选。
-        val globalAutoInject = SettingBinder.getInstance(project).tryRead()?.autoInjectAgent ?: true
+        val globalAutoInject = SettingBinder.getInstance(project).tryRead()?.autoInjectAgent ?: false
         if (!globalAutoInject) {
             log.info("[MockAgent] Skipped injection: global autoInjectAgent is disabled")
             return
@@ -245,9 +245,8 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
             foreground = com.intellij.util.ui.UIUtil.getContextHelpForeground()
             font = font.deriveFont(font.size2D - 1f)
         }
-        private val globalOffLabel = JLabel(
-            "<html><font color='#999999'>插件全局设置已关闭「自动注入 Mock Agent」，此处的勾选无效。</font></html>"
-        ).apply {
+        private val globalOffLabel = JLabel("插件全局设置已关闭「自动注入 Mock Agent」，此处的勾选无效。").apply {
+            foreground = com.intellij.util.ui.UIUtil.getContextHelpForeground()
             font = font.deriveFont(font.size2D - 1f)
             isVisible = false
         }
@@ -285,7 +284,7 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
 
         /** 根据全局设置刷新控件有效性与提示 */
         private fun refreshGlobalState() {
-            val globalAutoInject = SettingBinder.getInstance(project).tryRead()?.autoInjectAgent ?: true
+            val globalAutoInject = SettingBinder.getInstance(project).tryRead()?.autoInjectAgent ?: false
             val disabledByGlobal = !globalAutoInject
             globalOffLabel.isVisible = disabledByGlobal
             enabledCheckBox.isEnabled = !disabledByGlobal

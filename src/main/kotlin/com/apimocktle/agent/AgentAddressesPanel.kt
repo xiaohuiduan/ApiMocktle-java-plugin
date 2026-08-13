@@ -1,8 +1,10 @@
 package com.apimocktle.agent
 
 import com.intellij.openapi.project.Project
+import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import com.apimocktle.ide.ui.AgentStatusColors
 import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.util.concurrent.Executors
@@ -21,13 +23,6 @@ import javax.swing.border.EmptyBorder
  */
 class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout()) {
 
-    companion object {
-        private val COLOR_GREEN = Color(0x2da44e)
-        private val COLOR_YELLOW = Color(0xD4A017)
-        private val COLOR_RED = Color(0xCF6A4C)
-        private val COLOR_GRAY = Color(0x999999)
-    }
-
     private val agentsContainer = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         isOpaque = false
@@ -37,7 +32,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         "<html><center><b>暂无已配置的 Agent</b><br>启动带 Mock Agent 的运行配置后会自动注册到这里<br>可在 设置 → Mock Agent 开启/关闭自动注入</center></html>",
         SwingConstants.CENTER
     ).apply {
-        foreground = COLOR_GRAY
+        foreground = AgentStatusColors.Muted
     }
 
     private val scheduler = Executors.newSingleThreadScheduledExecutor { r ->
@@ -101,7 +96,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
     private fun createAgentRow(agent: AgentInfo, manager: MockAgentManager): JPanel {
         val row = JPanel(BorderLayout()).apply {
             border = BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UIUtil.getBoundsColor() ?: Color(0xDDDDDD), 1, true),
+                BorderFactory.createLineBorder(JBColor.border(), 1, true),
                 EmptyBorder(6, 8, 6, 8)
             )
             background = UIUtil.getListBackground()
@@ -110,9 +105,9 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
 
         // 状态：绿灯=就绪，黄灯=已暂停，红灯=未连接
         val dotColor = when {
-            !agent.connected -> COLOR_RED
-            !agent.active -> COLOR_YELLOW
-            else -> COLOR_GREEN
+            !agent.connected -> AgentStatusColors.Offline
+            !agent.active -> AgentStatusColors.Paused
+            else -> AgentStatusColors.Ready
         }
         val statusText = when {
             !agent.connected -> "未连接"
@@ -120,9 +115,9 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             else -> "就绪，可接收 Mock 规则"
         }
         val statusTextColor = when {
-            !agent.connected -> COLOR_RED
-            !agent.active -> COLOR_YELLOW
-            else -> COLOR_GREEN
+            !agent.connected -> AgentStatusColors.Offline
+            !agent.active -> AgentStatusColors.Paused
+            else -> AgentStatusColors.Ready
         }
 
         val statusDot = createStatusDot(dotColor)
@@ -130,7 +125,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             font = font.deriveFont(Font.BOLD)
         }
         val addressLabel = JLabel("→ ${agent.address}").apply {
-            foreground = COLOR_GRAY
+            foreground = AgentStatusColors.Muted
         }
         val statusLabel = JLabel(statusText).apply {
             foreground = statusTextColor

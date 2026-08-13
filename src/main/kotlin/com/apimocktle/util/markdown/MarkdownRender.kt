@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 /**
  * Renders Markdown text to HTML.
  *
- * Used primarily when exporting API documentation to platforms like YApi
+ * Used primarily when exporting API documentation to platforms like ApiMocktle
  * that expect HTML content for descriptions. The raw Markdown is preserved
  * alongside the rendered HTML so that consumers can choose which format to use.
  *

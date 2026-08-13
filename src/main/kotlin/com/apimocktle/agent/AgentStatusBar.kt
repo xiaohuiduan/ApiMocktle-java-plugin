@@ -2,6 +2,7 @@ package com.apimocktle.agent
 
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.JBUI
+import com.apimocktle.ide.ui.AgentStatusColors
 import com.apimocktle.settings.SettingBinder
 import java.awt.*
 import java.util.concurrent.Executors
@@ -66,7 +67,7 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
             override fun paintComponent(g: Graphics) {
                 val g2 = g as Graphics2D
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-                g2.color = if (lastConnected) Color(0x2da44e) else Color(0x999999)
+                g2.color = if (lastConnected) AgentStatusColors.Ready else AgentStatusColors.Muted
                 g2.fillOval(1, 1, 8, 8)
             }
         }.also { dot ->
@@ -98,25 +99,25 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
 
             if (agents.isEmpty()) {
                 statusLabel.text = "Mock Agent 未配置"
-                statusLabel.foreground = Color(0x999999)
+                statusLabel.foreground = AgentStatusColors.Muted
                 portLabel.text = "--"
             } else {
                 statusLabel.text = "Mock Agent: $connectedCount/${agents.size} 已连接"
-                statusLabel.foreground = if (lastConnected) Color(0x2da44e) else Color(0x999999)
+                statusLabel.foreground = if (lastConnected) AgentStatusColors.Ready else AgentStatusColors.Muted
                 portLabel.text = agents.joinToString(", ") { "${it.name}:${it.port}" }
-                portLabel.foreground = if (lastConnected) UIManager.getColor("Label.foreground") else Color(0x999999)
+                portLabel.foreground = if (lastConnected) UIManager.getColor("Label.foreground") else AgentStatusColors.Muted
             }
 
             val settings = SettingBinder.getInstance(project).tryRead()
-            val autoMode = settings?.autoInjectAgent ?: true
+            val autoMode = settings?.autoInjectAgent ?: false
             modeLabel.text = if (autoMode) "自动注入: 开启" else "自动注入: 关闭"
-            modeLabel.foreground = if (autoMode) Color(0x2da44e) else Color(0x999999)
+            modeLabel.foreground = if (autoMode) AgentStatusColors.Ready else AgentStatusColors.Muted
 
             // 重绘状态圆点
             repaint()
         } catch (_: Exception) {
             statusLabel.text = "Mock Agent 状态未知"
-            statusLabel.foreground = Color(0x999999)
+            statusLabel.foreground = AgentStatusColors.Muted
             portLabel.text = "--"
             modeLabel.text = ""
         }

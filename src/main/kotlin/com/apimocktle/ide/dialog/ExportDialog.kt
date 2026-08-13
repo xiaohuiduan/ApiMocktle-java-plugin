@@ -10,6 +10,7 @@ import com.apimocktle.exporter.model.ExportFormat
 import com.apimocktle.exporter.model.OutputConfig
 import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.exporter.model.path
+import com.apimocktle.ide.ui.HttpMethodColors
 import java.awt.*
 import java.awt.event.ItemEvent
 import javax.swing.*
@@ -23,7 +24,7 @@ import javax.swing.table.TableCellRenderer
  * API export configuration dialog.
  *
  * Allows users to select which endpoints to export and configure
- * YAPI export options.
+ * ApiMocktle export options.
  */
 class ExportDialog(
     private val project: Project,
@@ -282,21 +283,10 @@ private class MethodCellRenderer : DefaultTableCellRenderer() {
         if (c is JLabel && value is String) {
             c.text = value.padEnd(6)
             if (!isSelected) {
-                c.foreground = getMethodColor(value)
+                c.foreground = HttpMethodColors.colorForName(value)
             }
         }
         return c
-    }
-
-    private fun getMethodColor(method: String): Color = when (method) {
-        "GET" -> Color(0x61affe)
-        "POST" -> Color(0x49cc90)
-        "PUT" -> Color(0xfca130)
-        "DELETE" -> Color(0xf93e3e)
-        "PATCH" -> Color(0x50e3c2)
-        "HEAD" -> Color(0x9012fe)
-        "OPTIONS" -> Color(0x0d5aa7)
-        else -> Color(0x999999)
     }
 }
 

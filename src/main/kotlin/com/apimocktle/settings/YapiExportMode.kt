@@ -1,7 +1,7 @@
 package com.apimocktle.settings
 
 /**
- * YAPI 导出模式，决定如何处理已有的 API。
+ * ApiMocktle 导出模式，决定如何处理已有的 API。
  */
 enum class YapiExportMode(val desc: String) {
     /** 始终更新已有 API */

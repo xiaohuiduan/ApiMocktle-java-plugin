@@ -34,7 +34,7 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
             panel = JPanel(BorderLayout())
             tabs = JTabbedPane().also { t ->
                 t.addTab("API 扫描", apiScanPanel.component)
-                t.addTab("YAPI 导出", yapiExportPanel.component)
+                t.addTab("导出到 ApiMocktle", yapiExportPanel.component)
                 t.addTab("Mock Agent", mockAgentPanel.component)
                 t.addTab("扩展配置", extensionPanel.component)
                 t.addTab("高级", advancedPanel.component)

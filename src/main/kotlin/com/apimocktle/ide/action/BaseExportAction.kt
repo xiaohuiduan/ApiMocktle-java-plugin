@@ -3,6 +3,7 @@ package com.apimocktle.ide.action
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.apimocktle.core.event.ActionCompletedTopic
 import com.apimocktle.core.event.ActionCompletedTopic.Companion.syncPublish
 import com.apimocktle.core.threading.backgroundAsync
@@ -60,6 +61,19 @@ abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val selection = SelectedHelper.resolveSelection(e)
+
+        // 未选中任何内容时将导出整个项目的全部端点，先向用户确认，避免误操作全量导出
+        if (selection == null) {
+            val proceed = Messages.showYesNoDialog(
+                project,
+                "未选中任何方法/文件，将导出项目中全部 API 端点，是否继续？",
+                actionName,
+                "继续导出全部",
+                "取消",
+                Messages.getWarningIcon()
+            )
+            if (proceed != Messages.YES) return
+        }
 
         backgroundAsync {
             runWithProgress(project, actionName) { indicator ->
@@ -136,10 +150,7 @@ abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
     }
 
     protected open fun showExportError(project: Project, message: String) {
-        com.intellij.openapi.ui.Messages.showErrorDialog(
-            project,
-            "导出失败：$message",
-            "导出API"
-        )
+        // 与 Dashboard 导出路径一致，统一使用气泡通知，完整堆栈保留在控制台
+        NotificationUtils.notifyError(project, "导出API", "导出失败：$message")
     }
 }

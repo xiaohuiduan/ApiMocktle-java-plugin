@@ -3,9 +3,9 @@ package com.apimocktle.ide.action
 import com.apimocktle.exporter.model.ExportFormat
 
 /**
- * Action to export APIs to YAPI platform.
+ * Action to export APIs to ApiMocktle platform.
  *
- * Extends [BaseExportAction] with YAPI-specific format configuration.
+ * Extends [BaseExportAction] with ApiMocktle-specific format configuration.
  *
  * @see BaseExportAction for the export implementation
  * @see ExportFormat.YAPI for the target format

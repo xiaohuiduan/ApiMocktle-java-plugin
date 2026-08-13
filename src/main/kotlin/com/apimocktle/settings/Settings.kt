@@ -35,7 +35,7 @@ data class Settings(
     override var remoteConfig: Array<String> = emptyArray(),
     override var autoScanEnabled: Boolean = true,
     override var concurrentScanEnabled: Boolean = false,
-    override var autoInjectAgent: Boolean = true
+    override var autoInjectAgent: Boolean = false
 ) : ProjectSettingsSupport, ApplicationSettingsSupport {
 
     companion object {

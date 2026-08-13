@@ -3,6 +3,7 @@ package com.apimocktle.dashboard
 import com.apimocktle.exporter.model.ApiEndpoint
 import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
+import com.apimocktle.ide.ui.HttpMethodColors
 import com.intellij.util.ui.UIUtil
 import java.awt.Color
 import java.awt.Component
@@ -55,17 +56,18 @@ class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
         }
 
         if (endpoint != null && tree != null) {
+            val method = when (val meta = endpoint.metadata) {
+                is HttpMetadata -> meta.method
+                else -> null
+            }
             val path = when (val meta = endpoint.metadata) {
                 is HttpMetadata -> meta.path
                 else -> ""
             }
-            val methodName = when (val meta = endpoint.metadata) {
-                is HttpMetadata -> meta.method.name
-                else -> endpoint.metadata.protocol
-            }
+            val methodName = method?.name ?: endpoint.metadata.protocol
 
             badge.text = methodName
-            badge.background = getMethodColor(endpoint)
+            badge.background = method?.let { HttpMethodColors.colorFor(it) } ?: HttpMethodColors.UNKNOWN
             badge.foreground = Color.WHITE
 
             nameLabel.text = endpoint.name ?: path
@@ -79,27 +81,5 @@ class ApiTreeCellRenderer : DefaultTreeCellRenderer() {
         }
 
         return super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
-    }
-
-    /**
-     * Returns the color for an API endpoint based on its HTTP method.
-     * Follows common API documentation conventions:
-     * - GET: Blue, POST: Green, PUT: Orange, DELETE: Red
-     * - PATCH: Cyan, HEAD: Purple, OPTIONS: Dark blue
-     */
-    private fun getMethodColor(endpoint: ApiEndpoint): Color {
-        return when (val meta = endpoint.metadata) {
-            is HttpMetadata -> when (meta.method) {
-                HttpMethod.GET -> Color(0x61affe)
-                HttpMethod.POST -> Color(0x49cc90)
-                HttpMethod.PUT -> Color(0xfca130)
-                HttpMethod.DELETE -> Color(0xf93e3e)
-                HttpMethod.PATCH -> Color(0x50e3c2)
-                HttpMethod.HEAD -> Color(0x9012fe)
-                HttpMethod.OPTIONS -> Color(0x0d5aa7)
-                HttpMethod.NO_METHOD -> Color(0x888888)
-            }
-            else -> Color(0x888888)
-        }
     }
 }

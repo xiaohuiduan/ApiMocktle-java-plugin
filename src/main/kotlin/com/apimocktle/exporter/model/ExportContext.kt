@@ -38,7 +38,7 @@ enum class ExportFormat(
     val supportsHttp: Boolean = true,
     val displayName: String
 ) {
-    YAPI(displayName = "YAPI");
+    YAPI(displayName = "ApiMocktle");
 
     fun isAvailableFor(endpoints: List<ApiEndpoint>): Boolean {
         if (endpoints.isEmpty()) return true

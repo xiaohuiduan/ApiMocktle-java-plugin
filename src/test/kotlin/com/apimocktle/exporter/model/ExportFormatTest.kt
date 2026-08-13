@@ -7,7 +7,7 @@ class ExportFormatTest {
 
     @Test
     fun testYapiDisplayName() {
-        assertEquals("YAPI", ExportFormat.YAPI.displayName)
+        assertEquals("ApiMocktle", ExportFormat.YAPI.displayName)
     }
 
     @Test

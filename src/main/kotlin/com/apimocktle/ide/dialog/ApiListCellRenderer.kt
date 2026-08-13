@@ -1,9 +1,9 @@
 package com.apimocktle.ide.dialog
 
 import com.apimocktle.exporter.model.ApiEndpoint
-import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.exporter.model.path
+import com.apimocktle.ide.ui.HttpMethodColors
 import java.awt.Color
 import java.awt.Component
 import javax.swing.JLabel
@@ -14,14 +14,7 @@ import javax.swing.ListCellRenderer
  * List cell renderer for displaying API endpoints with color-coded HTTP methods.
  *
  * Renders each endpoint as "METHOD path - name" with the method name colored
- * according to standard HTTP method conventions:
- * - GET: Blue (#61affe)
- * - POST: Green (#49cc90)
- * - PUT: Orange (#fca130)
- * - DELETE: Red (#f93e3e)
- * - PATCH: Cyan (#50e3c2)
- * - HEAD: Purple (#9012fe)
- * - OPTIONS: Dark Blue (#0d5aa7)
+ * according to standard HTTP method conventions (see [HttpMethodColors]).
  *
  * @see ApiEndpoint for the data model
  */
@@ -52,7 +45,7 @@ class ApiListCellRenderer : JLabel(), ListCellRenderer<ApiEndpoint> {
             list?.selectionForeground ?: Color.WHITE
         } else {
             val httpMeta = value.httpMetadata
-            if (httpMeta != null) getMethodColor(httpMeta.method) else Color(0x999999)
+            if (httpMeta != null) HttpMethodColors.colorFor(httpMeta.method) else HttpMethodColors.UNKNOWN
         }
         background = if (isSelected) {
             list?.selectionBackground ?: Color.BLUE
@@ -61,18 +54,5 @@ class ApiListCellRenderer : JLabel(), ListCellRenderer<ApiEndpoint> {
         }
 
         return this
-    }
-
-    private fun getMethodColor(method: HttpMethod): Color {
-        return when (method) {
-            HttpMethod.GET -> Color(0x61affe)
-            HttpMethod.POST -> Color(0x49cc90)
-            HttpMethod.PUT -> Color(0xfca130)
-            HttpMethod.DELETE -> Color(0xf93e3e)
-            HttpMethod.PATCH -> Color(0x50e3c2)
-            HttpMethod.HEAD -> Color(0x9012fe)
-            HttpMethod.OPTIONS -> Color(0x0d5aa7)
-            HttpMethod.NO_METHOD -> Color(0x999999)
-        }
     }
 }

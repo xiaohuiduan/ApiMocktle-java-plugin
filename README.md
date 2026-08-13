@@ -83,7 +83,7 @@
 
 ### 导出到 ApiMocktle
 
-1. **配置个人令牌**：Settings → ApiMocktle → YAPI → 输入服务器地址和个人令牌
+1. **配置个人令牌**：Settings → ApiMocktle → 导出到 ApiMocktle → 输入服务器地址和个人令牌
 2. 右键控制器文件 / 类 / 方法 → **导出到ApiMocktle**（`Alt+Shift+E`）
 3. 在弹出的项目选择框中选择目标项目
 4. API 自动同步

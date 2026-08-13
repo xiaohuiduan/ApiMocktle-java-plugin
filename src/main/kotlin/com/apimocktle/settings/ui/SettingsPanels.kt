@@ -4,6 +4,7 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.CheckBoxList
+import com.intellij.ui.JBColor
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.*
 import com.intellij.ui.table.TableView
@@ -19,6 +20,7 @@ import com.apimocktle.repository.RepositoryConfig
 import com.apimocktle.repository.RepositoryType
 import com.apimocktle.exporter.model.PathSelector
 import com.apimocktle.extension.ExtensionConfigRegistry
+import com.apimocktle.ide.ui.StatusColors
 import com.apimocktle.logging.IdeaLog
 import com.apimocktle.util.GsonUtils
 import com.apimocktle.settings.Settings
@@ -73,7 +75,7 @@ class ApiScanPanel(project: com.intellij.openapi.project.Project? = null) : Sett
     private val inferCb = JBCheckBox("推断响应体主类型（Result<T> → T）").apply { toolTipText = "自动提取实际数据类型"; isSelected = true }
     private val urlTplCb = JBCheckBox("URL 模板（/users/{id}）").apply { toolTipText = "使用 RFC 6570 语法"; isSelected = true }
 
-    private val feign = withHelp(feignCb, project, "Feign 客户端支持", "扫描项目中的 @FeignClient 接口，提取其中的 API 信息并导出到 YAPI。")
+    private val feign = withHelp(feignCb, project, "Feign 客户端支持", "扫描项目中的 @FeignClient 接口，提取其中的 API 信息并导出到 ApiMocktle。")
     private val autoScan = withHelp(autoCb, project, "自动扫描", "文件修改后自动重新扫描 API。关闭后需手动刷新。")
     private val concurrent = withHelp(concurrentCb, project, "并发扫描", "多线程扫描，大型项目可加速。实验性功能。")
     private val queryExp = withHelp(queryExpCb, project, "展开查询参数", "把 @RequestParam 参数展开为文档中的独立字段。")
@@ -142,7 +144,7 @@ class ApiScanPanel(project: com.intellij.openapi.project.Project? = null) : Sett
     }
 }
 
-// ── YAPI 导出 ───────────────────────────────────────────────
+// ── 导出到 ApiMocktle ────────────────────────────────────────
 class YapiExportPanel(private val project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
     private val server = JBTextField()
     private val token = JBTextField()
@@ -179,8 +181,8 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
 
     override val component: JComponent = FormBuilder.createFormBuilder()
         .addComponent(createSection("服务器", listOf(
-            withHelp(JPanel(BorderLayout()).apply { add(JLabel("地址："), BorderLayout.WEST); add(server, BorderLayout.CENTER) }, project, "YAPI 服务器地址", "你的 YAPI 服务地址，插件会向这个地址同步 API 文档。"),
-            withHelp(JPanel(BorderLayout(5, 0)).apply { add(JLabel("令牌："), BorderLayout.WEST); add(JPanel(BorderLayout(5,0)).apply { add(token, BorderLayout.CENTER); add(tokenBtn, BorderLayout.EAST) }, BorderLayout.CENTER) }, project, "个人令牌", "YAPI 个人访问令牌。获取：YAPI → 个人中心 → 令牌")
+            withHelp(JPanel(BorderLayout()).apply { add(JLabel("地址："), BorderLayout.WEST); add(server, BorderLayout.CENTER) }, project, "ApiMocktle 服务器地址", "你的 ApiMocktle 服务地址，插件会向这个地址同步 API 文档。"),
+            withHelp(JPanel(BorderLayout(5, 0)).apply { add(JLabel("令牌："), BorderLayout.WEST); add(JPanel(BorderLayout(5,0)).apply { add(token, BorderLayout.CENTER); add(tokenBtn, BorderLayout.EAST) }, BorderLayout.CENTER) }, project, "个人令牌", "ApiMocktle 个人访问令牌。获取：ApiMocktle → 个人中心 → 令牌")
         )))
         .addComponent(tokenResult)
         .addComponent(createSection("导出选项", listOf(urlTpl, JPanel(BorderLayout()).apply { add(JLabel("模式："), BorderLayout.WEST); add(modeCombo, BorderLayout.CENTER) }, reqJson5, resJson5)))
@@ -189,7 +191,7 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
 
     private fun checkToken() {
         val sv = server.text.trim(); val tk = token.text.trim()
-        if (sv.isBlank()) { Messages.showWarningDialog(project, "请先输入 YAPI 服务器地址", "提示"); return }
+        if (sv.isBlank()) { Messages.showWarningDialog(project, "请先输入 ApiMocktle 服务器地址", "提示"); return }
         if (tk.isBlank()) { Messages.showWarningDialog(project, "请先输入个人令牌", "提示"); return }
         tokenBtn.isEnabled = false; tokenResult.text = "检测中..."
         thread {
@@ -201,11 +203,11 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
                 val code = json.get("errcode")?.asInt ?: json.get("code")?.asInt
                 val msg = json.get("errmsg")?.asString ?: json.get("message")?.asString ?: ""
                 SwingUtilities.invokeLater {
-                    if (code == 0 || msg.contains("成功")) { tokenResult.text = "✓ 有效"; tokenResult.foreground = Color(0x2da44e) }
-                    else { tokenResult.text = "✗ $msg"; tokenResult.foreground = Color(0xcf222e) }
+                    if (code == 0 || msg.contains("成功")) { tokenResult.text = "✓ 有效"; tokenResult.foreground = StatusColors.Success }
+                    else { tokenResult.text = "✗ $msg"; tokenResult.foreground = StatusColors.Error }
                     tokenBtn.isEnabled = true
                 }
-            } catch (e: Exception) { SwingUtilities.invokeLater { tokenResult.text = "✗ 连接失败"; tokenResult.foreground = Color(0xcf222e); tokenBtn.isEnabled = true } }
+            } catch (e: Exception) { SwingUtilities.invokeLater { tokenResult.text = "✗ 连接失败"; tokenResult.foreground = StatusColors.Error; tokenBtn.isEnabled = true } }
         }
     }
 
@@ -229,14 +231,14 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
 
 // ── Mock Agent ──────────────────────────────────────────────
 class MockAgentPanel(project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
-    private val injectCb = JBCheckBox("自动注入 Mock Agent").apply { isSelected = true; toolTipText = "启动运行配置时自动注入 -javaagent" }
+    private val injectCb = JBCheckBox("自动注入 Mock Agent").apply { isSelected = false; toolTipText = "启动运行配置时自动注入 -javaagent" }
     private val inject = withHelp(injectCb, project, "自动注入 Mock Agent", "启动 Spring Boot 运行配置时自动添加 -javaagent:mock-agent.jar，拦截 Feign/MyBatis 调用返回模拟数据。")
 
     override val component: JComponent = FormBuilder.createFormBuilder()
         .addComponent(createSection("Mock 拦截", listOf(inject)))
         .addComponentFillVertically(JPanel(), 0)
         .panel
-    override fun resetFrom(s: Settings?) { injectCb.isSelected = s?.autoInjectAgent ?: true }
+    override fun resetFrom(s: Settings?) { injectCb.isSelected = s?.autoInjectAgent ?: false }
     override fun applyTo(s: Settings) { s.autoInjectAgent = injectCb.isSelected }
     override fun isModified(s: Settings?): Boolean = injectCb.isSelected != (s?.autoInjectAgent ?: true)
 }
@@ -345,7 +347,7 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
         val ok = text.toIntOrNull()?.let { it in 1..600 } == true
         if (!ok) {
             timeout.toolTipText = "超时必须是 1-600 的整数（秒）"
-            timeout.background = java.awt.Color(255, 230, 230)
+            timeout.background = JBColor(Color(255, 230, 230), Color(0x5a2d2d))
         } else {
             timeout.toolTipText = null
             timeout.background = null

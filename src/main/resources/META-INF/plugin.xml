@@ -4,7 +4,7 @@
     <version>3.0.0</version>
     <vendor>ApiMocktle</vendor>
 
-    <description><![CDATA[统一插件，支持从源码提取 API 并同步到 YAPI。]]></description>
+    <description><![CDATA[统一插件，支持从源码提取 API 并同步到 ApiMocktle。]]></description>
     <category>Web</category>
 
     <idea-version since-build="262.0"/>
@@ -60,8 +60,8 @@
     <actions>
         <group id="ApiMocktleActions">
             <action id="com.apimocktle.action.YapiExportAction"
-                    class="com.apimocktle.ide.action.ExportToYapiAction" text="导出到 YAPI"
-                    description="将 API 文档同步到 YAPI">
+                    class="com.apimocktle.ide.action.ExportToYapiAction" text="导出到 ApiMocktle"
+                    description="将 API 文档同步到 ApiMocktle">
             </action>
         </group>
 

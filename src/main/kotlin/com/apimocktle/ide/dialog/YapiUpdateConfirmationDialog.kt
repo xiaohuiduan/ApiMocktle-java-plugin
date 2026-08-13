@@ -4,10 +4,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.UIUtil
 import com.apimocktle.exporter.yapi.UpdateDecision
 import com.apimocktle.exporter.yapi.model.YapiApiDoc
-import java.awt.Color
+import com.apimocktle.ide.ui.HttpMethodColors
 import java.awt.Component
 import javax.swing.*
 
@@ -69,14 +68,7 @@ class YapiUpdateConfirmationDialog(
     }
 
     private fun createMethodPathLabel(method: String, path: String): JBLabel {
-        val color = when (method) {
-            "GET" -> Color(0x61affe)
-            "POST" -> Color(0x49cc90)
-            "PUT" -> Color(0xfca130)
-            "DELETE" -> Color(0xf93e3e)
-            "PATCH" -> Color(0x50e3c2)
-            else -> UIUtil.getContextHelpForeground()
-        }
+        val color = HttpMethodColors.colorForName(method)
         return JBLabel("[$method] $path").apply {
             foreground = color
             font = font.deriveFont(java.awt.Font.BOLD, font.size2D + 1)

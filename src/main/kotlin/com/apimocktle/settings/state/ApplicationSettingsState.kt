@@ -39,7 +39,7 @@ class ApplicationSettingsState : PersistentStateComponent<ApplicationSettingsSta
         override var remoteConfig: Array<String> = emptyArray(),
         override var autoScanEnabled: Boolean = true,
         override var concurrentScanEnabled: Boolean = false,
-        override var autoInjectAgent: Boolean = true
+        override var autoInjectAgent: Boolean = false
     ) : ApplicationSettingsSupport {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

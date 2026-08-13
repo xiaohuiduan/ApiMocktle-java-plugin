@@ -17,6 +17,7 @@ import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.ParameterBinding
 import com.apimocktle.exporter.model.httpMetadata
+import com.apimocktle.ide.ui.HttpMethodColors
 import com.apimocktle.logging.IdeaLog
 import com.apimocktle.psi.model.ObjectModelJsonConverter
 import java.awt.BorderLayout
@@ -199,7 +200,7 @@ class EndpointDetailsPanel(
             is HttpMetadata -> {
                 nameLabel.text = endpoint.name ?: "未命名"
                 methodLabel.text = meta.method.name
-                methodLabel.foreground = getMethodColor(meta.method)
+                methodLabel.foreground = HttpMethodColors.colorFor(meta.method)
                 pathLabel.text = meta.path
 
                 loadFromEndpoint(endpoint)
@@ -310,17 +311,6 @@ class EndpointDetailsPanel(
         bodyArea.text = ""
         responseBodyArea.text = ""
         tabPane.removeAll()
-    }
-
-    private fun getMethodColor(method: HttpMethod): Color = when (method) {
-        HttpMethod.GET -> Color(0x61affe)
-        HttpMethod.POST -> Color(0x49cc90)
-        HttpMethod.PUT -> Color(0xfca130)
-        HttpMethod.DELETE -> Color(0xf93e3e)
-        HttpMethod.PATCH -> Color(0x50e3c2)
-        HttpMethod.HEAD -> Color(0x9012fe)
-        HttpMethod.OPTIONS -> Color(0x0d5aa7)
-        HttpMethod.NO_METHOD -> Color(0x999999)
     }
 
     fun dispose() {}

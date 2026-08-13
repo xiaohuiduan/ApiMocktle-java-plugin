@@ -87,7 +87,7 @@ object RuleKeys {
     val CLASS_IS_FEIGN_CTRL = RuleKey.boolean("class.is.feign.ctrl")
     val CLASS_IS_QUARKUS_CTRL = RuleKey.boolean("class.is.quarkus.ctrl")
 
-    // ── YAPI rules ────────────────────────────────────────────────
+    // ── ApiMocktle rules ──────────────────────────────────────────
     val YAPI_PROJECT = RuleKey.string("yapi.project", aliases = listOf("project", "module"))
     val YAPI_EXPORT_BEFORE = RuleKey.event("yapi.export.before", EventRuleMode.THROW_IN_ERROR)
     val YAPI_SAVE_BEFORE   = RuleKey.event("yapi.save.before", EventRuleMode.THROW_IN_ERROR)
