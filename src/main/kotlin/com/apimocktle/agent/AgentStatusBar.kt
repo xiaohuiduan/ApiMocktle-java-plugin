@@ -70,9 +70,6 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
                 g2.color = if (lastConnected) AgentStatusColors.Ready else AgentStatusColors.Muted
                 g2.fillOval(1, 1, 8, 8)
             }
-        }.also { dot ->
-            // 刷新时重绘圆点
-            statusLabel.putClientProperty("statusDot", dot)
         }
     }
 
@@ -88,39 +85,54 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
         }, 5, 5, TimeUnit.SECONDS)
     }
 
+    /**
+     * 刷新状态。探测（串行 HTTP，每 agent 最长 3s）与设置读取在后台线程执行，
+     * 仅 label 更新回 EDT，避免轮询冻结 UI。
+     */
     private fun refresh() {
-        try {
-            val manager = project.getService(MockAgentManager::class.java)
-            manager.probeAllStatus()
+        scheduler.execute {
+            try {
+                val manager = project.getService(MockAgentManager::class.java)
+                manager.probeAllStatus()
 
-            val agents = manager.getAgents()
-            val connectedCount = agents.count { it.connected }
-            lastConnected = connectedCount > 0
+                val agents = manager.getAgents()
+                val settings = SettingBinder.getInstance(project).tryRead()
+                val autoMode = settings?.autoInjectAgent ?: false
 
-            if (agents.isEmpty()) {
-                statusLabel.text = "Mock Agent 未配置"
-                statusLabel.foreground = AgentStatusColors.Muted
-                portLabel.text = "--"
-            } else {
-                statusLabel.text = "Mock Agent: $connectedCount/${agents.size} 已连接"
-                statusLabel.foreground = if (lastConnected) AgentStatusColors.Ready else AgentStatusColors.Muted
-                portLabel.text = agents.joinToString(", ") { "${it.name}:${it.port}" }
-                portLabel.foreground = if (lastConnected) UIManager.getColor("Label.foreground") else AgentStatusColors.Muted
+                SwingUtilities.invokeLater { render(agents, autoMode) }
+            } catch (_: Exception) {
+                SwingUtilities.invokeLater { renderUnknown() }
             }
+        }
+    }
 
-            val settings = SettingBinder.getInstance(project).tryRead()
-            val autoMode = settings?.autoInjectAgent ?: false
-            modeLabel.text = if (autoMode) "自动注入: 开启" else "自动注入: 关闭"
-            modeLabel.foreground = if (autoMode) AgentStatusColors.Ready else AgentStatusColors.Muted
+    private fun render(agents: List<AgentInfo>, autoMode: Boolean) {
+        val connectedCount = agents.count { it.connected }
+        lastConnected = connectedCount > 0
 
-            // 重绘状态圆点
-            repaint()
-        } catch (_: Exception) {
-            statusLabel.text = "Mock Agent 状态未知"
+        if (agents.isEmpty()) {
+            statusLabel.text = "Mock Agent 未配置"
             statusLabel.foreground = AgentStatusColors.Muted
             portLabel.text = "--"
-            modeLabel.text = ""
+        } else {
+            statusLabel.text = "Mock Agent: $connectedCount/${agents.size} 已连接"
+            statusLabel.foreground = if (lastConnected) AgentStatusColors.Ready else AgentStatusColors.Muted
+            portLabel.text = agents.joinToString(", ") { "${it.name}:${it.port}" }
+            portLabel.foreground = if (lastConnected) UIManager.getColor("Label.foreground") else AgentStatusColors.Muted
         }
+
+        modeLabel.text = if (autoMode) "自动注入: 开启" else "自动注入: 关闭"
+        modeLabel.foreground = if (autoMode) AgentStatusColors.Ready else AgentStatusColors.Muted
+
+        // 重绘状态圆点
+        repaint()
+    }
+
+    private fun renderUnknown() {
+        statusLabel.text = "Mock Agent 状态未知"
+        statusLabel.foreground = AgentStatusColors.Muted
+        portLabel.text = "--"
+        modeLabel.text = ""
     }
 
     fun dispose() {

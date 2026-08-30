@@ -395,12 +395,11 @@ object IdeDispatchers : IdeaLog {
     /**
      * Launches a coroutine to execute a block on the background dispatcher.
      *
-     * Fire-and-forget execution - no result is returned.
-     *
      * @param block The code to execute in background
+     * @return Job backing the coroutine — cancel it to stop the background work
      */
-    fun backgroundAsync(block: suspend () -> Unit) {
-        scope.launch { block() }
+    fun backgroundAsync(block: suspend () -> Unit): Job {
+        return scope.launch { block() }
     }
 }
 
@@ -484,4 +483,4 @@ suspend fun <T> background(block: suspend () -> T): T = IdeDispatchers.backgroun
 /**
  * Shorthand for [IdeDispatchers.backgroundAsync].
  */
-fun backgroundAsync(block: suspend () -> Unit) = IdeDispatchers.backgroundAsync(block)
+fun backgroundAsync(block: suspend () -> Unit): Job = IdeDispatchers.backgroundAsync(block)

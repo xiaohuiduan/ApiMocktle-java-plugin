@@ -7,6 +7,7 @@ import com.apimocktle.core.threading.backgroundAsync
 import com.apimocktle.exporter.model.ApiEndpoint
 import com.apimocktle.logging.IdeaLog
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -91,9 +92,10 @@ class ApiIndex {
      * if you need to update UI components.
      *
      * @param listener Suspended function called with the updated endpoint list
+     * @return Job backing the subscription — cancel it when the subscriber is disposed
      */
-    fun subscribe(listener: suspend (List<ApiEndpoint>) -> Unit) {
-        backgroundAsync {
+    fun subscribe(listener: suspend (List<ApiEndpoint>) -> Unit): Job {
+        return backgroundAsync {
             _endpointsFlow.collect { listener(it) }
         }
     }

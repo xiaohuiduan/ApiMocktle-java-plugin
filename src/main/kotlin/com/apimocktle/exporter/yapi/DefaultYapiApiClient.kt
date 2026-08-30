@@ -32,6 +32,10 @@ class DefaultYapiApiClient(
     private val httpClient: HttpClient
 ) : YapiApiClient {
 
+    /** list_cat 分页大小，仅在返回满页时自动放大（实例级，避免多项目共享状态） */
+    @Volatile
+    private var apiPageLimit: Int = 1000
+
     // region Project listing
 
     override suspend fun listProjects(): YapiResponse<List<YapiProjectInfo>> {
@@ -164,7 +168,9 @@ class DefaultYapiApiClient(
     // region API upload
 
     override suspend fun uploadApi(doc: YapiApiDoc, catId: String): YapiResponse<Unit> {
-        if (serverUrl.isBlank() || token.isBlank()) return YapiResponse.success(Unit)
+        if (serverUrl.isBlank() || token.isBlank()) {
+            return YapiResponse.failure("ApiMocktle 服务器地址或个人令牌未配置，导出已中止")
+        }
         return withContext(Dispatchers.IO) {
             runCatching {
                 val existingId = findExistingApi(catId, doc.path, doc.method)
@@ -186,7 +192,9 @@ class DefaultYapiApiClient(
         catId: String,
         updateConfirmation: UpdateConfirmation
     ): YapiResponse<Unit> {
-        if (serverUrl.isBlank() || token.isBlank()) return YapiResponse.success(Unit)
+        if (serverUrl.isBlank() || token.isBlank()) {
+            return YapiResponse.failure("ApiMocktle 服务器地址或个人令牌未配置，导出已中止")
+        }
         if (!updateConfirmation.confirm(doc, catId)) {
             return YapiResponse.success(Unit)
         }
@@ -231,9 +239,6 @@ class DefaultYapiApiClient(
 
         private val SUCCESS_MESSAGES = setOf("成功", "成功！")
         private val SUCCESS_CODES = setOf(0, 200)
-
-        @Volatile
-        private var apiPageLimit: Int = 1000
     }
 
     private fun buildApiDocBody(doc: YapiApiDoc, catId: String, existingId: String? = null): String {

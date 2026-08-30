@@ -341,6 +341,8 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
     private val repoTable = TableView(repoModel)
     private val importBtn = JButton("导入设置"); private val exportBtn = JButton("导出设置")
     private var curSettings: Settings? = null
+    /** resetFrom 时实际加载进表格的仓库配置（序列化形式），isModified 用它判断表格是否被改动 */
+    private var loadedRepos: List<String> = emptyList()
 
     private fun validateTimeout() {
         val text = timeout.text.trim()
@@ -424,18 +426,23 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
         curSettings = s; timeout.text = (s?.httpTimeOut ?: 30).toString(); unsafeSslCb.isSelected = s?.unsafeSsl ?: false
         logLevel.selectedItem = VerbosityLevel.toLevel(s?.logLevel ?: 50); charset.selectedItem = s?.outputCharset ?: "UTF-8"
         outputDemo.isSelected = s?.outputDemo ?: true; switchNotice.isSelected = s?.switchNotice ?: true; refreshSizes()
-        val ur = s?.remoteConfig?.mapNotNull { RepositoryConfig.parse(it) }; repoModel.items = if (!ur.isNullOrEmpty()) ur.toMutableList() else DefaultRepositories.detectFromEnvironment().toMutableList()
+        val ur = s?.remoteConfig?.mapNotNull { RepositoryConfig.parse(it) }
+        val items = if (!ur.isNullOrEmpty()) ur else DefaultRepositories.detectFromEnvironment()
+        loadedRepos = items.map { RepositoryConfig.serialize(it) }
+        repoModel.items = items.toMutableList()
     }
     override fun applyTo(s: Settings) {
         s.httpTimeOut = timeout.text.trim().toIntOrNull()?.takeIf { it in 1..600 } ?: 30; s.unsafeSsl = unsafeSslCb.isSelected
         s.logLevel = (logLevel.selectedItem as? VerbosityLevel)?.level ?: 50; s.outputCharset = charset.selectedItem?.toString() ?: "UTF-8"
         s.outputDemo = outputDemo.isSelected; s.switchNotice = switchNotice.isSelected
+        s.remoteConfig = repoModel.items.map { RepositoryConfig.serialize(it) }.toTypedArray()
     }
     override fun isModified(s: Settings?): Boolean {
         val ss = s ?: return false
-        return timeout.text != ss.httpTimeOut.toString() || unsafeSslCb.isSelected != ss.unsafeSsl ||
+        if (timeout.text != ss.httpTimeOut.toString() || unsafeSslCb.isSelected != ss.unsafeSsl ||
                 (logLevel.selectedItem as? VerbosityLevel)?.level != ss.logLevel || charset.selectedItem?.toString() != ss.outputCharset ||
-                outputDemo.isSelected != ss.outputDemo || switchNotice.isSelected != ss.switchNotice
+                outputDemo.isSelected != ss.outputDemo || switchNotice.isSelected != ss.switchNotice) return true
+        return repoModel.items.map { RepositoryConfig.serialize(it) } != loadedRepos
     }
     private fun applyImp(s: Settings, i: Settings) {
         s.feignEnable = i.feignEnable; s.queryExpanded = i.queryExpanded; s.formExpanded = i.formExpanded
@@ -443,6 +450,8 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
         s.yapiExportMode = i.yapiExportMode; s.yapiReqBodyJson5 = i.yapiReqBodyJson5; s.yapiResBodyJson5 = i.yapiResBodyJson5
         s.httpTimeOut = i.httpTimeOut; s.unsafeSsl = i.unsafeSsl; s.extensionConfigs = i.extensionConfigs
         s.logLevel = i.logLevel; s.outputDemo = i.outputDemo; s.outputCharset = i.outputCharset
+        s.remoteConfig = i.remoteConfig; s.autoInjectAgent = i.autoInjectAgent; s.pathMulti = i.pathMulti
+        s.autoScanEnabled = i.autoScanEnabled; s.concurrentScanEnabled = i.concurrentScanEnabled; s.inferReturnMain = i.inferReturnMain
     }
 }
 

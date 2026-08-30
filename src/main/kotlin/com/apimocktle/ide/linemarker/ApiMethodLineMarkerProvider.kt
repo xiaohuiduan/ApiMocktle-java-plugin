@@ -51,7 +51,9 @@ class ApiMethodLineMarkerProvider : LineMarkerProvider {
         if (element !is PsiIdentifier) return null
         val parent = element.parent as? PsiMethod ?: return null
 
-        if (!isApiMethod(parent) && !isIndexedMethod(parent)) return null
+        // 顺序很关键：先查 O(1) 索引，命中即返回；未命中再做本地注解名匹配。
+        // 只有方法确实携带 API 注解名时才进入 classpath 可用性检查（有缓存，极少触发阻塞查询）。
+        if (!isIndexedMethod(parent) && !hasApiAnnotation(parent)) return null
 
         return LineMarkerInfo(
             element,
@@ -68,11 +70,27 @@ class ApiMethodLineMarkerProvider : LineMarkerProvider {
         return ApiIndex.getInstance(method.project).containsMethod(method)
     }
 
-    private fun isApiMethod(method: PsiMethod): Boolean {
-        val availabilityService = ProjectClassAvailabilityService.getInstance(method.project)
+    /**
+     * 判断方法是否带 API 注解。
+     * 先做纯 PSI 的注解短名预筛（无协程派发、无阻塞）：方法没有携带任何 API 注解名时直接返回 false；
+     * 仅对真正带 API 注解的方法才进入 runBlocking 做 FQN 确认与 classpath 可用性检查（有 TTL 缓存），
+     * 保证对文件里绝大多数普通方法零阻塞。
+     */
+    private fun hasApiAnnotation(method: PsiMethod): Boolean {
+        val modifierList = method.modifierList ?: return false
+        val presentNames = modifierList.annotations
+            .mapNotNull { it.qualifiedName?.substringAfterLast('.')?.lowercase() }
+            .toSet()
+        if (presentNames.isEmpty()) return false
 
+        val matchedAnnotations = allApiAnnotations.filter { fqn ->
+            fqn.substringAfterLast('.').lowercase() in presentNames
+        }
+        if (matchedAnnotations.isEmpty()) return false
+
+        val availabilityService = ProjectClassAvailabilityService.getInstance(method.project)
         return runBlocking {
-            allApiAnnotations.any { annotationFqn ->
+            matchedAnnotations.any { annotationFqn ->
                 availabilityService.hasClassInProject(annotationFqn) &&
                     annotationHelper.hasAnn(method, annotationFqn)
             }

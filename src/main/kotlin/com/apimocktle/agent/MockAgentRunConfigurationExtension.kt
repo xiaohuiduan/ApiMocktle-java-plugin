@@ -71,12 +71,17 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
                 }
             } catch (_: Exception) {}
 
-            // 4. classpath 资源 -> 临时文件
+            // 4. classpath 资源 -> 临时文件（按插件版本缓存，插件升级后自动覆盖旧版 agent）
             try {
                 val tempDir = File(System.getProperty("java.io.tmpdir"), "apimocktle-agent")
                 tempDir.mkdirs()
                 val target = File(tempDir, AGENT_JAR_NAME)
-                if (target.exists() && target.length() > 1000) return target
+                val versionFile = File(tempDir, "$AGENT_JAR_NAME.version")
+                val pluginVersion = try {
+                    com.intellij.ide.plugins.PluginManagerCore.getPlugin(
+                        com.intellij.openapi.extensions.PluginId.getId("com.apimocktle.plugin")
+                    )?.version ?: ""
+                } catch (_: Exception) { "" }
 
                 val stream = MockAgentRunConfigurationExtension::class.java
                     .getResourceAsStream("/$AGENT_JAR_NAME")
@@ -84,7 +89,18 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
                         .getResourceAsStream(AGENT_JAR_NAME)
                 if (stream != null) {
                     stream.use { input ->
-                        target.outputStream().use { output -> input.copyTo(output) }
+                        val stale = !target.exists() || target.length() <= 1000 ||
+                                runCatching { versionFile.readText() }.getOrDefault("") != pluginVersion
+                        if (stale) {
+                            // 先写临时文件再原子替换，避免并发运行时读到半截 jar
+                            val tmp = File(tempDir, "$AGENT_JAR_NAME.tmp")
+                            tmp.outputStream().use { output -> input.copyTo(output) }
+                            java.nio.file.Files.move(
+                                tmp.toPath(), target.toPath(),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                            )
+                            versionFile.writeText(pluginVersion)
+                        }
                     }
                     if (target.length() > 1000) return target
                 }
@@ -193,12 +209,11 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
         manager.registerAgent(runConfigId, configuration.name, port)
 
         // 构建 -javaagent 参数
+        // 注意：路径含空格时不能手动给路径加引号 —— JVM 的 -javaagent 解析不剥引号，
+        // 会报 "Error opening zip file or JAR manifest missing"。
+        // 整个参数作为一个 token 交给 ParametersList，由平台负责命令行级引号转义。
         val agentPath = agentJar.absolutePath
-        val agentParam = if (agentPath.contains(" ")) {
-            "${AGENT_FLAG_PREFIX}\"$agentPath\"=mode=spring,port=$port"
-        } else {
-            "$AGENT_FLAG_PREFIX$agentPath=mode=spring,port=$port"
-        }
+        val agentParam = "$AGENT_FLAG_PREFIX$agentPath=mode=spring,port=$port"
 
         params.vmParametersList.add(agentParam)
         log.info("[MockAgent] Injected $agentParam into ${configuration.name}")

@@ -51,7 +51,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         }
 
         add(emptyLabel, BorderLayout.CENTER)
-        add(scrollPane, BorderLayout.NORTH)
+        add(scrollPane, BorderLayout.CENTER)
 
         refresh()
         startAutoRefresh()
@@ -69,11 +69,23 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         }, 3, 3, TimeUnit.SECONDS)
     }
 
+    /**
+     * 刷新面板。必须在 EDT 调用：先渲染本地快照，再在后台探测状态，探测完回 EDT 重绘。
+     * probeAllStatus() 是串行 HTTP（每个 agent 最长 3s），绝不能在 EDT 上执行。
+     */
     private fun refresh() {
         val manager = project.getService(MockAgentManager::class.java)
-        manager.probeAllStatus()
-        val agents = manager.getAgents()
+        renderAgents(manager.getAgents(), manager)
 
+        scheduler.execute {
+            try {
+                manager.probeAllStatus()
+            } catch (_: Exception) {}
+            SwingUtilities.invokeLater { renderAgents(manager.getAgents(), manager) }
+        }
+    }
+
+    private fun renderAgents(agents: List<AgentInfo>, manager: MockAgentManager) {
         agentsContainer.removeAll()
 
         if (agents.isEmpty()) {
@@ -160,8 +172,16 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         val activeButton = JButton(if (agent.active) "暂停" else "激活").apply {
             font = font.deriveFont(Font.PLAIN, 11f)
             addActionListener {
-                manager.setActive(agent.runConfigId ?: agent.name, !agent.active)
-                refresh()
+                // setActive 内部是 HTTP 调用（readTimeout 10s），必须移出 EDT
+                isEnabled = false
+                val id = agent.runConfigId ?: agent.name
+                scheduler.execute {
+                    try {
+                        manager.setActive(id, !agent.active)
+                    } finally {
+                        SwingUtilities.invokeLater { refresh() }
+                    }
+                }
             }
         }
 
@@ -183,7 +203,19 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             font = font.deriveFont(Font.PLAIN, 11f)
             isEnabled = agent.connected
             addActionListener {
-                showLogWindow(agent, manager)
+                // 拉取日志是 HTTP 调用（readTimeout 10s），先在后台取，取完再开窗口
+                isEnabled = false
+                scheduler.execute {
+                    val logs = try {
+                        manager.getAgentLogs(agent.port)
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
+                    SwingUtilities.invokeLater {
+                        isEnabled = true
+                        showLogWindow(agent, logs)
+                    }
+                }
             }
         }
 
@@ -213,28 +245,45 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         }
     }
 
-    private fun showLogWindow(agent: AgentInfo, manager: MockAgentManager) {
+    private fun showLogWindow(agent: AgentInfo, initialLogs: List<Map<String, Any?>>) {
         val logArea = JTextArea().apply {
             isEditable = false
+            lineWrap = true
             font = Font(Font.MONOSPACED, Font.PLAIN, 12)
             rows = 20
             columns = 80
         }
 
+        fun formatLogs(logs: List<Map<String, Any?>>): String {
+            return if (logs.isEmpty()) {
+                "暂无日志"
+            } else {
+                logs.joinToString("\n") { entry ->
+                    val ts = entry["timestamp"] ?: ""
+                    val level = entry["level"] ?: ""
+                    val message = entry["message"] ?: ""
+                    "[$ts] [$level] $message"
+                }
+            }
+        }
+
+        val manager = project.getService(MockAgentManager::class.java)
         val refreshBtn = JButton("刷新").apply {
             addActionListener {
-                val logs = manager.getAgentLogs(agent.port)
-                logArea.text = if (logs.isEmpty()) {
-                    "暂无日志"
-                } else {
-                    logs.joinToString("\n") { entry ->
-                        val ts = entry["timestamp"] ?: ""
-                        val level = entry["level"] ?: ""
-                        val message = entry["message"] ?: ""
-                        "[$ts] [$level] $message"
+                // 后台拉取，避免阻塞 EDT
+                isEnabled = false
+                scheduler.execute {
+                    val logs = try {
+                        manager.getAgentLogs(agent.port)
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
+                    SwingUtilities.invokeLater {
+                        logArea.text = formatLogs(logs)
+                        logArea.caretPosition = logArea.document.length
+                        isEnabled = true
                     }
                 }
-                logArea.caretPosition = logArea.document.length
             }
         }
 
@@ -254,7 +303,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         dialog.setLocationRelativeTo(this)
         dialog.defaultCloseOperation = JDialog.DISPOSE_ON_CLOSE
 
-        refreshBtn.doClick()
+        logArea.text = formatLogs(initialLogs)
         dialog.isVisible = true
     }
 

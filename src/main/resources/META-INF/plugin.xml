@@ -28,7 +28,6 @@
         <projectService serviceInterface="com.apimocktle.config.ConfigReader"
                         serviceImplementation="com.apimocktle.config.DefaultConfigReader"/>
         <projectService serviceImplementation="com.apimocktle.config.ConfigSyncService"/>
-        <projectService serviceImplementation="com.apimocktle.cache.CacheService"/>
         <projectService serviceInterface="com.apimocktle.settings.SettingBinder"
                         serviceImplementation="com.apimocktle.settings.DefaultSettingBinder"/>
         <projectService serviceImplementation="com.apimocktle.settings.state.ProjectSettingsState"/>
@@ -43,10 +42,11 @@
         <postStartupActivity implementation="com.apimocktle.ide.ApiIndexStartupActivity"/>
         <postStartupActivity implementation="com.apimocktle.agent.AgentProcessListener"/>
 
-        <projectConfigurable groupId="null"
+        <projectConfigurable groupId="tools"
                              displayName="ApiMocktle"
                              id="apimocktle.settings.ApiMocktleConfigurable"
-                             instance="com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable"/>
+                             instance="com.apimocktle.settings.ui.ApiMocktleSettingsConfigurable"
+                             dynamic="true"/>
         <toolWindow
                 id="API Dashboard"
                 icon="/icons/apiDashboard.svg"

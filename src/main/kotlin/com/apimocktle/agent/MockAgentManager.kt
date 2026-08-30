@@ -119,17 +119,18 @@ class MockAgentManager(private val project: Project) {
      * 探测指定端口的 Agent 是否可达。
      */
     fun probeStatus(port: Int): Boolean {
+        var conn: HttpURLConnection? = null
         return try {
             val url = URL("http://localhost:$port/status")
-            val conn = url.openConnection() as HttpURLConnection
+            conn = url.openConnection() as HttpURLConnection
             conn.connectTimeout = CONNECT_TIMEOUT_MS
             conn.readTimeout = CONNECT_TIMEOUT_MS
             conn.requestMethod = "GET"
-            val ok = conn.responseCode == 200
-            conn.disconnect()
-            ok
+            conn.responseCode == 200
         } catch (_: Exception) {
             false
+        } finally {
+            conn?.disconnect()
         }
     }
 
@@ -279,15 +280,35 @@ class MockAgentManager(private val project: Project) {
 
     // ==================== HTTP 工具 ====================
 
+    /**
+     * 执行请求并读取响应体。
+     * 统一在 finally 中 disconnect，避免 4xx/5xx 时 socket 泄漏；
+     * 失败时读取 errorStream，保留 agent 返回的错误信息。
+     */
+    private fun execute(conn: HttpURLConnection): String {
+        try {
+            val code = conn.responseCode
+            if (code in 200..299) {
+                return conn.inputStream.bufferedReader().readText()
+            }
+            val errorBody = try {
+                conn.errorStream?.bufferedReader()?.readText()
+            } catch (_: Exception) {
+                null
+            }
+            throw java.io.IOException("HTTP $code: ${errorBody?.take(300) ?: "无响应体"}")
+        } finally {
+            conn.disconnect()
+        }
+    }
+
     private fun httpGet(port: Int, path: String): String {
         val url = URL("http://localhost:$port$path")
         val conn = url.openConnection() as HttpURLConnection
         conn.connectTimeout = CONNECT_TIMEOUT_MS
         conn.readTimeout = READ_TIMEOUT_MS
         conn.requestMethod = "GET"
-        val response = conn.inputStream.bufferedReader().readText()
-        conn.disconnect()
-        return response
+        return execute(conn)
     }
 
     private fun httpPut(port: Int, path: String, body: String): String {
@@ -299,9 +320,7 @@ class MockAgentManager(private val project: Project) {
         conn.doOutput = true
         conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
         conn.outputStream.write(body.toByteArray(Charsets.UTF_8))
-        val response = conn.inputStream.bufferedReader().readText()
-        conn.disconnect()
-        return response
+        return execute(conn)
     }
 
     private fun httpDelete(port: Int, path: String): String {
@@ -310,9 +329,7 @@ class MockAgentManager(private val project: Project) {
         conn.connectTimeout = CONNECT_TIMEOUT_MS
         conn.readTimeout = READ_TIMEOUT_MS
         conn.requestMethod = "DELETE"
-        val response = conn.inputStream.bufferedReader().readText()
-        conn.disconnect()
-        return response
+        return execute(conn)
     }
 
     private fun httpPost(port: Int, path: String, body: String): String {
@@ -326,8 +343,6 @@ class MockAgentManager(private val project: Project) {
         if (body.isNotEmpty()) {
             conn.outputStream.write(body.toByteArray(Charsets.UTF_8))
         }
-        val response = conn.inputStream.bufferedReader().readText()
-        conn.disconnect()
-        return response
+        return execute(conn)
     }
 }

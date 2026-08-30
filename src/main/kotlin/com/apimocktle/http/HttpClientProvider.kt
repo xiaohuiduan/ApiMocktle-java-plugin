@@ -2,12 +2,13 @@ package com.apimocktle.http
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.apimocktle.core.event.EventBus
-import com.apimocktle.core.event.EventKeys
+import com.intellij.util.concurrency.AppExecutorUtil
 import com.apimocktle.http.HttpClientProvider.Companion.getInstance
 import com.apimocktle.logging.IdeaLog
 import com.apimocktle.settings.SettingBinder
+import java.util.concurrent.TimeUnit
 
 /**
  * Creates [HttpClient] instances using Apache HttpClient.
@@ -15,19 +16,15 @@ import com.apimocktle.settings.SettingBinder
  * This is the single entry point for obtaining an [HttpClient].
  * Every client returned is wrapped with [LoggingHttpClient].
  *
- * This class is action-scoped — prefer [getInstance] to reuse the instance
+ * The underlying client is shared per project and closed when the project closes.
+ * Do NOT close it per action — concurrent exports would get their connection pool
+ * pulled out from under them.
  */
 @Service(Service.Level.PROJECT)
-class HttpClientProvider(private val project: Project) {
+class HttpClientProvider(private val project: Project) : Disposable {
 
     @Volatile
     private var cached: Pair<String, HttpClient>? = null
-
-    init {
-        EventBus.getInstance(project).register(EventKeys.ON_COMPLETED) {
-            dispose()
-        }
-    }
 
     fun getClient(
         httpTimeOut: Int? = null,
@@ -42,11 +39,11 @@ class HttpClientProvider(private val project: Project) {
         return raw.logging()
     }
 
-    fun dispose() {
-        synchronized(this) {
-            cached?.second?.close()
-            cached = null
-        }
+    /** Client retired on a timeout/ssl settings change; kept briefly so in-flight requests finish. */
+    private fun retire(client: HttpClient) {
+        AppExecutorUtil.getAppScheduledExecutorService().schedule({
+            runCatching { client.close() }
+        }, 30, TimeUnit.SECONDS)
     }
 
     private fun getRawClient(httpTimeOut: Int, unsafeSsl: Boolean): HttpClient {
@@ -54,10 +51,19 @@ class HttpClientProvider(private val project: Project) {
         cached?.let { (k, p) -> if (k == key) return p }
         synchronized(this) {
             cached?.let { (k, p) -> if (k == key) return p }
-            cached?.second?.close()
+            val old = cached?.second
             val client = ApacheHttpClient(httpTimeOut, unsafeSsl)
             cached = key to client
+            old?.let { retire(it) }
             return client
+        }
+    }
+
+    /** Called by the platform when the project closes; also available for explicit cleanup. */
+    override fun dispose() {
+        synchronized(this) {
+            cached?.second?.let { runCatching { it.close() } }
+            cached = null
         }
     }
 

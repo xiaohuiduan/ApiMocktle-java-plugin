@@ -38,7 +38,7 @@ class DefaultYapiSettingsHelper(private val project: Project) : YapiSettingsHelp
     }
 
     companion object {
-        const val DEFAULT_YAPI_SERVER_URL = "http://localhost:49128"
+        const val DEFAULT_YAPI_SERVER_URL = "http://localhost:14202"
     }
 
     override suspend fun resolvePersonalToken(): String? {

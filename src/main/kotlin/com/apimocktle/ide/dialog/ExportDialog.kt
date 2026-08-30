@@ -54,7 +54,10 @@ class ExportDialog(
     init {
         title = "导出API端点（$endpointCount 个端点）"
 
-        endpointTableModel.onDataChanged = { updateCount() }
+        endpointTableModel.onDataChanged = {
+            updateCount()
+            updateOkState()
+        }
 
         selectAllBtn.addActionListener { endpointTableModel.selectAll() }
         deselectAllBtn.addActionListener { endpointTableModel.deselectAll() }
@@ -67,6 +70,12 @@ class ExportDialog(
         init()
         setupEndpointTable()
         updateCount()
+        updateOkState()
+    }
+
+    /** 未选择任何端点时禁用 OK，防止"取消全选后确认却导出全部"的语义反转。 */
+    private fun updateOkState() {
+        okAction?.isEnabled = endpointTableModel.rows.any { it.selected }
     }
 
     private fun onSearchChanged() {

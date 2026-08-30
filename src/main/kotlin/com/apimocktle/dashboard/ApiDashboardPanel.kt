@@ -87,7 +87,11 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
     private val agentStatusBar = AgentStatusBar(project)
 
     /** Cached list of all endpoints for filtering operations */
+    @Volatile
     private var cachedEndpoints: List<ApiEndpoint> = emptyList()
+
+    /** Job backing the ApiIndex subscription — cancelled in [dispose] to avoid leaking the panel */
+    private var apiSubscriptionJob: kotlinx.coroutines.Job? = null
 
     /** Timer for debouncing search input to avoid excessive filtering */
     private var searchDebounceTimer: Timer? = null
@@ -427,6 +431,10 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
             exportFormat = dialogResult.format
             outputConfig = dialogResult.outputConfig
             selectedEndpoints = dialogResult.selectedEndpoints
+            if (selectedEndpoints.isEmpty()) {
+                NotificationUtils.notifyWarning(project, "导出API", "未选择任何端点，已取消导出。")
+                return
+            }
         }
 
         backgroundAsync {
@@ -670,7 +678,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
             swing {
                 updateTree(cachedEndpoints)
             }
-            apiIndex.subscribe { endpoints ->
+            apiSubscriptionJob = apiIndex.subscribe { endpoints ->
                 LOG.debug("缓存已更新，刷新树显示 ${endpoints.size} 个端点")
                 cachedEndpoints = endpoints
                 swing {
@@ -792,6 +800,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      * Stops timers, cancels coroutines, and disposes child components.
      */
     fun dispose() {
+        apiSubscriptionJob?.cancel()
         searchDebounceTimer?.stop()
         endpointDetailsPanel.dispose()
         agentStatusBar.dispose()
