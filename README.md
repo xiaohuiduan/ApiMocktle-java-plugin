@@ -1,152 +1,168 @@
+<div align="right">
+
+**English** | [简体中文](./README.zh-CN.md)
+
+</div>
+
 # ApiMocktle
 
-一个 IntelliJ IDEA 插件，从源码提取 API 并同步到 [ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle)。
+An IntelliJ IDEA plugin that extracts APIs from source code and syncs them to
+[ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle).
 
-## 更新日志
+## Requirements
 
-### v2.2.0 — 修复 YAPI 导出 Map 类型响应体丢失
+| Item | Version |
+|------|---------|
+| IntelliJ IDEA | 2026.2+ (build 262+) |
+| JDK | 25+ |
 
-- **修复**：`Result<Map<String, Xxx>>` 等包含 Map 泛型的返回类型，导出到 YAPI 后 Map 字段值结构显示为 `{}` 的问题
-- **改进**：`JsonSchemaBuilder` 的 Map 类型改用 `properties` + 示例 key 生成 JSON Schema，兼容 YAPI 的 mock 预览渲染
+## Installation
 
-### v2.1.0 — 统一名字 & EasyApi → ApiMocktle
+1. Download `ApiMocktle-x.x.x.zip` from the [Releases](https://github.com/xiaohuiduan/easy-yapi/releases) page
+   (or `build/distributions/` for a local build)
+2. IDEA → Settings → Plugins → ⚙️ → Install Plugin from Disk
+3. Select the zip file and restart the IDE
 
-- **名字统一**：清理所有 EasyApi 名字，避免与[EasyApi](https://github.com/tangcent/easy-yapi)插件冲突，设置页、右键菜单统一显示为 ApiMocktle
-- **菜单重构**：右键菜单扁平化，去掉多余的"导出"按钮，只保留「调用」和「导出到ApiMocktle」
-- **快捷键**：「导出到ApiMocktle」继承 `Alt+Shift+E` 快捷键
-- **通知/控制台**：所有通知组、控制台窗口标题改为 ApiMocktle
-- **内部清理**：重命名所有 EasyApi* 类、State 持久化名称、缓存目录等
+## Setup
 
-### v2.0.0 — 个人令牌 + 项目选择同步
+This plugin works together with [ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle) and
+**must** be used with it.
 
-- 新增 YAPI 设置页检测令牌按钮
-- 支持个人令牌认证和项目选择同步
+![Sync settings and example](./assets/sync.png)
 
-## 同步设置以及案例
+Configure it at **Settings → Tools → ApiMocktle → Export to ApiMocktle**: enter your server
+address and personal access token.
 
-该插件必须结合[ApiMocktle](https://github.com/xiaohuiduan/ApiMocktle)进行共同使用。
+## Features
 
-![同步设置以及案例](./assets/sync.png)
+### Export APIs to ApiMocktle
 
-## 功能
+- Parse API endpoints from **Java / Kotlin** source code
+- Authenticate with a **personal token** — no per-module configuration
+- Choose which endpoints to export in a preview dialog before uploading
+- Creates categories automatically, detects duplicate endpoints, and confirms updates
+- Four update modes: always update / never update / always ask / update only if changed
+- Progress is reported in a notification; the plugin never uploads silently
 
-### API 导出到 ApiMocktle
+### API Dashboard
 
-- 从 Java / Kotlin / Scala / Groovy 源码解析 API 端点
-- 使用**个人令牌**认证，无需为每个模块单独配置
-- 导出时下拉选择目标项目，支持搜索过滤
-- 自动创建分类、检测重复接口、更新确认
+A built-in tool window for browsing and inspecting APIs:
 
-### API 仪表盘
+- Browse endpoints by class in a tree
+- Filter by path, name, or HTTP method
+- Inspect path params, query params, headers, form params, request body, and response body
+- Click an endpoint to jump to its source code
+- Endpoint details are **read-only** (request execution was removed in 3.0.0)
 
-内置工具窗口，浏览、搜索、调用 API：
+### Field conversion
 
-- 按模块和类浏览接口树
-- 搜索接口路径、名称、方法
-- 查看参数、请求头、请求体详情
-- 直接从仪表盘发送 HTTP 请求
-- 单击导航至源码
+- Convert class fields to **JSON** or **JSON5**
+- The result is copied to the clipboard
 
-### 发送 API 请求
+### Mock Agent
 
-- 右键控制器方法 → **调用**（`Alt+Shift+C`）
-- 编辑参数后发送，查看带语法高亮的响应
+- Auto-inject the Mock Agent into Spring Boot run configurations (`-javaagent`)
+- Intercepts Feign / MyBatis calls and returns mock data
+- Agent status is shown in the Dashboard status bar
 
-### API 全局搜索
+## Supported frameworks
 
-双击 Shift → APIs 标签 → 按方法前缀（`GET /users`）或关键字搜索。
+| Category | Support |
+|----------|---------|
+| Language | Java, Kotlin |
+| Web framework | Spring MVC, Spring Cloud OpenFeign |
+| Validation | javax.validation / Jakarta Validation |
+| Serialization | Jackson, Gson |
+| API annotations | Swagger 2 / OpenAPI 3 |
 
-### 字段转换
+> **Note**: JAX-RS, gRPC, Scala/Groovy adapters, and API Search Everywhere were **removed in
+> 3.0.0** — see [CHANGELOG.md](./CHANGELOG.md).
 
-- 类字段 → JSON / JSON5 / Properties
+## Usage
 
-## 支持的框架
+### Export to ApiMocktle
 
-| 类别 | 支持 |
-|------|------|
-| 语言 | Java、Kotlin、Scala、Groovy |
-| Web 框架 | Spring MVC、Spring Cloud OpenFeign、JAX-RS |
-| RPC | gRPC |
-| 校验 | javax.validation / Jakarta Validation |
-| 序列化 | Jackson、Gson |
-| API 注解 | Swagger 2 / OpenAPI 3 |
+1. Configure the server address and personal token in the settings page
+2. Right-click a controller file, class, or method → **Export to ApiMocktle**
+3. Review the endpoints to export in the dialog and confirm
+4. APIs are synced automatically; a notification reports the result
 
-## 安装
+### Open the dashboard
 
-1. 从 `build/distributions/` 获取 `ApiMocktle-x.x.x.zip`
-2. IDEA → Settings → Plugins → 齿轮 → Install Plugin from Disk
-3. 选择 zip 文件，重启 IDEA
+**Tools → Open API Dashboard**, or click the **API Dashboard** tab at the bottom of the IDE.
 
-**兼容性**：IntelliJ IDEA 2023.3+ / JDK 17+
+### Convert fields to JSON
 
-## 使用方法
+Right-click inside a class → **ApiMocktle → To JSON / To JSON5**.
 
-### 导出到 ApiMocktle
+## Configuration
 
-1. **配置个人令牌**：Settings → ApiMocktle → 导出到 ApiMocktle → 输入服务器地址和个人令牌
-2. 右键控制器文件 / 类 / 方法 → **导出到ApiMocktle**（`Alt+Shift+E`）
-3. 在弹出的项目选择框中选择目标项目
-4. API 自动同步
+The plugin uses a layered configuration system:
 
-### 调用 API
+| Priority | Source | Description |
+|----------|--------|-------------|
+| Highest | Local file | `.easy.api.config` in the project root |
+| | Extension | Built-in extension configurations |
+| | Runtime | Runtime-provided configuration |
+| Lowest | Built-in | Default configuration |
 
-右键控制器方法 → **调用**（`Alt+Shift+C`），编辑参数后发送。
+The rule engine supports Groovy scripts, regular expressions, annotation expressions, and
+more. See [`docs/apimocktle-script-reference.md`](./docs/apimocktle-script-reference.md).
 
-### 打开仪表盘
+## Development
 
-Tools → 打开API仪表盘，或点击底部 **API Dashboard** 标签。
+### Requirements
 
-## 配置
+- JDK 25
+- IntelliJ IDEA 2026.2+
 
-插件使用分层配置系统：
-
-| 优先级 | 来源 | 说明 |
-|--------|------|------|
-| 最高 | 本地文件 | 项目根目录 `.easy.api.config` |
-| | 扩展 | 内置扩展配置 |
-| | 远程 | 从 URL 加载的配置 |
-| 最低 | 内置 | 默认配置 |
-
-支持 Groovy 脚本、正则表达式、注解表达式等规则引擎语法。
-
-## 开发
-
-### 环境要求
-
-- JDK 17+
-- IntelliJ IDEA 2023.3+
-
-### 构建
+### Build
 
 ```bash
-# 编译
+# Compile and package
 ./gradlew clean buildPlugin
 
-# 运行 IDEA 实例
+# Run a sandbox IDE instance
 ./gradlew runIde
 
-# 运行测试
-./gradlew clean test
+# Run tests
+./gradlew test
 ```
 
-## 架构
+Local builds use `local.properties` (gitignored) to switch between a locally installed IDE
+and a downloaded platform. On Windows, `build-local.bat` pins `JAVA_HOME` to the IDEA JBR.
+
+## Architecture
 
 ```
-IDE 层 (Actions, Dashboard, Line Markers, Search)
+IDE layer (Actions, Dashboard, Line Markers)
     ↓
-导出层 (ExportOrchestrator → ClassExporter → YapiExporter)
+Export layer (ExportOrchestrator → ClassExporter → YapiExporter)
     ↓
-核心服务 (RuleEngine, ConfigReader, ApiIndex, HttpClient)
+Core services (RuleEngine, ConfigReader, ApiIndex, HttpClient)
     ↓
-PSI 分析 (TypeResolver, DocHelper, AnnotationHelper)
+PSI analysis (TypeResolver, DocHelper, AnnotationHelper)
 ```
 
-- **ClassExporter** — 从 PSI 类提取 `ApiEndpoint` 模型
-- **YapiExporter** — 格式化、上传至 YAPI
-- **ExportOrchestrator** — 协调扫描到导出的完整流程
-- **RuleEngine** — 评估规则表达式，自定义解析行为
+- **ClassExporter** — extracts the `ApiEndpoint` model from a PSI class
+- **YapiExporter** — formats and uploads to the YAPI server
+- **ExportOrchestrator** — coordinates the full scan-to-export flow
+- **RuleEngine** — evaluates rule expressions to customize parsing behavior
 
-## 致谢
-1. 本项目是在大佬[tangcent/easy-yapi](https://github.com/tangcent/easy-yapi)的项目基础上进行改造，去除了一些与ApiMocktle不相关的功能，并进行了翻译为中文，同时对令牌相关的逻辑进行了修改，简化了同步的过程逻辑。
-2. 感谢mimo 100T计划，给我提供的免费2亿credits套餐（虽然我一天就蹬完了🤣）。
-3. 感谢伟大的DeepSeek V4 pro，在五一期间降价，让我疯狂蹬，花费却不到100，完成了项目所有内容。
+More detail in [`.trellis/spec/backend/`](./.trellis/spec/backend/index.md).
+
+## Troubleshooting
+
+| Symptom | Cause / fix |
+|---------|-------------|
+| UI stays Chinese after switching the IDE to English | The Language Pack plugin version must match the IDE build. A mismatched pack falls back to English UI while the JVM locale stays `zh_CN`. Check `idea.log` for `AppStarter - locale=...` |
+| Export fails with "server address or token not configured" | Fill in both fields in **Settings → Tools → ApiMocktle** |
+| Encoding problems with Chinese text | The bundles are UTF-8 without BOM; the plugin reads them through `DynamicBundle` |
+
+## Acknowledgement
+
+1. This project is based on [tangcent/easy-yapi](https://github.com/tangcent/easy-yapi). We
+   removed features unrelated to ApiMocktle, translated the UI into Chinese, and simplified
+   the token-based sync flow.
+2. Thanks to the mimo 100T program for the free 200M credits package.
+3. Thanks to DeepSeek for making this project possible at a very low cost.

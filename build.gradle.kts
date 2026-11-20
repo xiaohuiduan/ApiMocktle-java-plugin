@@ -19,7 +19,7 @@ val ideaLocalPath = localProps.getProperty("ideaLocalPath")
     ?: "C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.0.1"
 
 group = "com.apimocktle"
-version = "3.0.3"
+version = "3.2.0"
 
 repositories {
     mavenCentral()

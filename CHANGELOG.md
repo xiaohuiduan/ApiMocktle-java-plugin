@@ -5,6 +5,31 @@ All notable changes to the ApiMocktle plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-11-20
+
+### 新增（国际化）
+- 插件界面文案全面外部化到资源包 `messages/ApiMocktleBundle`，跟随 **IDE 界面语言**切换
+- 英文为基线（`ApiMocktleBundle.properties`），中文为覆盖层（`ApiMocktleBundle_zh_CN.properties`），各 282 条
+- 菜单与 action 文案按平台约定本地化（`<resource-bundle>` + `action.<id>.text` / `group.<id>.text`）
+- 插件说明改为中英双语（先英文后中文）
+- README 改为中英双语，新增 `README.zh-CN.md` 与顶部语言切换链接
+
+### 修复
+- 修复菜单直接显示 `%action.xxx.text` 字面量的问题（`plugin.xml` 不支持 `%key` 语法）
+- 修复 action 文案 key 改名导致 `ExportToYapiAction` 无法实例化的问题
+- 修复 `AddRepoDlg` 用中文字面量判断仓库类型的问题（翻译后类型会全部落回 `CUSTOM`）
+- 修复设置页 tab 定位依赖显示文案的问题
+
+### 测试
+- 新增 `ActionLocalizationTest`：通过平台 `ActionManager` 验证 action/group 文案确实被解析
+- 新增 `ApiMocktleBundleTest`：校验中英文 key 集合、占位符、重复 key、编码一致性
+
+### 文档
+- README 修正 10 处与当前代码不符的描述（JAX-RS、gRPC、Scala/Groovy、已移除的功能、兼容性版本等）
+- 新增 `.trellis/spec/backend/i18n-guidelines.md` 记录国际化约定与踩坑
+
+---
+
 ## [3.0.0] - 2026-06-13
 
 ### 精简（移除）
