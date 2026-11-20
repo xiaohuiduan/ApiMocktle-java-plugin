@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.JBUI
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.settings.SettingBinder
 import com.apimocktle.settings.SettingsChangeListener
 import org.jdom.Element
@@ -188,7 +189,7 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
         val agentJar = findAgentJar()
         if (agentJar == null) {
             log.warn("[MockAgent] mock-agent.jar not found, skipping injection")
-            notifyWarning(project, "找不到 mock-agent.jar，Mock Agent 注入已跳过")
+            notifyWarning(project, ApiMocktleBundle.message("agent.inject.jarMissing"))
             return
         }
 
@@ -197,7 +198,7 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
         val userPort = configuration.getUserData(AGENT_PORT_KEY) ?: 0
         val port = if (userPort > 0) {
             if (manager.isPortOccupiedByAgent(userPort)) {
-                notifyWarning(project, "端口 $userPort 已被其他 Agent 占用，请修改端口配置")
+                notifyWarning(project, ApiMocktleBundle.message("agent.inject.portOccupied", userPort))
                 return
             }
             userPort
@@ -256,11 +257,11 @@ class MockAgentRunConfigurationExtension : RunConfigurationExtension() {
         private val portField = JTextField().apply {
             columns = 10
         }
-        private val hintLabel = JLabel("留空则自动分配空闲端口").apply {
+        private val hintLabel = JLabel(ApiMocktleBundle.message("agent.inject.portHint")).apply {
             foreground = com.intellij.util.ui.UIUtil.getContextHelpForeground()
             font = font.deriveFont(font.size2D - 1f)
         }
-        private val globalOffLabel = JLabel("插件全局设置已关闭「自动注入 Mock Agent」，此处的勾选无效。").apply {
+        private val globalOffLabel = JLabel(ApiMocktleBundle.message("agent.inject.globalOff")).apply {
             foreground = com.intellij.util.ui.UIUtil.getContextHelpForeground()
             font = font.deriveFont(font.size2D - 1f)
             isVisible = false

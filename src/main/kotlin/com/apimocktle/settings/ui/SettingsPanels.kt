@@ -15,6 +15,7 @@ import com.intellij.util.ui.ListTableModel
 import com.intellij.util.ui.UIUtil
 import com.apimocktle.cache.AppCacheRepository
 import com.apimocktle.cache.ProjectCacheRepository
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.repository.DefaultRepositories
 import com.apimocktle.repository.RepositoryConfig
 import com.apimocktle.repository.RepositoryType
@@ -55,7 +56,7 @@ private fun withHelp(
         isFocusable = false
         isContentAreaFilled = false
         isBorderPainted = true
-        toolTipText = "点击查看说明"
+        toolTipText = ApiMocktleBundle.message("settings.help.tooltip")
         addActionListener {
             if (project != null) Messages.showMessageDialog(project, message, title, null)
             else JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE)
@@ -67,21 +68,21 @@ private fun withHelp(
 
 // ── API 扫描 ────────────────────────────────────────────────
 class ApiScanPanel(project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
-    private val feignCb = JBCheckBox("Feign 客户端").apply { toolTipText = "将 Feign 客户端接口解析为 API 端点" }
-    private val autoCb = JBCheckBox("文件变更时自动扫描").apply { toolTipText = "源文件修改后自动重新扫描 API" }
-    private val concurrentCb = JBCheckBox("启用并发扫描（实验性）").apply { toolTipText = "使用多线程进行 API 扫描" }
-    private val queryExpCb = JBCheckBox("展开查询参数").apply { toolTipText = "将查询参数展开为独立字段"; isSelected = true }
-    private val formExpCb = JBCheckBox("展开表单参数").apply { toolTipText = "将表单参数展开为独立字段"; isSelected = true }
-    private val inferCb = JBCheckBox("推断响应体主类型（Result<T> → T）").apply { toolTipText = "自动提取实际数据类型"; isSelected = true }
-    private val urlTplCb = JBCheckBox("URL 模板（/users/{id}）").apply { toolTipText = "使用 RFC 6570 语法"; isSelected = true }
+    private val feignCb = JBCheckBox(ApiMocktleBundle.message("settings.scan.feign.label")).apply { toolTipText = ApiMocktleBundle.message("settings.scan.feign.tooltip") }
+    private val autoCb = JBCheckBox(ApiMocktleBundle.message("settings.scan.autoScan.label")).apply { toolTipText = ApiMocktleBundle.message("settings.scan.autoScan.tooltip") }
+    private val concurrentCb = JBCheckBox(ApiMocktleBundle.message("settings.scan.concurrent.label")).apply { toolTipText = ApiMocktleBundle.message("settings.scan.concurrent.tooltip") }
+    private val queryExpCb = JBCheckBox(ApiMocktleBundle.message("settings.scan.queryExpand.label")).apply { toolTipText = ApiMocktleBundle.message("settings.scan.queryExpand.tooltip"); isSelected = true }
+    private val formExpCb = JBCheckBox(ApiMocktleBundle.message("settings.scan.formExpand.label")).apply { toolTipText = ApiMocktleBundle.message("settings.scan.formExpand.tooltip"); isSelected = true }
+    private val inferCb = JBCheckBox(ApiMocktleBundle.message("settings.scan.inferReturn.label")).apply { toolTipText = ApiMocktleBundle.message("settings.scan.inferReturn.tooltip"); isSelected = true }
+    private val urlTplCb = JBCheckBox(ApiMocktleBundle.message("settings.scan.urlTemplate.label")).apply { toolTipText = ApiMocktleBundle.message("settings.scan.urlTemplate.tooltip"); isSelected = true }
 
-    private val feign = withHelp(feignCb, project, "Feign 客户端支持", "扫描项目中的 @FeignClient 接口，提取其中的 API 信息并导出到 ApiMocktle。")
-    private val autoScan = withHelp(autoCb, project, "自动扫描", "文件修改后自动重新扫描 API。关闭后需手动刷新。")
-    private val concurrent = withHelp(concurrentCb, project, "并发扫描", "多线程扫描，大型项目可加速。实验性功能。")
-    private val queryExp = withHelp(queryExpCb, project, "展开查询参数", "把 @RequestParam 参数展开为文档中的独立字段。")
-    private val formExp = withHelp(formExpCb, project, "展开表单参数", "把表单参数展开为独立字段。")
-    private val infer = withHelp(inferCb, project, "推断响应体主类型", "Result<T> → T，自动提取实际数据类型。")
-    private val urlTpl = withHelp(urlTplCb, project, "URL 模板", "路径变量用 {id} 语法显示。")
+    private val feign = withHelp(feignCb, project, ApiMocktleBundle.message("settings.help.feign.title"), ApiMocktleBundle.message("settings.help.feign.message"))
+    private val autoScan = withHelp(autoCb, project, ApiMocktleBundle.message("settings.help.autoScan.title"), ApiMocktleBundle.message("settings.help.autoScan.message"))
+    private val concurrent = withHelp(concurrentCb, project, ApiMocktleBundle.message("settings.help.concurrent.title"), ApiMocktleBundle.message("settings.help.concurrent.message"))
+    private val queryExp = withHelp(queryExpCb, project, ApiMocktleBundle.message("settings.help.queryExpand.title"), ApiMocktleBundle.message("settings.help.queryExpand.message"))
+    private val formExp = withHelp(formExpCb, project, ApiMocktleBundle.message("settings.help.formExpand.title"), ApiMocktleBundle.message("settings.help.formExpand.message"))
+    private val infer = withHelp(inferCb, project, ApiMocktleBundle.message("settings.help.inferReturn.title"), ApiMocktleBundle.message("settings.help.inferReturn.message"))
+    private val urlTpl = withHelp(urlTplCb, project, ApiMocktleBundle.message("settings.help.urlTemplate.title"), ApiMocktleBundle.message("settings.help.urlTemplate.message"))
 
     private val pathMulti = ComboBox<PathSelector>(PathSelector.values()).apply {
         renderer = object : ListCellRenderer<PathSelector> {
@@ -108,20 +109,19 @@ class ApiScanPanel(project: com.intellij.openapi.project.Project? = null) : Sett
     }
     private val pathMultiRow = withHelp(
         JPanel(BorderLayout(4, 0)).apply {
-            add(JLabel("路径多选策略："), BorderLayout.WEST)
+            add(JLabel(ApiMocktleBundle.message("settings.pathMulti.label")), BorderLayout.WEST)
             add(pathMulti, BorderLayout.CENTER)
         },
         project,
-        "路径多选策略",
-        "一个接口映射了多个路径（如 @PostMapping({\"/a\", \"/b\"})）时，选择导出哪些路径。" +
-            "全部路径：导出所有路径；仅第一条/最后一条：按声明顺序取；仅最短/仅最长：按路径长度取。"
+        ApiMocktleBundle.message("settings.help.pathMulti.title"),
+        ApiMocktleBundle.message("settings.help.pathMulti.message")
     )
 
     override val component: JComponent = FormBuilder.createFormBuilder()
-        .addComponent(createSection("框架支持", listOf(feign)))
-        .addComponent(createSection("扫描行为", listOf(autoScan, concurrent)))
-        .addComponent(createSection("文档格式", listOf(queryExp, formExp, infer, urlTpl)))
-        .addComponent(createSection("路径多选", listOf(pathMultiRow)))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.frameworks"), listOf(feign)))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.scanBehavior"), listOf(autoScan, concurrent)))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.docFormat"), listOf(queryExp, formExp, infer, urlTpl)))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.pathMulti"), listOf(pathMultiRow)))
         .addComponentFillVertically(JPanel(), 0)
         .panel
 
@@ -148,9 +148,9 @@ class ApiScanPanel(project: com.intellij.openapi.project.Project? = null) : Sett
 class YapiExportPanel(private val project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
     private val server = JBTextField()
     private val token = JBTextField()
-    private val tokenBtn = JButton("检测令牌")
+    private val tokenBtn = JButton(ApiMocktleBundle.message("settings.yapi.tokenCheck.button"))
     private val tokenResult = JBLabel()
-    private val urlTpl = JBCheckBox("URL 模板").apply { isSelected = true }
+    private val urlTpl = JBCheckBox(ApiMocktleBundle.message("settings.yapi.urlTemplate.label")).apply { isSelected = true }
     private val modeCombo = ComboBox<YapiExportMode>(YapiExportMode.entries.toTypedArray()).apply {
         renderer = object : ListCellRenderer<YapiExportMode> {
             private val label = JLabel()
@@ -174,26 +174,26 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
             }
         }
     }
-    private val reqJson5 = JBCheckBox("请求体 JSON5")
-    private val resJson5 = JBCheckBox("响应体 JSON5")
+    private val reqJson5 = JBCheckBox(ApiMocktleBundle.message("settings.yapi.reqJson5.label"))
+    private val resJson5 = JBCheckBox(ApiMocktleBundle.message("settings.yapi.resJson5.label"))
 
     init { tokenBtn.addActionListener { checkToken() } }
 
     override val component: JComponent = FormBuilder.createFormBuilder()
-        .addComponent(createSection("服务器", listOf(
-            withHelp(JPanel(BorderLayout()).apply { add(JLabel("地址："), BorderLayout.WEST); add(server, BorderLayout.CENTER) }, project, "ApiMocktle 服务器地址", "你的 ApiMocktle 服务地址，插件会向这个地址同步 API 文档。"),
-            withHelp(JPanel(BorderLayout(5, 0)).apply { add(JLabel("令牌："), BorderLayout.WEST); add(JPanel(BorderLayout(5,0)).apply { add(token, BorderLayout.CENTER); add(tokenBtn, BorderLayout.EAST) }, BorderLayout.CENTER) }, project, "个人令牌", "ApiMocktle 个人访问令牌。获取：ApiMocktle → 个人中心 → 令牌")
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.server"), listOf(
+            withHelp(JPanel(BorderLayout()).apply { add(JLabel(ApiMocktleBundle.message("settings.yapi.server.label")), BorderLayout.WEST); add(server, BorderLayout.CENTER) }, project, ApiMocktleBundle.message("settings.yapi.server.help.title"), ApiMocktleBundle.message("settings.yapi.server.help.message")),
+            withHelp(JPanel(BorderLayout(5, 0)).apply { add(JLabel(ApiMocktleBundle.message("settings.yapi.token.label")), BorderLayout.WEST); add(JPanel(BorderLayout(5,0)).apply { add(token, BorderLayout.CENTER); add(tokenBtn, BorderLayout.EAST) }, BorderLayout.CENTER) }, project, ApiMocktleBundle.message("settings.yapi.token.help.title"), ApiMocktleBundle.message("settings.yapi.token.help.message"))
         )))
         .addComponent(tokenResult)
-        .addComponent(createSection("导出选项", listOf(urlTpl, JPanel(BorderLayout()).apply { add(JLabel("模式："), BorderLayout.WEST); add(modeCombo, BorderLayout.CENTER) }, reqJson5, resJson5)))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.exportOptions"), listOf(urlTpl, JPanel(BorderLayout()).apply { add(JLabel(ApiMocktleBundle.message("settings.yapi.mode.label")), BorderLayout.WEST); add(modeCombo, BorderLayout.CENTER) }, reqJson5, resJson5)))
         .addComponentFillVertically(JPanel(), 0)
         .panel
 
     private fun checkToken() {
         val sv = server.text.trim(); val tk = token.text.trim()
-        if (sv.isBlank()) { Messages.showWarningDialog(project, "请先输入 ApiMocktle 服务器地址", "提示"); return }
-        if (tk.isBlank()) { Messages.showWarningDialog(project, "请先输入个人令牌", "提示"); return }
-        tokenBtn.isEnabled = false; tokenResult.text = "检测中..."
+        if (sv.isBlank()) { Messages.showWarningDialog(project, ApiMocktleBundle.message("settings.yapi.serverRequired"), ApiMocktleBundle.message("settings.yapi.warningTitle")); return }
+        if (tk.isBlank()) { Messages.showWarningDialog(project, ApiMocktleBundle.message("settings.yapi.tokenRequired"), ApiMocktleBundle.message("settings.yapi.warningTitle")); return }
+        tokenBtn.isEnabled = false; tokenResult.text = ApiMocktleBundle.message("settings.yapi.checking")
         thread {
             try {
                 val url = java.net.URL("${sv.removeSuffix("/")}/api/project/list?token=${java.net.URLEncoder.encode(tk, "UTF-8")}")
@@ -203,11 +203,12 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
                 val code = json.get("errcode")?.asInt ?: json.get("code")?.asInt
                 val msg = json.get("errmsg")?.asString ?: json.get("message")?.asString ?: ""
                 SwingUtilities.invokeLater {
-                    if (code == 0 || msg.contains("成功")) { tokenResult.text = "✓ 有效"; tokenResult.foreground = StatusColors.Success }
-                    else { tokenResult.text = "✗ $msg"; tokenResult.foreground = StatusColors.Error }
+                    // 注意：这里的 "成功" 是对服务端响应文本的协议性判断，不是界面文案，不能国际化。
+                    if (code == 0 || msg.contains("成功")) { tokenResult.text = ApiMocktleBundle.message("settings.yapi.tokenValid"); tokenResult.foreground = StatusColors.Success }
+                    else { tokenResult.text = ApiMocktleBundle.message("settings.yapi.tokenInvalid", msg); tokenResult.foreground = StatusColors.Error }
                     tokenBtn.isEnabled = true
                 }
-            } catch (e: Exception) { SwingUtilities.invokeLater { tokenResult.text = "✗ 连接失败"; tokenResult.foreground = StatusColors.Error; tokenBtn.isEnabled = true } }
+            } catch (e: Exception) { SwingUtilities.invokeLater { tokenResult.text = ApiMocktleBundle.message("settings.yapi.connectFailed"); tokenResult.foreground = StatusColors.Error; tokenBtn.isEnabled = true } }
         }
     }
 
@@ -231,11 +232,11 @@ class YapiExportPanel(private val project: com.intellij.openapi.project.Project?
 
 // ── Mock Agent ──────────────────────────────────────────────
 class MockAgentPanel(project: com.intellij.openapi.project.Project? = null) : SettingsPanel {
-    private val injectCb = JBCheckBox("自动注入 Mock Agent").apply { isSelected = false; toolTipText = "启动运行配置时自动注入 -javaagent" }
-    private val inject = withHelp(injectCb, project, "自动注入 Mock Agent", "启动 Spring Boot 运行配置时自动添加 -javaagent:mock-agent.jar，拦截 Feign/MyBatis 调用返回模拟数据。")
+    private val injectCb = JBCheckBox(ApiMocktleBundle.message("settings.agent.inject.label")).apply { isSelected = false; toolTipText = ApiMocktleBundle.message("settings.agent.inject.tooltip") }
+    private val inject = withHelp(injectCb, project, ApiMocktleBundle.message("settings.help.agentInject.title"), ApiMocktleBundle.message("settings.help.agentInject.message"))
 
     override val component: JComponent = FormBuilder.createFormBuilder()
-        .addComponent(createSection("Mock 拦截", listOf(inject)))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.mockIntercept"), listOf(inject)))
         .addComponentFillVertically(JPanel(), 0)
         .panel
     override fun resetFrom(s: Settings?) { injectCb.isSelected = s?.autoInjectAgent ?: false }
@@ -249,8 +250,8 @@ class ExtensionConfigPanel(project: com.intellij.openapi.project.Project? = null
     private val preview = JBTextArea().apply { isEditable = false }
     private val allExts = ExtensionConfigRegistry.allExtensions()
 
-    private val resetBtn = JButton("恢复默认").apply {
-        toolTipText = "按各扩展的默认启用状态重新勾选"
+    private val resetBtn = JButton(ApiMocktleBundle.message("settings.extensions.reset")).apply {
+        toolTipText = ApiMocktleBundle.message("settings.extensions.reset.tooltip")
         addActionListener {
             allExts.forEach { ext -> list.setItemSelected(ext.code, ext.defaultEnabled) }
             refreshPreview()
@@ -273,7 +274,7 @@ class ExtensionConfigPanel(project: com.intellij.openapi.project.Project? = null
                     append(ext.code)
                     append("  —  ")
                     append(ext.description)
-                    if (ext.defaultEnabled) append("（默认启用）")
+                    if (ext.defaultEnabled) append(ApiMocktleBundle.message("settings.extensions.defaultEnabled"))
                 }
             } ?: code
         }
@@ -299,13 +300,15 @@ class ExtensionConfigPanel(project: com.intellij.openapi.project.Project? = null
     private fun selectedCodes(): List<String> = allExts.mapNotNull { if (list.isItemSelected(it.code)) it.code else null }
 
     private fun refreshPreview() {
-        val idx = list.selectedIndex; if (idx < 0 || idx >= allExts.size) { preview.text = "# 选择扩展以预览"; return }
+        val idx = list.selectedIndex; if (idx < 0 || idx >= allExts.size) { preview.text = ApiMocktleBundle.message("settings.extensions.preview.hint"); return }
         val ext = allExts[idx]
         preview.text = buildString {
             appendLine("# ${ext.code}"); appendLine("# ${ext.description}")
-            if (ext.onClass != null) appendLine("# 条件：存在 ${ext.onClass}")
-            appendLine("# 当前：${if (list.isItemSelected(ext.code)) "已启用" else "已禁用"}  |  默认：${if (ext.defaultEnabled) "已启用" else "已禁用"}")
-            appendLine(); append(ext.content.ifBlank { "# （无内容）" })
+            if (ext.onClass != null) appendLine(ApiMocktleBundle.message("settings.extensions.preview.condition", ext.onClass!!))
+            appendLine(ApiMocktleBundle.message("settings.extensions.preview.state",
+                if (list.isItemSelected(ext.code)) ApiMocktleBundle.message("settings.extensions.enabled") else ApiMocktleBundle.message("settings.extensions.disabled"),
+                if (ext.defaultEnabled) ApiMocktleBundle.message("settings.extensions.enabled") else ApiMocktleBundle.message("settings.extensions.disabled")))
+            appendLine(); append(ext.content.ifBlank { ApiMocktleBundle.message("settings.extensions.preview.empty") })
         }
     }
 }
@@ -319,27 +322,27 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
             override fun changedUpdate(e: javax.swing.event.DocumentEvent?) = validateTimeout()
         })
     }
-    private val unsafeSslCb = JBCheckBox("允许不安全的 SSL").apply { toolTipText = "允许连接到自签名证书的服务器" }
-    private val unsafeSsl = withHelp(unsafeSslCb, project, "不安全 SSL", "允许插件通过 HTTPS 连接到使用自签名证书的服务器。")
+    private val unsafeSslCb = JBCheckBox(ApiMocktleBundle.message("settings.advanced.unsafeSsl.label")).apply { toolTipText = ApiMocktleBundle.message("settings.advanced.unsafeSsl.tooltip") }
+    private val unsafeSsl = withHelp(unsafeSslCb, project, ApiMocktleBundle.message("settings.help.unsafeSsl.title"), ApiMocktleBundle.message("settings.help.unsafeSsl.message"))
     private val logLevel = ComboBox(VerbosityLevel.values())
     private val charset = ComboBox(arrayOf("UTF-8", "GBK", "ISO-8859-1"))
-    private val outputDemo = JBCheckBox("在文档中输出示例值").apply { isSelected = true }
-    private val switchNotice = JBCheckBox("切换设置时显示通知").apply { isSelected = true }
+    private val outputDemo = JBCheckBox(ApiMocktleBundle.message("settings.advanced.outputDemo.label")).apply { isSelected = true }
+    private val switchNotice = JBCheckBox(ApiMocktleBundle.message("settings.advanced.switchNotice.label")).apply { isSelected = true }
 
     private val pCacheLbl = JBLabel("0 B"); private val gCacheLbl = JBLabel("0 B")
-    private val clrP = JButton("清除"); private val clrG = JButton("清除")
+    private val clrP = JButton(ApiMocktleBundle.message("settings.advanced.clear")); private val clrG = JButton(ApiMocktleBundle.message("settings.advanced.clear"))
     private val repoModel = ListTableModel<RepositoryConfig>(
         arrayOf(
-            object : ColumnInfo<RepositoryConfig, String>("类型") { override fun valueOf(i: RepositoryConfig?) = i?.displayName() },
-            object : ColumnInfo<RepositoryConfig, String>("路径") { override fun valueOf(i: RepositoryConfig?) = i?.path },
-            object : ColumnInfo<RepositoryConfig, Boolean>("启用") {
+            object : ColumnInfo<RepositoryConfig, String>(ApiMocktleBundle.message("settings.advanced.repo.column.type")) { override fun valueOf(i: RepositoryConfig?) = i?.displayName() },
+            object : ColumnInfo<RepositoryConfig, String>(ApiMocktleBundle.message("settings.advanced.repo.column.path")) { override fun valueOf(i: RepositoryConfig?) = i?.path },
+            object : ColumnInfo<RepositoryConfig, Boolean>(ApiMocktleBundle.message("settings.advanced.repo.column.enabled")) {
                 override fun valueOf(i: RepositoryConfig?) = i?.enabled ?: true; override fun getColumnClass() = java.lang.Boolean::class.java
                 override fun isCellEditable(i: RepositoryConfig?) = true; override fun setValue(i: RepositoryConfig?, v: Boolean) { i?.enabled = v }
             }
         ), mutableListOf()
     )
     private val repoTable = TableView(repoModel)
-    private val importBtn = JButton("导入设置"); private val exportBtn = JButton("导出设置")
+    private val importBtn = JButton(ApiMocktleBundle.message("settings.advanced.import")); private val exportBtn = JButton(ApiMocktleBundle.message("settings.advanced.export"))
     private var curSettings: Settings? = null
     /** resetFrom 时实际加载进表格的仓库配置（序列化形式），isModified 用它判断表格是否被改动 */
     private var loadedRepos: List<String> = emptyList()
@@ -348,7 +351,7 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
         val text = timeout.text.trim()
         val ok = text.toIntOrNull()?.let { it in 1..600 } == true
         if (!ok) {
-            timeout.toolTipText = "超时必须是 1-600 的整数（秒）"
+            timeout.toolTipText = ApiMocktleBundle.message("settings.advanced.timeoutInvalid")
             timeout.background = JBColor(Color(255, 230, 230), Color(0x5a2d2d))
         } else {
             timeout.toolTipText = null
@@ -357,18 +360,18 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
     }
 
     override val component: JComponent = FormBuilder.createFormBuilder()
-        .addComponent(createSection("HTTP 请求", listOf(JPanel(BorderLayout()).apply { add(JLabel("超时（秒）："), BorderLayout.WEST); add(timeout, BorderLayout.CENTER) }, unsafeSsl)))
-        .addComponent(createSection("日志与输出", listOf(JPanel(BorderLayout()).apply { add(JLabel("日志级别："), BorderLayout.WEST); add(logLevel, BorderLayout.CENTER) }, JPanel(BorderLayout()).apply { add(JLabel("字符集："), BorderLayout.WEST); add(charset, BorderLayout.CENTER) }, outputDemo, switchNotice)))
-        .addComponent(createSection("缓存", listOf(JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply { add(JLabel("项目缓存：")); add(pCacheLbl); add(clrP) }, JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply { add(JLabel("全局缓存：")); add(gCacheLbl); add(clrG) })))
-        .addComponent(createSection("仓库", listOf(createRepoPanel())))
-        .addComponent(createSection("导入 / 导出", listOf(JPanel(FlowLayout(FlowLayout.LEFT)).apply { add(importBtn); add(exportBtn) })))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.http"), listOf(JPanel(BorderLayout()).apply { add(JLabel(ApiMocktleBundle.message("settings.advanced.timeout.label")), BorderLayout.WEST); add(timeout, BorderLayout.CENTER) }, unsafeSsl)))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.logAndOutput"), listOf(JPanel(BorderLayout()).apply { add(JLabel(ApiMocktleBundle.message("settings.advanced.logLevel.label")), BorderLayout.WEST); add(logLevel, BorderLayout.CENTER) }, JPanel(BorderLayout()).apply { add(JLabel(ApiMocktleBundle.message("settings.advanced.charset.label")), BorderLayout.WEST); add(charset, BorderLayout.CENTER) }, outputDemo, switchNotice)))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.cache"), listOf(JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply { add(JLabel(ApiMocktleBundle.message("settings.advanced.projectCache.label"))); add(pCacheLbl); add(clrP) }, JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply { add(JLabel(ApiMocktleBundle.message("settings.advanced.globalCache.label"))); add(gCacheLbl); add(clrG) })))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.repos"), listOf(createRepoPanel())))
+        .addComponent(createSection(ApiMocktleBundle.message("settings.section.importExport"), listOf(JPanel(FlowLayout(FlowLayout.LEFT)).apply { add(importBtn); add(exportBtn) })))
         .addComponentFillVertically(JPanel(), 0)
         .panel
 
     private val prj: com.intellij.openapi.project.Project? = project
     init {
-        clrP.addActionListener { prj?.let { ProjectCacheRepository.getInstance(it).clear() }; refreshSizes(); Messages.showInfoMessage("项目缓存已清除。", "清除缓存") }
-        clrG.addActionListener { AppCacheRepository.getInstance().clear(); refreshSizes(); Messages.showInfoMessage("全局缓存已清除。", "清除缓存") }
+        clrP.addActionListener { prj?.let { ProjectCacheRepository.getInstance(it).clear() }; refreshSizes(); Messages.showInfoMessage(ApiMocktleBundle.message("settings.advanced.cache.cleared.project"), ApiMocktleBundle.message("settings.advanced.cache.clearTitle")) }
+        clrG.addActionListener { AppCacheRepository.getInstance().clear(); refreshSizes(); Messages.showInfoMessage(ApiMocktleBundle.message("settings.advanced.cache.cleared.global"), ApiMocktleBundle.message("settings.advanced.cache.clearTitle")) }
         repoTable.setShowGrid(false); repoTable.intercellSpacing = Dimension(0, 0)
         repoTable.columnModel.getColumn(0).preferredWidth = 120; repoTable.columnModel.getColumn(1).preferredWidth = 350; repoTable.columnModel.getColumn(2).preferredWidth = 60
         importBtn.addActionListener { doImport() }; exportBtn.addActionListener { doExport() }
@@ -395,30 +398,30 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
     private fun doImport() {
         val s = curSettings ?: return
         val c = JFileChooser().apply {
-            dialogTitle = "导入设置"
+            dialogTitle = ApiMocktleBundle.message("settings.advanced.import.title")
             fileSelectionMode = JFileChooser.FILES_ONLY
-            fileFilter = javax.swing.filechooser.FileNameExtensionFilter("JSON 设置文件 (*.json)", "json")
+            fileFilter = javax.swing.filechooser.FileNameExtensionFilter(ApiMocktleBundle.message("settings.advanced.settingsFileFilter"), "json")
         }
         if (c.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             runCatching {
                 val i = GsonUtils.fromJson<Settings>(c.selectedFile!!.readText())
                 applyImp(s, i)
                 resetFrom(s)
-            }.onFailure { Messages.showErrorDialog("导入失败：${it.message}", "ApiMocktle") }
+            }.onFailure { Messages.showErrorDialog(ApiMocktleBundle.message("settings.advanced.import.failed", it.message ?: ""), "ApiMocktle") }
         }
     }
     private fun doExport() {
         val s = curSettings ?: return
         val c = JFileChooser().apply {
-            dialogTitle = "导出设置"
+            dialogTitle = ApiMocktleBundle.message("settings.advanced.export.title")
             fileSelectionMode = JFileChooser.FILES_ONLY
-            fileFilter = javax.swing.filechooser.FileNameExtensionFilter("JSON 设置文件 (*.json)", "json")
+            fileFilter = javax.swing.filechooser.FileNameExtensionFilter(ApiMocktleBundle.message("settings.advanced.settingsFileFilter"), "json")
         }
         if (c.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             var f = c.selectedFile
             if (!f.name.lowercase().endsWith(".json")) f = java.io.File(f.parentFile, "${f.name}.json")
-            if (f.exists() && Messages.showYesNoDialog("文件已存在，是否覆盖？", "导出设置", "是", "否", null) != Messages.YES) return
-            runCatching { f.writeText(GsonUtils.toJson(s)) }.onFailure { Messages.showErrorDialog("导出失败：${it.message}", "ApiMocktle") }
+            if (f.exists() && Messages.showYesNoDialog(ApiMocktleBundle.message("settings.advanced.export.overwrite"), ApiMocktleBundle.message("settings.advanced.export.title"), ApiMocktleBundle.message("dialog.yes"), ApiMocktleBundle.message("dialog.no"), null) != Messages.YES) return
+            runCatching { f.writeText(GsonUtils.toJson(s)) }.onFailure { Messages.showErrorDialog(ApiMocktleBundle.message("settings.advanced.export.failed", it.message ?: ""), "ApiMocktle") }
         }
     }
 
@@ -455,8 +458,11 @@ class AdvancedSettingsPanel(project: com.intellij.openapi.project.Project? = nul
     }
 }
 
-enum class VerbosityLevel(val level: Int, val displayName: String) {
-    SILENT(0, "静默"), ERROR(10, "错误"), WARN(20, "警告"), INFO(30, "信息"), DEBUG(40, "调试"), TRACE(50, "跟踪");
+enum class VerbosityLevel(val level: Int) {
+    SILENT(0), ERROR(10), WARN(20), INFO(30), DEBUG(40), TRACE(50);
+    /** 面向用户的显示名，按当前 IDE 语言动态求值。 */
+    val displayName: String
+        get() = ApiMocktleBundle.message("enum.verbosityLevel.${name.lowercase()}")
     override fun toString() = displayName
     companion object { fun toLevel(l: Int) = values().minByOrNull { kotlin.math.abs(it.level - l) } ?: TRACE }
 }
@@ -467,26 +473,51 @@ private fun createSection(title: String, comps: List<JComponent>) = JPanel(Borde
 }
 
 private class AddRepoDlg : DialogWrapper(null) {
-    private val type = JComboBox(arrayOf("Maven本地", "Gradle缓存", "自定义"))
+    private val type = JComboBox(RepositoryType.entries.toTypedArray()).apply {
+        // 用枚举承载选择，渲染文本来自动源；否则翻译后中文字面量比较会让所有类型落回 CUSTOM。
+        renderer = object : DefaultListCellRenderer() {
+            override fun getListCellRendererComponent(
+                list: JList<*>?,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component {
+                val label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus) as JLabel
+                label.text = (value as? RepositoryType)?.displayName() ?: ""
+                return label
+            }
+        }
+    }
     private val path = JTextField(40)
-    private val browse = JButton("浏览...")
+    private val browse = JButton(ApiMocktleBundle.message("settings.repo.browse"))
     lateinit var config: RepositoryConfig
     init {
-        title = "添加仓库"
+        title = ApiMocktleBundle.message("settings.repo.add.title")
         browse.addActionListener { JFileChooser().apply { fileSelectionMode = JFileChooser.DIRECTORIES_ONLY }.apply { if (showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) path.text = selectedFile.absolutePath } }
         type.addActionListener { updatePath() }; updatePath(); init()
     }
     private fun updatePath() {
-        val c = type.selectedItem == "自定义"; path.isEnabled = c; browse.isEnabled = c
-        if (!c) path.text = when (type.selectedItem) { "Maven本地" -> DefaultRepositories.MAVEN_LOCAL.toString(); "Gradle缓存" -> DefaultRepositories.GRADLE_CACHE.toString(); else -> "" }
+        val selected = type.selectedItem as? RepositoryType ?: RepositoryType.CUSTOM
+        val custom = selected == RepositoryType.CUSTOM
+        path.isEnabled = custom; browse.isEnabled = custom
+        if (!custom) path.text = when (selected) {
+            RepositoryType.MAVEN_LOCAL -> DefaultRepositories.MAVEN_LOCAL.toString()
+            RepositoryType.GRADLE_CACHE -> DefaultRepositories.GRADLE_CACHE.toString()
+            RepositoryType.CUSTOM -> ""
+        }
     }
     override fun createCenterPanel() = JPanel(GridLayout(0, 2, 4, 4)).apply {
-        add(JLabel("类型：")); add(type); add(JLabel("路径：")); add(JPanel(BorderLayout()).apply { add(path, BorderLayout.CENTER); add(browse, BorderLayout.EAST) })
+        add(JLabel(ApiMocktleBundle.message("settings.repo.type.label"))); add(type)
+        add(JLabel(ApiMocktleBundle.message("settings.repo.path.label"))); add(JPanel(BorderLayout()).apply { add(path, BorderLayout.CENTER); add(browse, BorderLayout.EAST) })
         preferredSize = Dimension(500, preferredSize.height)
     }
     override fun doOKAction() {
         if (path.text.trim().isEmpty()) return
-        config = RepositoryConfig(when (type.selectedItem) { "Maven本地" -> RepositoryType.MAVEN_LOCAL; "Gradle缓存" -> RepositoryType.GRADLE_CACHE; else -> RepositoryType.CUSTOM }, path.text.trim())
+        config = RepositoryConfig(
+            type.selectedItem as? RepositoryType ?: RepositoryType.CUSTOM,
+            path.text.trim()
+        )
         super.doOKAction()
     }
 }
@@ -494,11 +525,15 @@ private class AddRepoDlg : DialogWrapper(null) {
 private class EditRepoDlg(val config: RepositoryConfig) : DialogWrapper(null) {
     private val path = JTextField(40)
     init {
-        title = "编辑仓库：${config.displayName()}"; path.text = config.path; path.isEnabled = config.type == RepositoryType.CUSTOM
-        val b = JButton("浏览...").apply { isEnabled = config.type == RepositoryType.CUSTOM }
+        title = ApiMocktleBundle.message("settings.repo.edit.title", config.displayName()); path.text = config.path; path.isEnabled = config.type == RepositoryType.CUSTOM
+        val b = JButton(ApiMocktleBundle.message("settings.repo.browse")).apply { isEnabled = config.type == RepositoryType.CUSTOM }
         b.addActionListener { JFileChooser().apply { fileSelectionMode = JFileChooser.DIRECTORIES_ONLY; selectedFile = File(config.path) }.apply { if (showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) path.text = selectedFile.absolutePath } }
         init()
     }
-    override fun createCenterPanel() = JPanel(GridLayout(0, 2, 4, 4)).apply { add(JLabel("类型：")); add(JLabel(config.displayName())); add(JLabel("路径：")); add(path); preferredSize = Dimension(500, preferredSize.height) }
+    override fun createCenterPanel() = JPanel(GridLayout(0, 2, 4, 4)).apply {
+        add(JLabel(ApiMocktleBundle.message("settings.repo.type.label"))); add(JLabel(config.displayName()))
+        add(JLabel(ApiMocktleBundle.message("settings.repo.path.label"))); add(path)
+        preferredSize = Dimension(500, preferredSize.height)
+    }
     override fun doOKAction() { if (config.type == RepositoryType.CUSTOM) { if (path.text.trim().isEmpty()) return; config.path = path.text.trim() }; super.doOKAction() }
 }

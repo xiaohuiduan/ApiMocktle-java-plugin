@@ -1,10 +1,13 @@
 package com.apimocktle.repository
 
+import com.apimocktle.i18n.ApiMocktleBundle
 import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
  * Types of artifact repositories supported by the plugin.
+ *
+ * 显示名从资源包动态求值（不覆写 `toString()`：序列化用的是 [RepositoryType.name]）。
  */
 enum class RepositoryType {
     /** Standard Maven local repository (~/.m2/repository) */
@@ -12,7 +15,11 @@ enum class RepositoryType {
     /** Gradle dependency cache (~/.gradle/caches/modules-2/files-2.1) */
     GRADLE_CACHE,
     /** User-specified custom repository path */
-    CUSTOM
+    CUSTOM;
+
+    /** 面向用户的显示名，按当前 IDE 语言动态求值。 */
+    fun displayName(): String =
+        ApiMocktleBundle.message("enum.repositoryType.${name.lowercase().replace("_", "")}")
 }
 
 /**
@@ -34,9 +41,11 @@ data class RepositoryConfig(
 
     /** Returns a human-readable display name for the repository. */
     fun displayName(): String = when (type) {
-        RepositoryType.MAVEN_LOCAL -> "Maven Local"
-        RepositoryType.GRADLE_CACHE -> "Gradle Cache"
-        RepositoryType.CUSTOM -> "Custom: ${path.substringAfterLast('/')}"
+        RepositoryType.MAVEN_LOCAL, RepositoryType.GRADLE_CACHE -> type.displayName()
+        RepositoryType.CUSTOM -> ApiMocktleBundle.message(
+            "settings.repo.displayName.custom",
+            path.substringAfterLast('/')
+        )
     }
 
     companion object {

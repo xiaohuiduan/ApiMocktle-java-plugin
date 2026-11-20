@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.apimocktle.exporter.yapi.UpdateDecision
 import com.apimocktle.exporter.yapi.model.YapiApiDoc
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.ide.ui.HttpMethodColors
 import java.awt.Component
 import javax.swing.*
@@ -16,8 +17,8 @@ class YapiUpdateConfirmationDialog(
     private val existingApiTitle: String?
 ) : DialogWrapper(project) {
 
-    private val applyForAllCheckBox = JCheckBox("全部应用").apply {
-        toolTipText = "将此决定应用到所有剩余的API"
+    private val applyForAllCheckBox = JCheckBox(ApiMocktleBundle.message("dialog.update.applyForAll")).apply {
+        toolTipText = ApiMocktleBundle.message("dialog.update.applyForAll.tooltip")
     }
 
     var shouldApplyForAll: Boolean = false
@@ -27,9 +28,9 @@ class YapiUpdateConfirmationDialog(
         private set
 
     init {
-        title = "更新已有API"
-        setOKButtonText("是")
-        setCancelButtonText("否")
+        title = ApiMocktleBundle.message("dialog.update.title")
+        setOKButtonText(ApiMocktleBundle.message("dialog.yes"))
+        setCancelButtonText(ApiMocktleBundle.message("dialog.no"))
         init()
     }
 
@@ -38,7 +39,7 @@ class YapiUpdateConfirmationDialog(
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
         panel.border = JBUI.Borders.empty(JBUI.scale(12))
 
-        val questionLabel = JBLabel("是否更新已有的API？").apply {
+        val questionLabel = JBLabel(ApiMocktleBundle.message("dialog.update.question")).apply {
             font = font.deriveFont(font.size2D + 2)
             setCopyable(true)
             alignmentX = Component.LEFT_ALIGNMENT
@@ -52,7 +53,7 @@ class YapiUpdateConfirmationDialog(
         panel.add(methodPathLabel)
         panel.add(Box.createVerticalStrut(JBUI.scale(8)))
 
-        val apiTitle = existingApiTitle ?: doc.title ?: "未知API"
+        val apiTitle = existingApiTitle ?: doc.title ?: ApiMocktleBundle.message("dialog.update.unknownApi")
         val apiNameLabel = JBLabel(apiTitle).apply {
             font = font.deriveFont(font.size2D + 1)
             setCopyable(true)
@@ -77,7 +78,7 @@ class YapiUpdateConfirmationDialog(
     }
 
     override fun getOKAction(): Action {
-        return object : AbstractAction("是") {
+        return object : AbstractAction(ApiMocktleBundle.message("dialog.yes")) {
             override fun actionPerformed(e: java.awt.event.ActionEvent?) {
                 shouldApplyForAll = applyForAllCheckBox.isSelected
                 userDecision = if (shouldApplyForAll) {
@@ -91,7 +92,7 @@ class YapiUpdateConfirmationDialog(
     }
 
     override fun getCancelAction(): Action {
-        return object : AbstractAction("否") {
+        return object : AbstractAction(ApiMocktleBundle.message("dialog.no")) {
             override fun actionPerformed(e: java.awt.event.ActionEvent?) {
                 shouldApplyForAll = applyForAllCheckBox.isSelected
                 userDecision = if (shouldApplyForAll) {

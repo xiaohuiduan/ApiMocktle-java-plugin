@@ -10,6 +10,7 @@ import com.apimocktle.http.HttpClient
 import com.apimocktle.http.HttpRequest
 import com.apimocktle.http.HttpResponse
 import com.apimocktle.http.KeyValue
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.util.GsonUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,8 +40,8 @@ class DefaultYapiApiClient(
     // region Project listing
 
     override suspend fun listProjects(): YapiResponse<List<YapiProjectInfo>> {
-        if (serverUrl.isBlank()) return YapiResponse.failure("YAPI服务器URL未配置")
-        if (token.isBlank()) return YapiResponse.failure("令牌为空")
+        if (serverUrl.isBlank()) return YapiResponse.failure(ApiMocktleBundle.message("error.yapi.serverNotConfigured"))
+        if (token.isBlank()) return YapiResponse.failure(ApiMocktleBundle.message("error.yapi.tokenEmpty"))
         return withContext(Dispatchers.IO) {
             runCatching {
                 val url = "$serverUrl$LIST_PROJECTS?token=${enc(token)}"
@@ -55,7 +56,7 @@ class DefaultYapiApiClient(
                         )
                     } ?: emptyList()
                 }
-            }.getOrElse { YapiResponse.failure(it.message ?: "未知错误") }
+            }.getOrElse { YapiResponse.failure(it.message ?: ApiMocktleBundle.message("error.unknown")) }
         }
     }
 
@@ -74,7 +75,7 @@ class DefaultYapiApiClient(
                         YapiCart(id = obj.get("_id").asString, name = obj.get("name").asString)
                     } ?: emptyList()
                 }
-            }.getOrElse { YapiResponse.failure(it.message ?: "未知错误") }
+            }.getOrElse { YapiResponse.failure(it.message ?: ApiMocktleBundle.message("error.unknown")) }
         }
     }
 
@@ -96,19 +97,19 @@ class DefaultYapiApiClient(
                     val data = json.getAsJsonObject("data")
                     YapiCart(id = data.get("_id").asString, name = data.get("name").asString)
                 }
-            }.getOrElse { YapiResponse.failure(it.message ?: "未知错误") }
+            }.getOrElse { YapiResponse.failure(it.message ?: ApiMocktleBundle.message("error.unknown")) }
         }
     }
 
     override suspend fun findOrCreateCart(name: String, desc: String): YapiResponse<String> {
         val cartsResult = listCarts()
         val carts = cartsResult.getOrNull()
-            ?: return YapiResponse.failure(cartsResult.errorMessage() ?: "获取分类列表失败")
+            ?: return YapiResponse.failure(cartsResult.errorMessage() ?: ApiMocktleBundle.message("error.yapi.cartListFailed"))
         val existing = carts.firstOrNull { it.name == name }
         if (existing != null) return YapiResponse.success(existing.id)
         return createCart(name, desc).let { result ->
             result.getOrNull()?.let { YapiResponse.success(it.id) }
-                ?: YapiResponse.failure(result.errorMessage() ?: "创建分类 '$name' 失败")
+                ?: YapiResponse.failure(result.errorMessage() ?: ApiMocktleBundle.message("error.yapi.createCartFailed", name))
         }
     }
 
@@ -132,7 +133,7 @@ class DefaultYapiApiClient(
                     return@runCatching listApis(catId, apiPageLimit)
                 }
                 result
-            }.getOrElse { YapiResponse.failure(it.message ?: "未知错误") }
+            }.getOrElse { YapiResponse.failure(it.message ?: ApiMocktleBundle.message("error.unknown")) }
         }
     }
 
@@ -169,7 +170,7 @@ class DefaultYapiApiClient(
 
     override suspend fun uploadApi(doc: YapiApiDoc, catId: String): YapiResponse<Unit> {
         if (serverUrl.isBlank() || token.isBlank()) {
-            return YapiResponse.failure("ApiMocktle 服务器地址或个人令牌未配置，导出已中止")
+            return YapiResponse.failure(ApiMocktleBundle.message("error.yapi.serverOrTokenNotConfigured"))
         }
         return withContext(Dispatchers.IO) {
             runCatching {
@@ -183,7 +184,7 @@ class DefaultYapiApiClient(
                     )
                 )
                 parseResponse(resp) { Unit }
-            }.getOrElse { YapiResponse.failure(it.message ?: "未知错误") }
+            }.getOrElse { YapiResponse.failure(it.message ?: ApiMocktleBundle.message("error.unknown")) }
         }
     }
 
@@ -193,7 +194,7 @@ class DefaultYapiApiClient(
         updateConfirmation: UpdateConfirmation
     ): YapiResponse<Unit> {
         if (serverUrl.isBlank() || token.isBlank()) {
-            return YapiResponse.failure("ApiMocktle 服务器地址或个人令牌未配置，导出已中止")
+            return YapiResponse.failure(ApiMocktleBundle.message("error.yapi.serverOrTokenNotConfigured"))
         }
         if (!updateConfirmation.confirm(doc, catId)) {
             return YapiResponse.success(Unit)
@@ -210,7 +211,7 @@ class DefaultYapiApiClient(
                     )
                 )
                 parseResponse(resp) { Unit }
-            }.getOrElse { YapiResponse.failure(it.message ?: "未知错误") }
+            }.getOrElse { YapiResponse.failure(it.message ?: ApiMocktleBundle.message("error.unknown")) }
         }
     }
 
@@ -219,15 +220,15 @@ class DefaultYapiApiClient(
     private fun <T> parseResponse(res: HttpResponse, handle: (JsonObject) -> T?): YapiResponse<T> {
         if (res.code != 200) return YapiResponse.failure("HTTP ${res.code}")
         val json = runCatching { GsonUtils.fromJson<JsonObject>(res.body ?: "") }.getOrNull()
-            ?: return YapiResponse.failure("无效的JSON响应")
+            ?: return YapiResponse.failure(ApiMocktleBundle.message("error.yapi.invalidJson"))
         val errcode = json.get("errcode")?.asInt ?: json.get("code")?.asInt
         val errmsg = json.get("errmsg")?.asString ?: json.get("message")?.asString
         val isSuccess = errmsg in SUCCESS_MESSAGES || errcode in SUCCESS_CODES
         if (!isSuccess) {
-            return YapiResponse.failure(errmsg ?: "未知错误（错误码：$errcode）")
+            return YapiResponse.failure(errmsg ?: ApiMocktleBundle.message("error.yapi.unknownErrorCode", errcode ?: 0))
         }
         return handle(json)?.let { YapiResponse.success(it) }
-            ?: YapiResponse.failure("响应中数据为空")
+            ?: YapiResponse.failure(ApiMocktleBundle.message("error.yapi.emptyData"))
     }
 
     companion object {

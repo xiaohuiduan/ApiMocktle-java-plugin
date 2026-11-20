@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.apimocktle.i18n.ApiMocktleBundle
 import java.net.ConnectException
 import java.net.HttpURLConnection
 import java.net.ServerSocket
@@ -296,7 +297,7 @@ class MockAgentManager(private val project: Project) {
             } catch (_: Exception) {
                 null
             }
-            throw java.io.IOException("HTTP $code: ${errorBody?.take(300) ?: "无响应体"}")
+            throw java.io.IOException(ApiMocktleBundle.message("error.httpResponse", code, errorBody?.take(300) ?: ApiMocktleBundle.message("error.noResponseBody")))
         } finally {
             conn.disconnect()
         }

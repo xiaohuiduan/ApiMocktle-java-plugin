@@ -2,6 +2,7 @@ package com.apimocktle.ide.action
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.psi.DefaultPsiClassHelper
 import com.apimocktle.psi.JsonOption
 import com.apimocktle.psi.model.ObjectModel
@@ -15,7 +16,9 @@ import com.apimocktle.psi.type.JsonType
  *
  * @see FieldFormatAction for the base class
  */
-class FieldsToJsonAction : FieldFormatAction("字段转JSON") {
+class FieldsToJsonAction : FieldFormatAction(
+    ApiMocktleBundle.message("ui.action.toJson.title")
+) {
     override suspend fun format(project: Project, psiClass: PsiClass): String {
         val helper = DefaultPsiClassHelper.getInstance(project)
         val model = helper.buildObjectModel(psiClass, JsonOption.READ_GETTER_OR_SETTER)

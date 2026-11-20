@@ -10,6 +10,7 @@ import com.apimocktle.exporter.model.ExportFormat
 import com.apimocktle.exporter.model.OutputConfig
 import com.apimocktle.exporter.model.httpMetadata
 import com.apimocktle.exporter.model.path
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.ide.ui.HttpMethodColors
 import java.awt.*
 import java.awt.event.ItemEvent
@@ -37,10 +38,10 @@ class ExportDialog(
     // --- Endpoint table ---
     private val endpointTableModel = EndpointTableModel(endpoints)
     private val endpointTable = JBTable(endpointTableModel)
-    private val selectAllBtn = JButton("全选")
-    private val deselectAllBtn = JButton("取消全选")
+    private val selectAllBtn = JButton(ApiMocktleBundle.message("dialog.export.selectAll"))
+    private val deselectAllBtn = JButton(ApiMocktleBundle.message("dialog.export.deselectAll"))
     private val searchField = JTextField().apply {
-        putClientProperty("JTextField.placeholder", "搜索路径/名称/方法")
+        putClientProperty("JTextField.placeholder", ApiMocktleBundle.message("dialog.export.search.placeholder"))
         preferredSize = Dimension(180, preferredSize.height)
     }
     private val countLabel = JLabel("")
@@ -52,7 +53,7 @@ class ExportDialog(
         private set
 
     init {
-        title = "导出API端点（$endpointCount 个端点）"
+        title = ApiMocktleBundle.message("dialog.export.title", endpointCount)
 
         endpointTableModel.onDataChanged = {
             updateCount()
@@ -84,7 +85,7 @@ class ExportDialog(
 
     private fun updateCount() {
         val selected = endpointTableModel.rows.count { it.selected }
-        countLabel.text = "已选 $selected / ${endpointTableModel.rows.size}"
+        countLabel.text = ApiMocktleBundle.message("dialog.export.selectedCount", selected, endpointTableModel.rows.size)
     }
 
     private fun setupEndpointTable() {
@@ -124,7 +125,7 @@ class ExportDialog(
     private fun createEndpointPanel(): JPanel {
         val headerPanel = JPanel(BorderLayout(8, 0)).apply {
             add(JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
-                add(JLabel("API端点："))
+                add(JLabel(ApiMocktleBundle.message("dialog.export.endpointsLabel")))
                 add(countLabel)
             }, BorderLayout.WEST)
             add(searchField, BorderLayout.CENTER)
@@ -255,9 +256,9 @@ private class EndpointTableModel(
 
     override fun getColumnName(column: Int): String = when (column) {
         COL_SELECT -> ""
-        COL_METHOD -> "方法"
-        COL_PATH -> "路径"
-        COL_NAME -> "名称"
+        COL_METHOD -> ApiMocktleBundle.message("dialog.export.column.method")
+        COL_PATH -> ApiMocktleBundle.message("dialog.export.column.path")
+        COL_NAME -> ApiMocktleBundle.message("dialog.export.column.name")
         else -> ""
     }
 

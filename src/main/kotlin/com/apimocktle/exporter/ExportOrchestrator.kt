@@ -11,6 +11,7 @@ import com.apimocktle.exporter.model.ExportContext
 import com.apimocktle.exporter.model.ExportFormat
 import com.apimocktle.exporter.model.ExportResult
 import com.apimocktle.exporter.model.OutputConfig
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.ide.support.SelectionScope
 import com.apimocktle.settings.SettingBinder
 import kotlinx.coroutines.withContext
@@ -51,22 +52,22 @@ class ExportOrchestrator(private val project: Project) {
         outputConfig: OutputConfig = OutputConfig.DEFAULT,
         indicator: ProgressIndicator? = null
     ): ExportResult {
-        indicator?.text = "正在扫描API端点..."
+        indicator?.text = ApiMocktleBundle.message("progress.export.scanning")
         indicator?.isIndeterminate = true
         val endpoints = scanEndpoints(selection, indicator)
         
         if (endpoints.isEmpty()) {
-            return ExportResult.Error("未找到API端点")
+            return ExportResult.Error(ApiMocktleBundle.message("error.export.noEndpoints"))
         }
 
-        indicator?.text = "正在导出 ${endpoints.size} 个端点..."
+        indicator?.text = ApiMocktleBundle.message("progress.export.exporting", endpoints.size)
         indicator?.isIndeterminate = false
         indicator?.fraction = 0.0
         
         val context = buildExportContext(endpoints, format, outputConfig, indicator)
         
         val exporter = exporterRegistry.getExporter(format)
-            ?: return ExportResult.Error("不支持的导出格式: $format")
+            ?: return ExportResult.Error(ApiMocktleBundle.message("error.export.unsupportedFormat", format.toString()))
         
         return exporter.export(context)
     }
@@ -87,13 +88,13 @@ class ExportOrchestrator(private val project: Project) {
         outputConfig: OutputConfig,
         indicator: ProgressIndicator? = null
     ): ExportResult {
-        indicator?.text = "正在导出 ${endpoints.size} 个端点..."
+        indicator?.text = ApiMocktleBundle.message("progress.export.exporting", endpoints.size)
         indicator?.isIndeterminate = false
         indicator?.fraction = 0.0
 
         val context = buildExportContext(endpoints, format, outputConfig, indicator)
         val exporter = exporterRegistry.getExporter(format)
-            ?: return ExportResult.Error("不支持的导出格式: $format")
+            ?: return ExportResult.Error(ApiMocktleBundle.message("error.export.unsupportedFormat", format.toString()))
         
         return exporter.export(context)
     }

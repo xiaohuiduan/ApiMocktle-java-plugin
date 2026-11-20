@@ -12,6 +12,7 @@ import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 import com.apimocktle.cache.ApiIndex
 import com.apimocktle.cache.ApiIndexManager
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.dashboard.ApiDashboardService
 import com.apimocktle.core.threading.IdeDispatchers
 import com.apimocktle.core.threading.backgroundAsync
@@ -59,10 +60,10 @@ class ApiMethodLineMarkerProvider : LineMarkerProvider {
             element,
             element.textRange,
             AllIcons.Toolwindows.Documentation,
-            { "在API仪表盘中打开" },
+            { ApiMocktleBundle.message("dashboard.lineMarker.open") },
             ApiMethodNavigationHandler,
             GutterIconRenderer.Alignment.LEFT,
-            { "在API仪表盘中打开" }
+            { ApiMocktleBundle.message("dashboard.lineMarker.open") }
         )
     }
 

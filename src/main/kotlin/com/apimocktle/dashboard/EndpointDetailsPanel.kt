@@ -17,6 +17,7 @@ import com.apimocktle.exporter.model.HttpMetadata
 import com.apimocktle.exporter.model.HttpMethod
 import com.apimocktle.exporter.model.ParameterBinding
 import com.apimocktle.exporter.model.httpMetadata
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.ide.ui.HttpMethodColors
 import com.apimocktle.logging.IdeaLog
 import com.apimocktle.psi.model.ObjectModelJsonConverter
@@ -47,7 +48,7 @@ class EndpointDetailsPanel(
     private val pathLabel = JBLabel("")
 
     // Path params table (read-only: Key / Value / Description)
-    private val pathParamsTableModel = object : DefaultTableModel(arrayOf("键", "值", "描述"), 0) {
+    private val pathParamsTableModel = object : DefaultTableModel(arrayOf(ApiMocktleBundle.message("dashboard.details.column.key"), ApiMocktleBundle.message("dashboard.details.column.value"), ApiMocktleBundle.message("dashboard.details.column.description")), 0) {
         override fun isCellEditable(row: Int, column: Int) = false
     }
     private val pathParamsTable = JBTable(pathParamsTableModel).apply {
@@ -55,7 +56,7 @@ class EndpointDetailsPanel(
     }
 
     // Query params table (read-only)
-    private val paramsTableModel = object : DefaultTableModel(arrayOf("键", "值", "描述"), 0) {
+    private val paramsTableModel = object : DefaultTableModel(arrayOf(ApiMocktleBundle.message("dashboard.details.column.key"), ApiMocktleBundle.message("dashboard.details.column.value"), ApiMocktleBundle.message("dashboard.details.column.description")), 0) {
         override fun isCellEditable(row: Int, column: Int) = false
     }
     private val paramsTable = JBTable(paramsTableModel).apply {
@@ -63,7 +64,7 @@ class EndpointDetailsPanel(
     }
 
     // Headers table (read-only)
-    private val headersTableModel = object : DefaultTableModel(arrayOf("名称", "值"), 0) {
+    private val headersTableModel = object : DefaultTableModel(arrayOf(ApiMocktleBundle.message("dashboard.details.column.name"), ApiMocktleBundle.message("dashboard.details.column.value")), 0) {
         override fun isCellEditable(row: Int, column: Int) = false
     }
     private val headersTable = JBTable(headersTableModel).apply {
@@ -71,7 +72,7 @@ class EndpointDetailsPanel(
     }
 
     // Form data table (read-only)
-    private val formTableModel = object : DefaultTableModel(arrayOf("键", "值", "描述"), 0) {
+    private val formTableModel = object : DefaultTableModel(arrayOf(ApiMocktleBundle.message("dashboard.details.column.key"), ApiMocktleBundle.message("dashboard.details.column.value"), ApiMocktleBundle.message("dashboard.details.column.description")), 0) {
         override fun isCellEditable(row: Int, column: Int) = false
     }
     private val formTable = JBTable(formTableModel).apply {
@@ -95,13 +96,13 @@ class EndpointDetailsPanel(
     private val tabPane = JTabbedPane()
     private val responseTabPane = JTabbedPane()
 
-    private val copyPathBtn = createCopyButton("复制路径") {
+    private val copyPathBtn = createCopyButton(ApiMocktleBundle.message("dashboard.details.copy.path")) {
         pathLabel.text.takeIf { it.isNotBlank() }?.let { copyToClipboard(it) }
     }
-    private val copyRequestBtn = createCopyButton("复制请求体") {
+    private val copyRequestBtn = createCopyButton(ApiMocktleBundle.message("dashboard.details.copy.requestBody")) {
         bodyArea.text.takeIf { it.isNotBlank() }?.let { copyToClipboard(it) }
     }
-    private val copyResponseBtn = createCopyButton("复制响应体") {
+    private val copyResponseBtn = createCopyButton(ApiMocktleBundle.message("dashboard.details.copy.responseBody")) {
         responseBodyArea.text.takeIf { it.isNotBlank() }?.let { copyToClipboard(it) }
     }
 
@@ -135,13 +136,13 @@ class EndpointDetailsPanel(
         }
 
         // Build response tabs
-        responseTabPane.addTab("响应体", JBScrollPane(responseBodyArea))
+        responseTabPane.addTab(ApiMocktleBundle.message("dashboard.details.tab.responseBody"), JBScrollPane(responseBodyArea))
         responseTabPane.preferredSize = Dimension(0, 200)
 
         val responseTitlePanel = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.emptyTop(8)
             add(JPanel().apply {
-                add(JBLabel("响应").apply { font = font.deriveFont(font.size + 1f) })
+                add(JBLabel(ApiMocktleBundle.message("dashboard.details.label.response")).apply { font = font.deriveFont(font.size + 1f) })
             }, BorderLayout.WEST)
         }
 
@@ -189,7 +190,7 @@ class EndpointDetailsPanel(
         Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(text), null)
         NotificationGroupManager.getInstance()
             .getNotificationGroup("ApiMocktle Notifications")
-            .createNotification("已复制到剪贴板", NotificationType.INFORMATION)
+            .createNotification(ApiMocktleBundle.message("notification.copied"), NotificationType.INFORMATION)
             .notify(project)
     }
 
@@ -198,7 +199,7 @@ class EndpointDetailsPanel(
 
         when (val meta = endpoint.metadata) {
             is HttpMetadata -> {
-                nameLabel.text = endpoint.name ?: "未命名"
+                nameLabel.text = endpoint.name ?: ApiMocktleBundle.message("dashboard.details.unnamed")
                 methodLabel.text = meta.method.name
                 methodLabel.foreground = HttpMethodColors.colorFor(meta.method)
                 pathLabel.text = meta.path
@@ -256,18 +257,18 @@ class EndpointDetailsPanel(
         val previousTab = if (tabPane.tabCount > 0) tabPane.getTitleAt(tabPane.selectedIndex) else null
         tabPane.removeAll()
         if (parameters.any { it.binding == ParameterBinding.Path }) {
-            tabPane.addTab("路径", JBScrollPane(pathParamsTable))
+            tabPane.addTab(ApiMocktleBundle.message("dashboard.details.tab.path"), JBScrollPane(pathParamsTable))
         }
         if (paramsTableModel.rowCount > 0) {
-            tabPane.addTab("参数", JBScrollPane(paramsTable))
+            tabPane.addTab(ApiMocktleBundle.message("dashboard.details.tab.params"), JBScrollPane(paramsTable))
         }
         if (headersTableModel.rowCount > 0) {
-            tabPane.addTab("请求头", JBScrollPane(headersTable))
+            tabPane.addTab(ApiMocktleBundle.message("dashboard.details.tab.headers"), JBScrollPane(headersTable))
         }
         if (isFormData) {
-            tabPane.addTab("表单", JBScrollPane(formTable))
+            tabPane.addTab(ApiMocktleBundle.message("dashboard.details.tab.form"), JBScrollPane(formTable))
         } else if (bodyArea.text.isNotBlank()) {
-            tabPane.addTab("请求体", JBScrollPane(bodyArea))
+            tabPane.addTab(ApiMocktleBundle.message("dashboard.details.tab.requestBody"), JBScrollPane(bodyArea))
         }
         if (previousTab != null) {
             for (i in 0 until tabPane.tabCount) {
@@ -290,12 +291,12 @@ class EndpointDetailsPanel(
         responseTabPane.removeAll()
         if (demoJson.isBlank() || demoJson == "{}") {
             responseBodyArea.text = ""
-            responseTabPane.addTab("响应体", JBScrollPane(JBLabel("（无响应示例）").apply {
+            responseTabPane.addTab(ApiMocktleBundle.message("dashboard.details.tab.responseBody"), JBScrollPane(JBLabel(ApiMocktleBundle.message("dashboard.details.noResponseExample")).apply {
                 horizontalAlignment = SwingConstants.CENTER
             }))
         } else {
             responseBodyArea.text = EndpointDetailsPanelLogic.formatJson(demoJson)
-            responseTabPane.addTab("响应体", JBScrollPane(responseBodyArea))
+            responseTabPane.addTab(ApiMocktleBundle.message("dashboard.details.tab.responseBody"), JBScrollPane(responseBodyArea))
         }
     }
 

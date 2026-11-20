@@ -1,6 +1,7 @@
 package com.apimocktle.settings.ui
 
 import com.intellij.openapi.options.Configurable
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.settings.SettingBinder
 import com.apimocktle.settings.ui.*
 import java.awt.BorderLayout
@@ -22,41 +23,22 @@ class ApiMocktleSettingsConfigurable(private val project: com.intellij.openapi.p
     private val extensionPanel: SettingsPanel = ExtensionConfigPanel(project)
     private val advancedPanel: SettingsPanel = AdvancedSettingsPanel(project)
 
-    companion object {
-        private var initialTab: String? = null
-        fun selectTab(tabName: String) { initialTab = tabName }
-    }
-
     override fun getDisplayName(): String = "ApiMocktle"
 
     override fun createComponent(): JComponent {
         if (panel == null) {
             panel = JPanel(BorderLayout())
             tabs = JTabbedPane().also { t ->
-                t.addTab("API 扫描", apiScanPanel.component)
-                t.addTab("导出到 ApiMocktle", yapiExportPanel.component)
-                t.addTab("Mock Agent", mockAgentPanel.component)
-                t.addTab("扩展配置", extensionPanel.component)
-                t.addTab("高级", advancedPanel.component)
+                t.addTab(ApiMocktleBundle.message("settings.section.apiScanTab"), apiScanPanel.component)
+                t.addTab(ApiMocktleBundle.message("settings.section.exportToApiMocktleTab"), yapiExportPanel.component)
+                t.addTab(ApiMocktleBundle.message("settings.section.mockAgentTab"), mockAgentPanel.component)
+                t.addTab(ApiMocktleBundle.message("settings.section.extensionConfigTab"), extensionPanel.component)
+                t.addTab(ApiMocktleBundle.message("settings.section.advancedTab"), advancedPanel.component)
             }
             panel!!.add(tabs, BorderLayout.CENTER)
         }
         reset()
-        selectInitialTab()
         return panel!!
-    }
-
-    private fun selectInitialTab() {
-        val tabName = initialTab
-        if (tabName != null && tabs != null) {
-            for (i in 0 until tabs!!.tabCount) {
-                if (tabs!!.getTitleAt(i) == tabName) {
-                    tabs!!.selectedIndex = i
-                    break
-                }
-            }
-            initialTab = null
-        }
     }
 
     override fun isModified(): Boolean {

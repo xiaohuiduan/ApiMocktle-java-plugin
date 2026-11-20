@@ -7,6 +7,7 @@ import com.apimocktle.core.threading.read
 import com.apimocktle.core.threading.swing
 import com.apimocktle.exporter.ApiExporter
 import com.apimocktle.exporter.model.*
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.psi.helper.ApiMetadataResolver
 import com.apimocktle.psi.helper.UnifiedDocHelper
 import com.apimocktle.rule.RuleKeys
@@ -43,10 +44,10 @@ class YapiExporter(private val project: Project) : ApiExporter {
         val clientProvider = DefaultYapiApiClientProvider(project)
         val initResult = runCatching { clientProvider.init() }
         if (initResult.isFailure) {
-            return ExportResult.Error(initResult.exceptionOrNull()?.message ?: "导出失败")
+            return ExportResult.Error(initResult.exceptionOrNull()?.message ?: ApiMocktleBundle.message("error.export.failed"))
         }
         if (!initResult.getOrThrow()) {
-            return ExportResult.Error("ApiMocktle 个人令牌未配置")
+            return ExportResult.Error(ApiMocktleBundle.message("error.yapi.tokenNotConfigured"))
         }
 
         val serverUrl = clientProvider.serverUrl
@@ -59,15 +60,15 @@ class YapiExporter(private val project: Project) : ApiExporter {
         val client = clientProvider.getClient("") // temp client for listing
         val projectsResult = client.listProjects()
         val projects = projectsResult.getOrNull()
-            ?: return ExportResult.Error(projectsResult.errorMessage() ?: "获取项目列表失败")
+            ?: return ExportResult.Error(projectsResult.errorMessage() ?: ApiMocktleBundle.message("error.yapi.projectListFailed"))
 
         if (projects.isEmpty()) {
-            return ExportResult.Error("没有可访问的 ApiMocktle 项目")
+            return ExportResult.Error(ApiMocktleBundle.message("error.yapi.noAccessibleProjects"))
         }
 
         // Show project selection dialog
         val selectedProjectId = selectProject(projects)
-            ?: return ExportResult.Error("未选择项目")
+            ?: return ExportResult.Error(ApiMocktleBundle.message("error.yapi.noProjectSelected"))
 
         val projectClient = clientProvider.getClient(selectedProjectId)
         val mockRules = MockRuleLoader.getInstance(project).getMockRules()
@@ -106,7 +107,8 @@ class YapiExporter(private val project: Project) : ApiExporter {
                 val catId = cartResult.getOrNull()
                 if (catId == null) {
                     failCount++
-                    errors.add("${endpoint.name}：${cartResult.errorMessage() ?: "无法解析分类 '$folderName'"}")
+                    errors.add(ApiMocktleBundle.message("error.export.endpointDetail", endpoint.name ?: endpoint.path,
+                        cartResult.errorMessage() ?: ApiMocktleBundle.message("error.yapi.cartUnresolved", folderName)))
                     processedCount++
                     continue
                 }
@@ -158,14 +160,14 @@ class YapiExporter(private val project: Project) : ApiExporter {
                 metadata = metadata
             )
             successCount == 0 && failCount > 0 -> ExportResult.Error(
-                "全部导出失败：\n${errors.take(5).joinToString("\n")}"
+                ApiMocktleBundle.message("error.export.allFailed", errors.take(5).joinToString("\n"))
             )
             successCount > 0 -> ExportResult.Success(
                 count = successCount,
-                target = "$serverUrl (ApiMocktle) - $failCount 个失败",
+                target = ApiMocktleBundle.message("error.export.partialTarget", "$serverUrl (ApiMocktle)", failCount),
                 metadata = metadata
             )
-            else -> ExportResult.Error("没有可导出的端点")
+            else -> ExportResult.Error(ApiMocktleBundle.message("error.export.noExportableEndpoints"))
         }
     }
 
@@ -199,12 +201,12 @@ class YapiExporter(private val project: Project) : ApiExporter {
                     }
                 }
                 isEditable = true
-                toolTipText = "输入项目名进行搜索"
+                toolTipText = ApiMocktleBundle.message("dashboard.project.search.tooltip")
             }
             val dialog = object : DialogWrapper(project) {
-                init { title = "选择 ApiMocktle 项目"; init() }
+                init { title = ApiMocktleBundle.message("dashboard.project.select.title"); init() }
                 override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 8)).apply {
-                    add(JLabel("请选择要同步的 ApiMocktle 项目："), BorderLayout.NORTH)
+                    add(JLabel(ApiMocktleBundle.message("dashboard.project.select.label")), BorderLayout.NORTH)
                     add(comboBox, BorderLayout.CENTER)
                 }
             }
@@ -223,12 +225,12 @@ class YapiExporter(private val project: Project) : ApiExporter {
         val metadata = result.metadata as? YapiExportMetadata ?: return false
         swing {
             val content = buildString {
-                append("已导出 ${result.count} 个端点到 ApiMocktle")
+                append(ApiMocktleBundle.message("notification.export.success.count", result.count))
                 if (metadata.usedDefaultServer) {
-                    append("\n未配置服务器地址，已使用默认地址 ${DefaultYapiSettingsHelper.DEFAULT_YAPI_SERVER_URL}，可在 设置 → 导出到 ApiMocktle 中修改")
+                    append("\n" + ApiMocktleBundle.message("notification.export.success.defaultServer", DefaultYapiSettingsHelper.DEFAULT_YAPI_SERVER_URL))
                 }
                 if (metadata.failures.isNotEmpty()) {
-                    append("，${metadata.failures.size} 个失败：\n")
+                    append(ApiMocktleBundle.message("notification.export.success.failures", metadata.failures.size))
                     append(metadata.failures.take(5).joinToString("\n"))
                     if (metadata.failures.size > 5) append("\n…")
                 }
@@ -240,7 +242,7 @@ class YapiExporter(private val project: Project) : ApiExporter {
             }
             val notification = com.intellij.notification.Notification(
                 "ApiMocktle Notifications",
-                "导出到 ApiMocktle",
+                ApiMocktleBundle.message("notification.export.title"),
                 content,
                 type
             )

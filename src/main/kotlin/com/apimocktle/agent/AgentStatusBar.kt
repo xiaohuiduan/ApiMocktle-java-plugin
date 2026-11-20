@@ -2,6 +2,7 @@ package com.apimocktle.agent
 
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.JBUI
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.ide.ui.AgentStatusColors
 import com.apimocktle.settings.SettingBinder
 import java.awt.*
@@ -44,7 +45,7 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
         // 端口 + 模式
         val infoPanel = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
             isOpaque = false
-            add(JLabel("端口:").apply { foreground = UIManager.getColor("Label.infoForeground") })
+            add(JLabel(ApiMocktleBundle.message("agent.statusBar.port")).apply { foreground = UIManager.getColor("Label.infoForeground") })
             add(portLabel)
             add(Box.createHorizontalStrut(8))
             add(modeLabel)
@@ -111,17 +112,17 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
         lastConnected = connectedCount > 0
 
         if (agents.isEmpty()) {
-            statusLabel.text = "Mock Agent 未配置"
+            statusLabel.text = ApiMocktleBundle.message("agent.statusBar.notConfigured")
             statusLabel.foreground = AgentStatusColors.Muted
             portLabel.text = "--"
         } else {
-            statusLabel.text = "Mock Agent: $connectedCount/${agents.size} 已连接"
+            statusLabel.text = ApiMocktleBundle.message("agent.statusBar.connected", connectedCount, agents.size)
             statusLabel.foreground = if (lastConnected) AgentStatusColors.Ready else AgentStatusColors.Muted
             portLabel.text = agents.joinToString(", ") { "${it.name}:${it.port}" }
             portLabel.foreground = if (lastConnected) UIManager.getColor("Label.foreground") else AgentStatusColors.Muted
         }
 
-        modeLabel.text = if (autoMode) "自动注入: 开启" else "自动注入: 关闭"
+        modeLabel.text = if (autoMode) ApiMocktleBundle.message("agent.statusBar.autoInject.on") else ApiMocktleBundle.message("agent.statusBar.autoInject.off")
         modeLabel.foreground = if (autoMode) AgentStatusColors.Ready else AgentStatusColors.Muted
 
         // 重绘状态圆点
@@ -129,7 +130,7 @@ class AgentStatusBar(private val project: Project) : JPanel(BorderLayout()) {
     }
 
     private fun renderUnknown() {
-        statusLabel.text = "Mock Agent 状态未知"
+        statusLabel.text = ApiMocktleBundle.message("agent.statusBar.unknown")
         statusLabel.foreground = AgentStatusColors.Muted
         portLabel.text = "--"
         modeLabel.text = ""

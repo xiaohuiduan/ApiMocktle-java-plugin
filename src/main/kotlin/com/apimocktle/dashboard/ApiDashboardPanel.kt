@@ -28,6 +28,7 @@ import com.apimocktle.exporter.model.OutputConfig
 import com.apimocktle.exporter.model.path
 import com.apimocktle.ide.dialog.EndpointSelection
 import com.apimocktle.ide.dialog.ExportDialog
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.ide.support.NotificationUtils
 import com.apimocktle.ide.support.runWithProgress
 import com.apimocktle.logging.IdeaLog
@@ -65,14 +66,14 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
     private val apiIndexManager = ApiIndexManager.getInstance(project)
 
     /** Tree model backing the API tree view */
-    private val treeModel = DefaultTreeModel(DefaultMutableTreeNode("加载中..."))
+    private val treeModel = DefaultTreeModel(DefaultMutableTreeNode(ApiMocktleBundle.message("dashboard.tree.loading")))
 
     /** Tree component displaying the API hierarchy */
     private val apiTree: Tree = Tree(treeModel)
 
     /** Search input field for filtering endpoints */
     private val searchField = SearchTextField().apply {
-        textEditor.putClientProperty("JTextField.placeholder", "搜索 API 名称/路径/描述")
+        textEditor.putClientProperty("JTextField.placeholder", ApiMocktleBundle.message("dashboard.search.placeholder"))
         preferredSize = Dimension(200, preferredSize.height)
         maximumSize = Dimension(300, preferredSize.height)
     }
@@ -270,17 +271,17 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
         val popupMenu = JPopupMenu()
 
         if (endpoint != null) {
-            val exportMenu = JMenu("导出")
+            val exportMenu = JMenu(ApiMocktleBundle.message("dashboard.menu.export"))
             addExportMenuItems(exportMenu, listOf(endpoint))
             popupMenu.add(exportMenu)
             popupMenu.addSeparator()
-            popupMenu.add(createMenuItem("复制路径") {
+            popupMenu.add(createMenuItem(ApiMocktleBundle.message("dashboard.menu.copyPath")) {
                 val clipboard = java.awt.Toolkit.getDefaultToolkit().systemClipboard
                 val selection = java.awt.datatransfer.StringSelection(endpoint.path)
                 clipboard.setContents(selection, null)
                 showCopyNotification()
             })
-            popupMenu.add(createMenuItem("复制为cURL") {
+            popupMenu.add(createMenuItem(ApiMocktleBundle.message("dashboard.menu.copyCurl")) {
                 val curl = com.apimocktle.exporter.curl.CurlFormatter.format(endpoint, "http://localhost:8080")
                 val clipboard = java.awt.Toolkit.getDefaultToolkit().systemClipboard
                 val selection = java.awt.datatransfer.StringSelection(curl)
@@ -288,32 +289,32 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
                 showCopyNotification()
             })
             popupMenu.addSeparator()
-            popupMenu.add(createMenuItem("导航到源码") {
+            popupMenu.add(createMenuItem(ApiMocktleBundle.message("dashboard.menu.navigateToSource")) {
                 navigateToSource(endpoint)
             })
         } else if (nodeInfo != null) {
             val endpoints = collectEndpointsFromNode(node)
             if (endpoints.isNotEmpty()) {
-                val exportMenu = JMenu("导出")
+                val exportMenu = JMenu(ApiMocktleBundle.message("dashboard.menu.export"))
                 addExportMenuItems(exportMenu, endpoints)
                 popupMenu.add(exportMenu)
                 popupMenu.addSeparator()
             }
-            popupMenu.add(createMenuItem("全部折叠") {
+            popupMenu.add(createMenuItem(ApiMocktleBundle.message("dashboard.menu.collapseAll")) {
                 collapseAll()
             })
-            popupMenu.add(createMenuItem("全部展开") {
+            popupMenu.add(createMenuItem(ApiMocktleBundle.message("dashboard.menu.expandAll")) {
                 expandAll()
             })
         } else {
-            val exportMenu = JMenu("导出全部")
+            val exportMenu = JMenu(ApiMocktleBundle.message("dashboard.menu.exportAll"))
             addExportMenuItems(exportMenu, cachedEndpoints)
             popupMenu.add(exportMenu)
             popupMenu.addSeparator()
-            popupMenu.add(createMenuItem("全部折叠") {
+            popupMenu.add(createMenuItem(ApiMocktleBundle.message("dashboard.menu.collapseAll")) {
                 collapseAll()
             })
-            popupMenu.add(createMenuItem("全部展开") {
+            popupMenu.add(createMenuItem(ApiMocktleBundle.message("dashboard.menu.expandAll")) {
                 expandAll()
             })
         }
@@ -331,7 +332,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
         ExportFormat.entries
             .filter { it.isAvailableFor(endpoints) }
             .forEach { format ->
-                menu.add(createMenuItem("导出到${format.displayName}") {
+                menu.add(createMenuItem(ApiMocktleBundle.message("dashboard.menu.exportTo", format.displayName)) {
                     showExportDialog(endpoints, format)
                 })
             }
@@ -398,7 +399,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
     private fun showCopyNotification() {
         NotificationGroupManager.getInstance()
             .getNotificationGroup("ApiMocktle Notifications")
-            .createNotification("已复制到剪贴板", NotificationType.INFORMATION)
+            .createNotification(ApiMocktleBundle.message("notification.copied"), NotificationType.INFORMATION)
             .notify(project)
     }
 
@@ -412,7 +413,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      */
     private fun showExportDialog(endpoints: List<ApiEndpoint>, format: ExportFormat? = null) {
         if (endpoints.isEmpty()) {
-            Messages.showInfoMessage(project, "没有可导出的API端点。", "导出API")
+            Messages.showInfoMessage(project, ApiMocktleBundle.message("dashboard.message.noEndpoints"), ApiMocktleBundle.message("notification.exportApi.title"))
             return
         }
 
@@ -432,7 +433,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
             outputConfig = dialogResult.outputConfig
             selectedEndpoints = dialogResult.selectedEndpoints
             if (selectedEndpoints.isEmpty()) {
-                NotificationUtils.notifyWarning(project, "导出API", "未选择任何端点，已取消导出。")
+                NotificationUtils.notifyWarning(project, ApiMocktleBundle.message("notification.exportApi.title"), ApiMocktleBundle.message("dashboard.message.noSelection"))
                 return
             }
         }
@@ -441,11 +442,11 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
             try {
                 val result = if (!selectedEndpoints.isNullOrEmpty()) {
                     val eps = selectedEndpoints.map { it.endpoint }
-                    runWithProgress(project, "正在导出API...") { indicator ->
+                    runWithProgress(project, ApiMocktleBundle.message("dashboard.progress.exporting")) { indicator ->
                         orchestrator.exportEndpoints(eps, exportFormat, outputConfig, indicator)
                     }
                 } else {
-                    runWithProgress(project, "正在导出API...") { indicator ->
+                    runWithProgress(project, ApiMocktleBundle.message("dashboard.progress.exporting")) { indicator ->
                         orchestrator.exportEndpoints(endpoints, exportFormat, outputConfig, indicator)
                     }
                 }
@@ -458,8 +459,8 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
                 swing {
                     NotificationUtils.notifyError(
                         project,
-                        "导出失败",
-                        "导出失败：${e.message}"
+                        ApiMocktleBundle.message("notification.export.failed.title"),
+                        ApiMocktleBundle.message("notification.export.failed.content", e.message ?: "")
                     )
                 }
             }
@@ -503,7 +504,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
             is ExportResult.Error -> {
                 NotificationUtils.notifyError(
                     project,
-                    "导出失败",
+                    ApiMocktleBundle.message("notification.export.failed.title"),
                     result.message
                 )
             }
@@ -517,12 +518,12 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      */
     private fun showExportSuccessNotification(result: ExportResult.Success) {
         val message = buildString {
-            append("成功导出 ${result.count} 个端点到 ${result.target}")
+            append(ApiMocktleBundle.message("notification.export.success.content", result.count, result.target))
             result.metadata?.formatDisplay()?.let { append(" $it") }
         }
         NotificationUtils.notifyInfo(
             project,
-            "导出成功",
+            ApiMocktleBundle.message("notification.export.success.title"),
             message
         )
     }
@@ -537,12 +538,12 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
     private fun updateTree(endpoints: List<ApiEndpoint>) {
         if (endpoints.isEmpty()) {
             apiTree.emptyText.clear()
-            apiTree.emptyText.appendLine("未找到API端点")
-            apiTree.emptyText.appendLine("  - 确保类上有 @RestController 或 @Controller 注解")
-            apiTree.emptyText.appendLine("  - 确保方法上有 @RequestMapping 或类似注解")
-            apiTree.emptyText.appendLine("  - 点击刷新按钮重新扫描")
+            apiTree.emptyText.appendLine(ApiMocktleBundle.message("dashboard.empty.noEndpoints"))
+            apiTree.emptyText.appendLine("  " + ApiMocktleBundle.message("dashboard.empty.tip.controller"))
+            apiTree.emptyText.appendLine("  " + ApiMocktleBundle.message("dashboard.empty.tip.mapping"))
+            apiTree.emptyText.appendLine("  " + ApiMocktleBundle.message("dashboard.empty.tip.refresh"))
             treeModel.setRoot(DefaultMutableTreeNode(project.name))
-            statusLabel.text = "0 个端点"
+            statusLabel.text = ApiMocktleBundle.message("dashboard.status.endpoints", 0)
             return
         }
         apiTree.emptyText.clear()
@@ -578,7 +579,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
         }
 
         treeModel.setRoot(root)
-        statusLabel.text = "${endpoints.size} 个端点"
+        statusLabel.text = ApiMocktleBundle.message("dashboard.status.endpoints", endpoints.size)
 
         for (i in 0 until minOf(3, treeModel.getChildCount(root))) {
             val child = root.getChildAt(i) as? DefaultMutableTreeNode
@@ -599,7 +600,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
     private fun buildModuleNode(moduleName: String, endpoints: List<ApiEndpoint>): DefaultMutableTreeNode {
         val moduleNode = DefaultMutableTreeNode(NodeInfo("$moduleName (${endpoints.size})", null))
 
-        val groupedByClass = endpoints.groupBy { it.className ?: it.sourceClass?.qualifiedName ?: "未知" }
+        val groupedByClass = endpoints.groupBy { it.className ?: it.sourceClass?.qualifiedName ?: ApiMocktleBundle.message("dashboard.unknown") }
         val singleClass = groupedByClass.size == 1
 
         if (singleClass) {
@@ -614,7 +615,7 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
                 val classTitle = firstEndpoint.folder?.takeIf { it.isNotBlank() }
                     ?: firstEndpoint.className?.substringAfterLast('.')
                     ?: firstEndpoint.sourceClass?.name
-                    ?: "未知"
+                    ?: ApiMocktleBundle.message("dashboard.unknown")
 
                 val classNode =
                     DefaultMutableTreeNode(NodeInfo("$classTitle (${classEndpoints.size})", firstEndpoint.sourceClass))
@@ -660,9 +661,9 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
 
         if (filtered.isEmpty()) {
             apiTree.emptyText.clear()
-            apiTree.emptyText.appendLine("未找到 '$searchText' 的结果")
+            apiTree.emptyText.appendLine(ApiMocktleBundle.message("dashboard.empty.noSearchResults", searchText))
             treeModel.setRoot(DefaultMutableTreeNode(project.name))
-            statusLabel.text = "0 个结果"
+            statusLabel.text = ApiMocktleBundle.message("dashboard.status.noResults")
         } else {
             updateTree(filtered)
         }
@@ -699,9 +700,9 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
             apiIndex.invalidate()
             swing {
                 LOG.debug("设置树为'扫描中...'状态")
-                statusLabel.text = "扫描中..."
+                statusLabel.text = ApiMocktleBundle.message("dashboard.tree.scanning")
                 apiTree.emptyText.clear()
-                treeModel.setRoot(DefaultMutableTreeNode("扫描中..."))
+                treeModel.setRoot(DefaultMutableTreeNode(ApiMocktleBundle.message("dashboard.tree.scanning")))
             }
             LOG.debug("请求重新扫描...")
             apiIndexManager.requestScan()
@@ -810,8 +811,8 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      * Action for refreshing the API endpoint list.
      */
     private inner class RefreshAction : com.intellij.openapi.actionSystem.AnAction(
-        "刷新",
-        "刷新API端点",
+        ApiMocktleBundle.message("dashboard.action.refresh.text"),
+        ApiMocktleBundle.message("dashboard.action.refresh.description"),
         com.intellij.icons.AllIcons.Actions.Refresh
     ) {
         override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
@@ -824,8 +825,8 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      * Exports selected endpoints if any, otherwise exports all cached endpoints.
      */
     private inner class ExportAction : com.intellij.openapi.actionSystem.AnAction(
-        "导出",
-        "导出API端点",
+        ApiMocktleBundle.message("dashboard.action.export.text"),
+        ApiMocktleBundle.message("dashboard.action.export.description"),
         com.intellij.icons.AllIcons.ToolbarDecorator.Export
     ) {
         override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
@@ -852,8 +853,8 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      * Action for collapsing all nodes in the tree.
      */
     private inner class CollapseAllAction : com.intellij.openapi.actionSystem.AnAction(
-        "全部折叠",
-        "折叠所有节点",
+        ApiMocktleBundle.message("dashboard.action.collapseAll.text"),
+        ApiMocktleBundle.message("dashboard.action.collapseAll.description"),
         com.intellij.icons.AllIcons.Actions.Collapseall
     ) {
         override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
@@ -865,8 +866,8 @@ class ApiDashboardPanel(private val project: Project) : JPanel(BorderLayout()), 
      * Action for expanding all nodes in the tree.
      */
     private inner class ExpandAllAction : com.intellij.openapi.actionSystem.AnAction(
-        "全部展开",
-        "展开所有节点",
+        ApiMocktleBundle.message("dashboard.action.expandAll.text"),
+        ApiMocktleBundle.message("dashboard.action.expandAll.description"),
         com.intellij.icons.AllIcons.Actions.Expandall
     ) {
         override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {

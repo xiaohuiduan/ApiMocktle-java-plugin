@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.apimocktle.core.threading.swing
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.settings.SettingBinder
 
 interface YapiSettingsHelper {
@@ -48,8 +49,8 @@ class DefaultYapiSettingsHelper(private val project: Project) : YapiSettingsHelp
         val token = swing {
             Messages.showInputDialog(
                 project,
-                "请输入 ApiMocktle 个人令牌：",
-                "ApiMocktle 个人令牌",
+                ApiMocktleBundle.message("dialog.token.input"),
+                ApiMocktleBundle.message("dialog.token.title"),
                 Messages.getInformationIcon(),
                 null,
                 null

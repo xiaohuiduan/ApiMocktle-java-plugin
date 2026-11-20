@@ -17,6 +17,7 @@ import com.apimocktle.ide.support.NotificationUtils
 import com.apimocktle.ide.support.SelectedHelper
 import com.apimocktle.ide.support.SelectionScope
 import com.apimocktle.ide.support.runWithProgress
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.logging.IdeaConsoleProvider
 import com.apimocktle.logging.IdeaLog
 import kotlin.coroutines.cancellation.CancellationException
@@ -66,10 +67,10 @@ abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
         if (selection == null) {
             val proceed = Messages.showYesNoDialog(
                 project,
-                "未选中任何方法/文件，将导出项目中全部 API 端点，是否继续？",
+                ApiMocktleBundle.message("dialog.exportAll.confirm"),
                 actionName,
-                "继续导出全部",
-                "取消",
+                ApiMocktleBundle.message("dialog.exportAll.ok"),
+                ApiMocktleBundle.message("dialog.exportAll.cancel"),
                 Messages.getWarningIcon()
             )
             if (proceed != Messages.YES) return
@@ -97,9 +98,9 @@ abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
             throw ce
         } catch (ex: Throwable) {
             LOG.warn("导出失败", ex)
-            IdeaConsoleProvider.getInstance(project).getConsole().error("导出失败", ex)
+            IdeaConsoleProvider.getInstance(project).getConsole().error(ApiMocktleBundle.message("error.export.failed"), ex)
             swing {
-                showExportError(project, ex.message ?: "未知错误")
+                showExportError(project, ex.message ?: ApiMocktleBundle.message("error.unknown"))
             }
         } finally {
             project.syncPublish(ActionCompletedTopic.TOPIC)
@@ -119,7 +120,7 @@ abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
                 } catch (e: Exception) {
                     LOG.warn("处理导出结果失败", e)
                     IdeaConsoleProvider.getInstance(project).getConsole()
-                        .error("保存导出结果失败", e)
+                        .error(ApiMocktleBundle.message("error.export.saveResultFailed"), e)
                     false
                 }
 
@@ -143,14 +144,14 @@ abstract class BaseExportAction : ApiMocktleAction(), IdeaLog {
 
     protected open fun showSuccessMessage(project: Project, result: ExportResult.Success) {
         val message = buildString {
-            append("成功导出 ${result.count} 个端点到 ${result.target}")
+            append(ApiMocktleBundle.message("notification.export.success.content", result.count, result.target))
             result.metadata?.formatDisplay()?.let { append(" $it") }
         }
-        NotificationUtils.notifyInfo(project, "导出API", message)
+        NotificationUtils.notifyInfo(project, ApiMocktleBundle.message("notification.exportApi.title"), message)
     }
 
     protected open fun showExportError(project: Project, message: String) {
         // 与 Dashboard 导出路径一致，统一使用气泡通知，完整堆栈保留在控制台
-        NotificationUtils.notifyError(project, "导出API", "导出失败：$message")
+        NotificationUtils.notifyError(project, ApiMocktleBundle.message("notification.exportApi.title"), ApiMocktleBundle.message("notification.export.failed.content", message))
     }
 }

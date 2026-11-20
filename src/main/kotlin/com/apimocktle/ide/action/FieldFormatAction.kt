@@ -12,6 +12,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.util.PsiTreeUtil
 import com.apimocktle.core.event.ActionCompletedTopic
 import com.apimocktle.core.event.ActionCompletedTopic.Companion.syncPublish
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.logging.IdeaLog
 import java.awt.datatransfer.StringSelection
 
@@ -22,7 +23,7 @@ import java.awt.datatransfer.StringSelection
  * the subclass implementation, copies the result to clipboard, and shows
  * a notification.
  *
- * @param title The display title for notifications
+ * @param title 通知标题（已本地化的文案）
  * @see FieldsToJsonAction for JSON output
  * @see FieldsToJson5Action for JSON5 output
  * @see FieldsToPropertiesAction for Properties output
@@ -40,7 +41,7 @@ abstract class FieldFormatAction(
                 Notification(
                     "ApiMocktle Notifications",
                     title,
-                    "已复制到剪贴板",
+                    ApiMocktleBundle.message("notification.copied"),
                     NotificationType.INFORMATION
                 ), project
             )

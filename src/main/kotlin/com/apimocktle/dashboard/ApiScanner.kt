@@ -9,6 +9,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.AnnotatedElementsSearch
 import com.apimocktle.core.threading.IdeDispatchers
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.core.threading.read
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -234,7 +235,7 @@ class ApiScanner(private val project: Project) {
      */
     private suspend fun doScan(indicator: ProgressIndicator): List<ApiEndpoint> {
         LOG.debug("Finding controller classes...")
-        indicator.text = "正在查找控制器类..."
+        indicator.text = ApiMocktleBundle.message("dashboard.scan.findingControllers")
         indicator.isIndeterminate = true
         val psiClasses = findControllerClasses()
         LOG.info("Found ${psiClasses.size} controller classes")
@@ -340,7 +341,7 @@ class ApiScanner(private val project: Project) {
         for ((index, psiClass) in psiClasses.withIndex()) {
             indicator?.checkCanceled()
             val className = read {
-                psiClass.qualifiedName ?: psiClass.name ?: "未知"
+                psiClass.qualifiedName ?: psiClass.name ?: ApiMocktleBundle.message("dashboard.unknown")
             }
             indicator?.text = className
             indicator?.fraction = index.toDouble() / total
@@ -404,7 +405,7 @@ class ApiScanner(private val project: Project) {
             async(IdeDispatchers.Background) {
                 semaphore.withPermit {
                     indicator?.checkCanceled()
-                    val className = read { psiClass.qualifiedName ?: psiClass.name ?: "未知" }
+                    val className = read { psiClass.qualifiedName ?: psiClass.name ?: ApiMocktleBundle.message("dashboard.unknown") }
                     indicator?.text = className
                     indicator?.fraction = index.toDouble() / total
                     LOG.info("search api from: $className")

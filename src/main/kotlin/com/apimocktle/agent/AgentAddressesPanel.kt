@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import com.apimocktle.i18n.ApiMocktleBundle
 import com.apimocktle.ide.ui.AgentStatusColors
 import java.awt.*
 import java.awt.datatransfer.StringSelection
@@ -29,7 +30,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
     }
 
     private val emptyLabel = JLabel(
-        "<html><center><b>暂无已配置的 Agent</b><br>启动带 Mock Agent 的运行配置后会自动注册到这里<br>可在 设置 → Mock Agent 开启/关闭自动注入</center></html>",
+        ApiMocktleBundle.message("agent.empty"),
         SwingConstants.CENTER
     ).apply {
         foreground = AgentStatusColors.Muted
@@ -122,9 +123,9 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             else -> AgentStatusColors.Ready
         }
         val statusText = when {
-            !agent.connected -> "未连接"
-            !agent.active -> "已暂停，不接收 Mock 规则"
-            else -> "就绪，可接收 Mock 规则"
+            !agent.connected -> ApiMocktleBundle.message("agent.status.disconnected")
+            !agent.active -> ApiMocktleBundle.message("agent.status.paused")
+            else -> ApiMocktleBundle.message("agent.status.ready")
         }
         val statusTextColor = when {
             !agent.connected -> AgentStatusColors.Offline
@@ -169,7 +170,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             isOpaque = false
         }
 
-        val activeButton = JButton(if (agent.active) "暂停" else "激活").apply {
+        val activeButton = JButton(if (agent.active) ApiMocktleBundle.message("agent.action.pause") else ApiMocktleBundle.message("agent.action.activate")).apply {
             font = font.deriveFont(Font.PLAIN, 11f)
             addActionListener {
                 // setActive 内部是 HTTP 调用（readTimeout 10s），必须移出 EDT
@@ -185,21 +186,21 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             }
         }
 
-        val copyButton = JButton("复制地址").apply {
+        val copyButton = JButton(ApiMocktleBundle.message("agent.action.copyAddress")).apply {
             font = font.deriveFont(Font.PLAIN, 11f)
             addActionListener {
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                 clipboard.setContents(StringSelection(agent.address), null)
-                text = "已复制"
+                text = ApiMocktleBundle.message("agent.action.copied")
                 isEnabled = false
                 Timer(1200) {
-                    text = "复制地址"
+                    text = ApiMocktleBundle.message("agent.action.copyAddress")
                     isEnabled = true
                 }.apply { isRepeats = false; start() }
             }
         }
 
-        val logButton = JButton("查看日志").apply {
+        val logButton = JButton(ApiMocktleBundle.message("agent.action.viewLogs")).apply {
             font = font.deriveFont(Font.PLAIN, 11f)
             isEnabled = agent.connected
             addActionListener {
@@ -256,7 +257,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
 
         fun formatLogs(logs: List<Map<String, Any?>>): String {
             return if (logs.isEmpty()) {
-                "暂无日志"
+                ApiMocktleBundle.message("agent.logs.empty")
             } else {
                 logs.joinToString("\n") { entry ->
                     val ts = entry["timestamp"] ?: ""
@@ -268,7 +269,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
         }
 
         val manager = project.getService(MockAgentManager::class.java)
-        val refreshBtn = JButton("刷新").apply {
+        val refreshBtn = JButton(ApiMocktleBundle.message("agent.action.refresh")).apply {
             addActionListener {
                 // 后台拉取，避免阻塞 EDT
                 isEnabled = false
@@ -297,7 +298,7 @@ class AgentAddressesPanel(private val project: Project) : JPanel(BorderLayout())
             border = JBUI.Borders.empty(4)
         }
 
-        val dialog = JDialog(SwingUtilities.getWindowAncestor(this), "Agent 日志 - ${agent.name}")
+        val dialog = JDialog(SwingUtilities.getWindowAncestor(this), ApiMocktleBundle.message("agent.log.title", agent.name))
         dialog.contentPane = content
         dialog.setSize(700, 450)
         dialog.setLocationRelativeTo(this)

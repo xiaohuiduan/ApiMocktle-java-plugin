@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.apimocktle.agent.AgentAddressesPanel
+import com.apimocktle.i18n.ApiMocktleBundle
 
 /**
  * Factory for creating the API Dashboard tool window in IntelliJ IDEA.
@@ -22,12 +23,12 @@ class ApiDashboardToolWindowFactory : ToolWindowFactory {
         val apiPanel = ApiDashboardPanel(project)
         val service = ApiDashboardService.getInstance(project)
         service.setDashboardPanel(apiPanel)
-        val apiContent = contentFactory.createContent(apiPanel, "API 端点", false)
+        val apiContent = contentFactory.createContent(apiPanel, ApiMocktleBundle.message("dashboard.toolWindow.content.apiEndpoints"), false)
         apiContent.setDisposer(Disposable { apiPanel.dispose() })
 
         // Tab 2: Agent Addresses
         val agentPanel = AgentAddressesPanel(project)
-        val agentContent = contentFactory.createContent(agentPanel, "Agent 地址", false)
+        val agentContent = contentFactory.createContent(agentPanel, ApiMocktleBundle.message("dashboard.toolWindow.content.agentAddresses"), false)
         agentContent.setDisposer(Disposable { agentPanel.dispose() })
 
         toolWindow.contentManager.addContent(apiContent)
