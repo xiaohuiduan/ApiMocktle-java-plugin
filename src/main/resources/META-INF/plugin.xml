@@ -10,6 +10,8 @@
     <idea-version since-build="262.0"/>
     <depends>com.intellij.modules.platform</depends>
 
+    <resource-bundle>messages.ApiMocktleBundle</resource-bundle>
+
     <depends optional="true" config-file="apimocktle-kotlin.xml">org.jetbrains.kotlin</depends>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
@@ -60,44 +62,35 @@
     <actions>
         <group id="ApiMocktleActions">
             <action id="com.apimocktle.action.YapiExportAction"
-                    class="com.apimocktle.ide.action.ExportToYapiAction" text="导出到 ApiMocktle"
-                    description="将 API 文档同步到 ApiMocktle">
-            </action>
+                    class="com.apimocktle.ide.action.ExportToYapiAction"/>
         </group>
 
-        <group id="ApiMocktleFieldsGroup" text="字段转换" description="字段格式转换" popup="true">
+        <group id="ApiMocktleFieldsGroup" popup="true">
             <action id="com.apimocktle.action.FieldsToJsonAction"
-                    class="com.apimocktle.ide.action.FieldsToJsonAction" text="转JSON"
-                    description="字段转JSON">
-            </action>
+                    class="com.apimocktle.ide.action.FieldsToJsonAction"/>
             <action id="com.apimocktle.action.FieldsToJson5Action"
-                    class="com.apimocktle.ide.action.FieldsToJson5Action" text="转JSON5"
-                    description="字段转JSON5">
-            </action>
+                    class="com.apimocktle.ide.action.FieldsToJson5Action"/>
         </group>
 
-        <group id="ApiMocktleGenerateMenu" text="ApiMocktle" description="ApiMocktle生成菜单" popup="true">
+        <group id="ApiMocktleGenerateMenu" popup="true">
             <add-to-group group-id="GenerateGroup" anchor="last"/>
             <reference ref="com.apimocktle.action.YapiExportAction"/>
             <reference ref="ApiMocktleFieldsGroup"/>
         </group>
 
-        <group id="ApiMocktleEditorLangPopupMenu" text="ApiMocktle" description="ApiMocktle编辑器菜单" popup="true">
+        <group id="ApiMocktleEditorLangPopupMenu" popup="true">
             <add-to-group group-id="EditorLangPopupMenu" anchor="last"/>
             <reference ref="com.apimocktle.action.YapiExportAction"/>
             <reference ref="ApiMocktleFieldsGroup"/>
         </group>
 
-        <group id="ApiMocktleProjectViewPopupMenu" text="ApiMocktle" description="ApiMocktle项目视图菜单" popup="true">
+        <group id="ApiMocktleProjectViewPopupMenu" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <reference ref="com.apimocktle.action.YapiExportAction"/>
         </group>
 
-        <action
-                id="com.apimocktle.action.OpenDashboardAction"
-                class="com.apimocktle.ide.action.OpenApiDashboardAction"
-                text="打开API仪表盘"
-                description="打开API Dashboard工具窗口">
+        <action id="com.apimocktle.action.OpenDashboardAction"
+                class="com.apimocktle.ide.action.OpenApiDashboardAction">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
 
