@@ -8,6 +8,7 @@ import com.apimocktle.exporter.yapi.model.YapiQuery
 import com.apimocktle.http.HttpClient
 import com.apimocktle.http.HttpRequest
 import com.apimocktle.http.HttpResponse
+import com.apimocktle.i18n.ApiMocktleBundle
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
@@ -105,7 +106,12 @@ class DefaultYapiApiClientTest {
         val c = DefaultYapiApiClient("", token, projectId, httpClient)
         val result = c.listProjects()
         assertFalse(result.isSuccess)
-        assertTrue(result.errorMessage()!!.contains("YAPI服务器URL未配置"))
+        // 按资源包解析出的当前语言文案断言，而不是硬编码任一语言的字面量：
+        // 本机 JVM 默认 locale 可能是 zh_CN，CI 可能是 en_US，硬编码任一种都会在另一端失败。
+        assertTrue(
+            "Blank server URL should report the configured-not-found message",
+            result.errorMessage()!!.contains(ApiMocktleBundle.message("error.yapi.serverNotConfigured"))
+        )
     }
 
     @Test
@@ -113,7 +119,10 @@ class DefaultYapiApiClientTest {
         val c = DefaultYapiApiClient(serverUrl, "", projectId, httpClient)
         val result = c.listProjects()
         assertFalse(result.isSuccess)
-        assertTrue(result.errorMessage()!!.contains("令牌为空"))
+        assertTrue(
+            "Blank token should report the empty-token message",
+            result.errorMessage()!!.contains(ApiMocktleBundle.message("error.yapi.tokenEmpty"))
+        )
     }
 
     @Test
@@ -355,10 +364,19 @@ class DefaultYapiApiClientTest {
     // -------------------------------------------------------------------------
 
     @Test
-    fun `uploadApi returns success in mock mode (blank serverUrl)`() = runBlocking {
+    fun `uploadApi returns failure when serverUrl is blank (no silent fake success)`() = runBlocking {
+        // 行为变更（8c5fb55）：空配置不再假成功，而是先失败再发请求。
+        // 旧断言 assertTrue(result.isSuccess) 已与该修复冲突，属于遗漏同步的陈旧测试。
         val c = DefaultYapiApiClient("", token, projectId, httpClient)
         val result = c.uploadApi(testDoc(), "cat1")
-        assertTrue(result.isSuccess)
+        assertFalse(
+            "Blank serverUrl must not report success",
+            result.isSuccess
+        )
+        assertTrue(
+            "Should report the not-configured message",
+            result.errorMessage()!!.contains(ApiMocktleBundle.message("error.yapi.serverOrTokenNotConfigured"))
+        )
         verifyNoInteractions(httpClient)
     }
 

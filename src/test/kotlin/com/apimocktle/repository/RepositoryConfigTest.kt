@@ -80,15 +80,23 @@ class RepositoryConfigTest {
     }
 
     @Test
-    fun testDisplayName() {
-        assertEquals("Maven Local", RepositoryConfig(RepositoryType.MAVEN_LOCAL, "/path").displayName())
-        assertEquals("Gradle Cache", RepositoryConfig(RepositoryType.GRADLE_CACHE, "/path").displayName())
-        assertTrue("Custom should contain path", RepositoryConfig(RepositoryType.CUSTOM, "/custom/my-repo").displayName().contains("my-repo"))
-    }
-
-    @Test
     fun testToPath() {
         val config = RepositoryConfig(RepositoryType.MAVEN_LOCAL, "/path/to/repo")
         assertEquals(java.nio.file.Paths.get("/path/to/repo"), config.toPath())
+    }
+
+    @Test
+    fun testDisplayName() {
+        // 显示名来自资源包，随 IDE 语言变化；断言"与资源包一致"而不是硬编码某一种语言。
+        // `RepositoryConfig` 的所有分支都不得漏出 `!key!` 缺失标记（枚举项覆盖见 ApiMocktleBundleTest）。
+        for (type in RepositoryType.entries) {
+            val text = RepositoryConfig(type, "/custom/my-repo").displayName()
+            assertTrue("$type display name must not be blank", text.isNotBlank())
+            assertFalse("$type display name must not be a missing marker: $text", text.startsWith("!"))
+        }
+        assertTrue(
+            "Custom should contain path leaf",
+            RepositoryConfig(RepositoryType.CUSTOM, "/custom/my-repo").displayName().contains("my-repo")
+        )
     }
 }
